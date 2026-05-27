@@ -197,7 +197,7 @@ button {
 }
 
 .summary-item span,
-.chart-row__label span,
+.performance-legend__item span,
 .recommendation-card p,
 .empty-state {
   color: var(--muted);
@@ -320,94 +320,123 @@ button {
   grid-column: 1 / -1;
 }
 
-.line-chart {
+.performance-chart-card {
   display: grid;
-  gap: 12px;
-}
-
-.chart-row {
-  display: grid;
-  grid-template-columns: minmax(130px, 0.8fr) minmax(220px, 1.4fr) 72px;
   gap: 14px;
-  align-items: center;
 }
 
-.chart-row__label {
+.performance-chart {
+  min-height: 330px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 82%, transparent),
+      color-mix(in srgb, var(--panel) 92%, transparent)
+    );
+  overflow: hidden;
+}
+
+.performance-chart__svg {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 300px;
+}
+
+.performance-chart__plot {
+  fill: color-mix(in srgb, var(--panel-strong) 72%, transparent);
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.performance-chart__grid {
+  stroke: color-mix(in srgb, var(--muted-text) 20%, transparent);
+  stroke-width: 1;
+}
+
+.performance-chart__zero-line {
+  stroke: color-mix(in srgb, var(--text) 38%, transparent);
+  stroke-dasharray: 6 7;
+  stroke-width: 1.35;
+}
+
+.performance-chart__axis-label {
+  fill: var(--muted-text);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.performance-chart__line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3.4;
+}
+
+.performance-chart__line--baseline {
+  stroke: var(--muted-text);
+  stroke-dasharray: 8 7;
+  stroke-width: 2.4;
+}
+
+.performance-chart__point {
+  stroke: var(--panel);
+  stroke-width: 2.2;
+}
+
+.performance-legend {
   display: grid;
-  gap: 3px;
+  grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+  gap: 8px;
+}
+
+.performance-legend__item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  gap: 5px 8px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-strong);
+}
+
+.performance-legend__swatch {
+  width: 10px;
+  height: 10px;
+  margin-top: 5px;
+  border-radius: 999px;
+}
+
+.performance-legend__item div {
+  display: grid;
+  gap: 2px;
   min-width: 0;
 }
 
-.chart-row__label strong,
-.chart-row__label span {
+.performance-legend__item strong,
+.performance-legend__item span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.chart-row__label span {
-  font-size: 0.8rem;
+.performance-legend__item strong {
+  color: var(--text);
+  font-size: 0.82rem;
 }
 
-.chart-row__track {
-  position: relative;
-  display: grid;
-  min-height: 96px;
-  grid-template-columns: repeat(12, minmax(5px, 1fr));
-  gap: 5px;
-  align-items: end;
-  padding: 10px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--panel-strong);
-  overflow: hidden;
+.performance-legend__item span {
+  font-size: 0.72rem;
 }
 
-.chart-row__track::before {
-  position: absolute;
-  right: 10px;
-  left: 10px;
-  top: var(--zero-line, 50%);
-  height: 1px;
-  background: color-mix(in srgb, var(--muted-text) 32%, transparent);
-  content: "";
-}
-
-.chart-point {
-  display: block;
-  min-height: 4px;
-  border-radius: 999px 999px 3px 3px;
-  background: var(--accent);
-  position: relative;
-  z-index: 1;
-}
-
-.chart-row:nth-child(2) .chart-point {
-  background: var(--blue);
-}
-
-.chart-row:nth-child(3) .chart-point {
-  background: var(--amber);
-}
-
-.chart-row:nth-child(4) .chart-point {
-  background: #8b9cff;
-}
-
-.chart-row:nth-child(5) .chart-point {
-  background: #e8799f;
-}
-
-.chart-row--baseline .chart-point {
-  align-self: center;
-  min-height: 2px;
-  border-radius: 999px;
-  background: var(--muted-text);
-  opacity: 0.72;
-}
-
-.chart-row__value {
-  justify-self: end;
+.performance-legend__item b {
+  grid-column: 1 / -1;
+  font-size: 0.95rem;
 }
 
 .chart-empty-note {
@@ -612,7 +641,7 @@ tbody tr:last-child td {
   .summary-strip,
   .dashboard-grid,
   .recommendation-list,
-  .chart-row {
+  .performance-legend {
     grid-template-columns: 1fr;
   }
 
@@ -621,16 +650,13 @@ tbody tr:last-child td {
     padding: 16px;
   }
 
-  .chart-row {
-    gap: 8px;
+  .performance-chart {
+    min-height: 260px;
+    padding: 10px;
   }
 
-  .chart-row__track {
-    min-height: 82px;
-  }
-
-  .chart-row__value {
-    justify-self: start;
+  .performance-chart__svg {
+    height: 250px;
   }
 }
 
