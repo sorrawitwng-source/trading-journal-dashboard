@@ -11,7 +11,6 @@ export interface StockRecommendation {
 }
 
 const clampScore = (score: number): number => Math.min(100, Math.max(0, score));
-const SCORE_CALIBRATION = 4;
 
 export function scoreStock(stock: StockProfile): number {
   const score =
@@ -21,7 +20,7 @@ export function scoreStock(stock: StockProfile): number {
     stock.dividend * 0.1 +
     (100 - stock.risk) * 0.2;
 
-  return clampScore(Math.round(score - SCORE_CALIBRATION));
+  return clampScore(Math.round(score));
 }
 
 export function riskLabel(risk: number): RiskLevel {

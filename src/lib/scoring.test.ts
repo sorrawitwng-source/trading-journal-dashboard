@@ -24,7 +24,7 @@ describe("scoreStock", () => {
   });
 
   it("returns a rounded score from 0 to 100", () => {
-    expect(scoreStock(stock({}))).toBe(67);
+    expect(scoreStock(stock({}))).toBe(71);
   });
 });
 
