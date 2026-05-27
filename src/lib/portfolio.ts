@@ -48,6 +48,18 @@ export function createPosition(
   };
 }
 
+export function updatePosition(
+  id: string,
+  symbol: string,
+  buyPrice: number,
+  universe: StockProfile[],
+): PortfolioPosition {
+  return {
+    ...createPosition(symbol, buyPrice, universe),
+    id,
+  };
+}
+
 export function unrealizedProfitLoss(
   buyPrice: number,
   currentPrice: number,

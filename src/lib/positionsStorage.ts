@@ -1,0 +1,59 @@
+import type { PortfolioPosition } from "../types";
+
+export const storedPositionsKey = "trading-journal.positions.v1";
+
+export function loadStoredPositions(
+  storage: Storage = localStorage,
+): PortfolioPosition[] {
+  try {
+    const rawValue = storage.getItem(storedPositionsKey);
+
+    if (!rawValue) {
+      return [];
+    }
+
+    const parsedValue: unknown = JSON.parse(rawValue);
+
+    return Array.isArray(parsedValue)
+      ? parsedValue.filter(isPortfolioPosition)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveStoredPositions(
+  positions: PortfolioPosition[],
+  storage: Storage = localStorage,
+) {
+  try {
+    storage.setItem(storedPositionsKey, JSON.stringify(positions));
+  } catch {
+    // Storage can fail in private mode or when quota is full. The app should keep running.
+  }
+}
+
+function isPortfolioPosition(value: unknown): value is PortfolioPosition {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const position = value as Partial<PortfolioPosition>;
+
+  return (
+    typeof position.id === "string" &&
+    typeof position.symbol === "string" &&
+    typeof position.name === "string" &&
+    (position.market === "Thai" ||
+      position.market === "US" ||
+      position.market === "Custom") &&
+    typeof position.sector === "string" &&
+    typeof position.buyPrice === "number" &&
+    typeof position.currentPrice === "number" &&
+    (typeof position.score === "number" || position.score === null) &&
+    (position.riskLevel === "Low" ||
+      position.riskLevel === "Medium" ||
+      position.riskLevel === "High") &&
+    typeof position.isCustom === "boolean"
+  );
+}

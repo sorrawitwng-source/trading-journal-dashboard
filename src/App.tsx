@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { HoldingsTable, type HoldingRow } from "./components/HoldingsTable";
 import { PerformanceChart } from "./components/PerformanceChart";
@@ -9,20 +9,39 @@ import { TopBar } from "./components/TopBar";
 import { benchmarkSeries } from "./data/benchmarks";
 import { stockUniverse } from "./data/stocks";
 import { combinedChartSeries } from "./lib/benchmarks";
-import { createPosition, summarizePortfolio, unrealizedProfitLoss } from "./lib/portfolio";
+import {
+  createPosition,
+  summarizePortfolio,
+  unrealizedProfitLoss,
+  updatePosition,
+} from "./lib/portfolio";
+import { loadStoredPositions, saveStoredPositions } from "./lib/positionsStorage";
 import { rankRecommendations } from "./lib/scoring";
 import { validatePositionInput } from "./lib/validation";
 import type { MarketFilter, PortfolioPosition } from "./types";
 
 type Theme = "dark" | "light";
+type EditDraft = {
+  buyPrice: string;
+  errors: { symbol?: string; buyPrice?: string };
+  id: string;
+  symbol: string;
+};
 
 function App() {
   const [theme, setTheme] = useState<Theme>("dark");
   const [marketFilter, setMarketFilter] = useState<MarketFilter>("All");
-  const [positions, setPositions] = useState<PortfolioPosition[]>([]);
+  const [positions, setPositions] = useState<PortfolioPosition[]>(() =>
+    loadStoredPositions(),
+  );
   const [formErrors, setFormErrors] = useState<{ symbol?: string; buyPrice?: string }>({});
   const [symbol, setSymbol] = useState("");
   const [buyPrice, setBuyPrice] = useState("");
+  const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
+
+  useEffect(() => {
+    saveStoredPositions(positions);
+  }, [positions]);
 
   const portfolioSummary = useMemo(() => summarizePortfolio(positions), [positions]);
   const recommendations = useMemo(
@@ -79,6 +98,60 @@ function App() {
     setBuyPrice("");
   }
 
+  function handleEditStart(row: HoldingRow) {
+    setEditDraft({
+      buyPrice: String(row.buyPrice),
+      errors: {},
+      id: row.id,
+      symbol: row.symbol,
+    });
+  }
+
+  function handleEditCancel() {
+    setEditDraft(null);
+  }
+
+  function handleEditSymbolChange(symbolValue: string) {
+    setEditDraft((currentDraft) =>
+      currentDraft ? { ...currentDraft, symbol: symbolValue } : currentDraft,
+    );
+  }
+
+  function handleEditBuyPriceChange(buyPriceValue: string) {
+    setEditDraft((currentDraft) =>
+      currentDraft
+        ? { ...currentDraft, buyPrice: buyPriceValue }
+        : currentDraft,
+    );
+  }
+
+  function handleEditSave() {
+    if (!editDraft) {
+      return;
+    }
+
+    const result = validatePositionInput(editDraft.symbol, editDraft.buyPrice);
+
+    if (!result.valid) {
+      setEditDraft({ ...editDraft, errors: result.errors });
+      return;
+    }
+
+    setPositions((currentPositions) =>
+      currentPositions.map((position) =>
+        position.id === editDraft.id
+          ? updatePosition(
+              editDraft.id,
+              result.value.symbol,
+              result.value.buyPrice,
+              stockUniverse,
+            )
+          : position,
+      ),
+    );
+    setEditDraft(null);
+  }
+
   return (
     <main className="app-shell" data-theme={theme}>
       <div className="dashboard">
@@ -110,7 +183,15 @@ function App() {
           />
           <PerformanceChart series={chartSeries} />
           <Recommendations recommendations={recommendations} />
-          <HoldingsTable rows={holdingRows} />
+          <HoldingsTable
+            editDraft={editDraft}
+            onEditBuyPriceChange={handleEditBuyPriceChange}
+            onEditCancel={handleEditCancel}
+            onEditSave={handleEditSave}
+            onEditStart={handleEditStart}
+            onEditSymbolChange={handleEditSymbolChange}
+            rows={holdingRows}
+          />
         </div>
       </div>
     </main>
