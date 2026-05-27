@@ -1,5 +1,6 @@
 export type Market = "Thai" | "US" | "Custom";
 export type MarketFilter = "All" | "Thai" | "US";
+export type PriceStatus = "cached" | "fallback" | "live";
 export type RiskLevel = "Low" | "Medium" | "High";
 
 export interface StockMetrics {
@@ -26,6 +27,8 @@ export interface PortfolioPosition {
   sector: string;
   buyPrice: number;
   currentPrice: number;
+  priceStatus?: PriceStatus;
+  priceUpdatedAt?: string;
   score: number | null;
   riskLevel: RiskLevel;
   isCustom: boolean;

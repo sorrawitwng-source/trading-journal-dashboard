@@ -1,4 +1,4 @@
-import { Check, Pencil, X } from "lucide-react";
+import { Check, Pencil, RefreshCw, Trash2, X } from "lucide-react";
 import type { PortfolioPosition } from "../types";
 
 export interface HoldingRow extends PortfolioPosition {
@@ -14,19 +14,31 @@ interface HoldingsTableProps {
     id: string;
     symbol: string;
   } | null;
+  isRefreshingPrices: boolean;
+  lastPriceUpdate: string | null;
   onEditBuyPriceChange: (buyPrice: string) => void;
   onEditCancel: () => void;
   onEditSave: () => void;
   onEditStart: (row: HoldingRow) => void;
   onEditSymbolChange: (symbol: string) => void;
+  onDelete: (id: string) => void;
+  onRefreshPrices: () => void;
+  priceRefreshError: string | null;
   rows: HoldingRow[];
 }
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  currency: "USD",
-  maximumFractionDigits: 2,
-  style: "currency",
-});
+const currencyFormatters = {
+  THB: new Intl.NumberFormat("th-TH", {
+    currency: "THB",
+    maximumFractionDigits: 2,
+    style: "currency",
+  }),
+  USD: new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    maximumFractionDigits: 2,
+    style: "currency",
+  }),
+};
 
 const percentFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
@@ -36,18 +48,44 @@ const percentFormatter = new Intl.NumberFormat("en-US", {
 
 export function HoldingsTable({
   editDraft,
+  isRefreshingPrices,
+  lastPriceUpdate,
   onEditBuyPriceChange,
   onEditCancel,
   onEditSave,
   onEditStart,
   onEditSymbolChange,
+  onDelete,
+  onRefreshPrices,
+  priceRefreshError,
   rows,
 }: HoldingsTableProps) {
   return (
     <section className="panel holdings-panel" aria-labelledby="holdings-title">
-      <div className="section-heading">
-        <p className="eyebrow">Portfolio</p>
-        <h2 id="holdings-title">Holdings</h2>
+      <div className="section-heading section-heading--with-action">
+        <div>
+          <p className="eyebrow">Portfolio</p>
+          <h2 id="holdings-title">Holdings</h2>
+          {lastPriceUpdate ? (
+            <span className="price-refresh-note">
+              Updated {formatUpdatedTime(lastPriceUpdate)}
+            </span>
+          ) : null}
+          {priceRefreshError ? (
+            <span className="price-refresh-note price-refresh-note--error">
+              {priceRefreshError}
+            </span>
+          ) : null}
+        </div>
+        <button
+          className="secondary-button"
+          disabled={isRefreshingPrices || rows.length === 0}
+          onClick={onRefreshPrices}
+          type="button"
+        >
+          <RefreshCw aria-hidden="true" size={16} />
+          {isRefreshingPrices ? "Refreshing" : "Refresh prices"}
+        </button>
       </div>
 
       {rows.length === 0 ? (
@@ -103,13 +141,25 @@ export function HoldingsTable({
                           value={editDraft.buyPrice}
                         />
                       ) : (
-                        currencyFormatter.format(row.buyPrice)
+                        formatMarketCurrency(row.buyPrice, row.market)
                       )}
                     </td>
-                    <td>{currencyFormatter.format(row.currentPrice)}</td>
+                    <td>
+                      <div className="current-price-cell">
+                        <span>{formatMarketCurrency(row.currentPrice, row.market)}</span>
+                        <span
+                          className={`price-status price-status--${
+                            row.priceStatus ?? "fallback"
+                          }`}
+                          title={row.priceUpdatedAt ?? undefined}
+                        >
+                          {priceStatusLabel(row.priceStatus)}
+                        </span>
+                      </div>
+                    </td>
                     <td>
                       <span className={`metric-value metric-value--${row.tone}`}>
-                        {currencyFormatter.format(row.profitLossAmount)} (
+                        {formatMarketCurrency(row.profitLossAmount, row.market)} (
                         {percentFormatter.format(row.profitLossPercent)}%)
                       </span>
                     </td>
@@ -138,15 +188,26 @@ export function HoldingsTable({
                           </button>
                         </div>
                       ) : (
-                        <button
-                          aria-label={`Edit ${row.symbol}`}
-                          className="table-action"
-                          onClick={() => onEditStart(row)}
-                          title="Edit"
-                          type="button"
-                        >
-                          <Pencil aria-hidden="true" size={16} />
-                        </button>
+                        <div className="row-actions" aria-label={`Actions for ${row.symbol}`}>
+                          <button
+                            aria-label={`Edit ${row.symbol}`}
+                            className="table-action"
+                            onClick={() => onEditStart(row)}
+                            title="Edit"
+                            type="button"
+                          >
+                            <Pencil aria-hidden="true" size={16} />
+                          </button>
+                          <button
+                            aria-label={`Delete ${row.symbol}`}
+                            className="table-action table-action--danger"
+                            onClick={() => onDelete(row.id)}
+                            title="Delete"
+                            type="button"
+                          >
+                            <Trash2 aria-hidden="true" size={16} />
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -158,6 +219,34 @@ export function HoldingsTable({
       )}
     </section>
   );
+}
+
+function formatMarketCurrency(
+  value: number,
+  market: PortfolioPosition["market"],
+): string {
+  const currency = market === "Thai" ? "THB" : "USD";
+
+  return currencyFormatters[currency].format(value);
+}
+
+function priceStatusLabel(status: PortfolioPosition["priceStatus"]): string {
+  if (status === "live") {
+    return "Live";
+  }
+
+  if (status === "cached") {
+    return "Cached";
+  }
+
+  return "Fallback";
+}
+
+function formatUpdatedTime(value: string): string {
+  return new Intl.DateTimeFormat("th-TH", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
 }
 
 function EditableCell({

@@ -3,9 +3,9 @@ import type { FormEvent } from "react";
 import { HoldingsTable, type HoldingRow } from "./components/HoldingsTable";
 import { PerformanceChart } from "./components/PerformanceChart";
 import { PositionForm } from "./components/PositionForm";
-import { Recommendations } from "./components/Recommendations";
+import { StockIdeasPage } from "./components/StockIdeasPage";
 import { SummaryStrip } from "./components/SummaryStrip";
-import { TopBar } from "./components/TopBar";
+import { TopBar, type AppView } from "./components/TopBar";
 import { benchmarkSeries } from "./data/benchmarks";
 import { stockUniverse } from "./data/stocks";
 import { combinedChartSeries } from "./lib/benchmarks";
@@ -15,8 +15,9 @@ import {
   unrealizedProfitLoss,
   updatePosition,
 } from "./lib/portfolio";
+import { refreshPositionPrices } from "./lib/marketData";
 import { loadStoredPositions, saveStoredPositions } from "./lib/positionsStorage";
-import { rankRecommendations } from "./lib/scoring";
+import { buildRecommendationCategories } from "./lib/recommendationCategories";
 import { validatePositionInput } from "./lib/validation";
 import type { MarketFilter, PortfolioPosition } from "./types";
 
@@ -30,6 +31,7 @@ type EditDraft = {
 
 function App() {
   const [theme, setTheme] = useState<Theme>("dark");
+  const [activeView, setActiveView] = useState<AppView>("portfolio");
   const [marketFilter, setMarketFilter] = useState<MarketFilter>("All");
   const [positions, setPositions] = useState<PortfolioPosition[]>(() =>
     loadStoredPositions(),
@@ -38,18 +40,35 @@ function App() {
   const [symbol, setSymbol] = useState("");
   const [buyPrice, setBuyPrice] = useState("");
   const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
+  const [isRefreshingPrices, setIsRefreshingPrices] = useState(false);
+  const [lastPriceUpdate, setLastPriceUpdate] = useState<string | null>(null);
+  const [priceRefreshError, setPriceRefreshError] = useState<string | null>(null);
 
   useEffect(() => {
     saveStoredPositions(positions);
   }, [positions]);
 
   const portfolioSummary = useMemo(() => summarizePortfolio(positions), [positions]);
-  const recommendations = useMemo(
-    () => rankRecommendations(stockUniverse, marketFilter).slice(0, 6),
+  const recommendationCategories = useMemo(
+    () => buildRecommendationCategories(stockUniverse, marketFilter),
     [marketFilter],
   );
   const chartSeries = useMemo(
     () => combinedChartSeries(positions, benchmarkSeries),
+    [positions],
+  );
+  const refreshablePositionKey = useMemo(
+    () =>
+      positions
+        .map((position) =>
+          [
+            position.id,
+            position.symbol,
+            position.market,
+            position.isCustom ? "custom" : "listed",
+          ].join(":"),
+        )
+        .join("|"),
     [positions],
   );
   const holdingRows = useMemo<HoldingRow[]>(
@@ -75,6 +94,14 @@ function App() {
       }),
     [positions],
   );
+
+  useEffect(() => {
+    if (!refreshablePositionKey) {
+      return;
+    }
+
+    void handleRefreshPrices(positions);
+  }, [refreshablePositionKey]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -152,47 +179,100 @@ function App() {
     setEditDraft(null);
   }
 
+  function handleDeletePosition(id: string) {
+    setPositions((currentPositions) =>
+      currentPositions.filter((position) => position.id !== id),
+    );
+    setEditDraft((currentDraft) =>
+      currentDraft?.id === id ? null : currentDraft,
+    );
+  }
+
+  async function handleRefreshPrices(positionSnapshot = positions) {
+    if (positionSnapshot.length === 0 || isRefreshingPrices) {
+      return;
+    }
+
+    setIsRefreshingPrices(true);
+    setPriceRefreshError(null);
+
+    try {
+      const refreshedPositions = await refreshPositionPrices(positionSnapshot);
+
+      setPositions((currentPositions) =>
+        currentPositions.map((currentPosition) => {
+          const refreshedPosition = refreshedPositions.find(
+            (position) =>
+              position.id === currentPosition.id &&
+              position.symbol === currentPosition.symbol &&
+              position.market === currentPosition.market,
+          );
+
+          return refreshedPosition ?? currentPosition;
+        }),
+      );
+      setLastPriceUpdate(new Date().toISOString());
+    } catch {
+      setPriceRefreshError("Could not refresh prices right now.");
+    } finally {
+      setIsRefreshingPrices(false);
+    }
+  }
+
   return (
     <main className="app-shell" data-theme={theme}>
       <div className="dashboard">
         <TopBar
+          activeView={activeView}
           marketFilter={marketFilter}
           onMarketFilterChange={setMarketFilter}
           onThemeToggle={() =>
             setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"))
           }
+          onViewChange={setActiveView}
           theme={theme}
         />
 
-        <SummaryStrip
-          averageScore={portfolioSummary.averageScore}
-          totalCost={portfolioSummary.totalCost}
-          totalProfitLoss={portfolioSummary.totalProfitLoss}
-          totalProfitLossPercent={portfolioSummary.totalProfitLossPercent}
-          totalValue={portfolioSummary.totalValue}
-        />
+        {activeView === "portfolio" ? (
+          <>
+            <SummaryStrip
+              averageScore={portfolioSummary.averageScore}
+              totalCost={portfolioSummary.totalCost}
+              totalProfitLoss={portfolioSummary.totalProfitLoss}
+              totalProfitLossPercent={portfolioSummary.totalProfitLossPercent}
+              totalValue={portfolioSummary.totalValue}
+            />
 
-        <div className="dashboard-grid">
-          <PositionForm
-            buyPrice={buyPrice}
-            errors={formErrors}
-            onBuyPriceChange={setBuyPrice}
-            onSubmit={handleSubmit}
-            onSymbolChange={setSymbol}
-            symbol={symbol}
-          />
-          <PerformanceChart series={chartSeries} />
-          <Recommendations recommendations={recommendations} />
-          <HoldingsTable
-            editDraft={editDraft}
-            onEditBuyPriceChange={handleEditBuyPriceChange}
-            onEditCancel={handleEditCancel}
-            onEditSave={handleEditSave}
-            onEditStart={handleEditStart}
-            onEditSymbolChange={handleEditSymbolChange}
-            rows={holdingRows}
-          />
-        </div>
+            <div className="portfolio-workspace">
+              <PositionForm
+                buyPrice={buyPrice}
+                errors={formErrors}
+                onBuyPriceChange={setBuyPrice}
+                onSubmit={handleSubmit}
+                onSymbolChange={setSymbol}
+                symbol={symbol}
+              />
+              <PerformanceChart series={chartSeries} />
+            </div>
+
+            <HoldingsTable
+              editDraft={editDraft}
+              isRefreshingPrices={isRefreshingPrices}
+              lastPriceUpdate={lastPriceUpdate}
+              onEditBuyPriceChange={handleEditBuyPriceChange}
+              onEditCancel={handleEditCancel}
+              onEditSave={handleEditSave}
+              onEditStart={handleEditStart}
+              onEditSymbolChange={handleEditSymbolChange}
+              onDelete={handleDeletePosition}
+              onRefreshPrices={() => void handleRefreshPrices()}
+              priceRefreshError={priceRefreshError}
+              rows={holdingRows}
+            />
+          </>
+        ) : (
+          <StockIdeasPage categories={recommendationCategories} />
+        )}
       </div>
     </main>
   );

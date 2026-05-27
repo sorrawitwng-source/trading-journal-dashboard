@@ -50,6 +50,12 @@ function isPortfolioPosition(value: unknown): value is PortfolioPosition {
     typeof position.sector === "string" &&
     typeof position.buyPrice === "number" &&
     typeof position.currentPrice === "number" &&
+    (position.priceStatus === undefined ||
+      position.priceStatus === "live" ||
+      position.priceStatus === "cached" ||
+      position.priceStatus === "fallback") &&
+    (position.priceUpdatedAt === undefined ||
+      typeof position.priceUpdatedAt === "string") &&
     (typeof position.score === "number" || position.score === null) &&
     (position.riskLevel === "Low" ||
       position.riskLevel === "Medium" ||
