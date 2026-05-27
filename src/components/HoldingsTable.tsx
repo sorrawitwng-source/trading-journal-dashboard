@@ -1,8 +1,13 @@
-import { unrealizedProfitLoss } from "../lib/portfolio";
 import type { PortfolioPosition } from "../types";
 
+export interface HoldingRow extends PortfolioPosition {
+  profitLossAmount: number;
+  profitLossPercent: number;
+  tone: "negative" | "neutral" | "positive";
+}
+
 interface HoldingsTableProps {
-  positions: PortfolioPosition[];
+  rows: HoldingRow[];
 }
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -17,7 +22,7 @@ const percentFormatter = new Intl.NumberFormat("en-US", {
   signDisplay: "exceptZero",
 });
 
-export function HoldingsTable({ positions }: HoldingsTableProps) {
+export function HoldingsTable({ rows }: HoldingsTableProps) {
   return (
     <section className="panel holdings-panel" aria-labelledby="holdings-title">
       <div className="section-heading">
@@ -25,7 +30,7 @@ export function HoldingsTable({ positions }: HoldingsTableProps) {
         <h2 id="holdings-title">Holdings</h2>
       </div>
 
-      {positions.length === 0 ? (
+      {rows.length === 0 ? (
         <p className="empty-state">No positions added yet.</p>
       ) : (
         <div className="table-scroll">
@@ -44,39 +49,26 @@ export function HoldingsTable({ positions }: HoldingsTableProps) {
               </tr>
             </thead>
             <tbody>
-              {positions.map((position) => {
-                const profitLoss = unrealizedProfitLoss(
-                  position.buyPrice,
-                  position.currentPrice,
-                );
-                const tone =
-                  profitLoss.amount > 0
-                    ? "positive"
-                    : profitLoss.amount < 0
-                      ? "negative"
-                      : "neutral";
-
-                return (
-                  <tr key={position.id}>
-                    <td>
-                      <strong>{position.symbol}</strong>
-                    </td>
-                    <td>{position.name}</td>
-                    <td>{position.market}</td>
-                    <td>{position.sector}</td>
-                    <td>{currencyFormatter.format(position.buyPrice)}</td>
-                    <td>{currencyFormatter.format(position.currentPrice)}</td>
-                    <td>
-                      <span className={`metric-value metric-value--${tone}`}>
-                        {currencyFormatter.format(profitLoss.amount)} (
-                        {percentFormatter.format(profitLoss.percent)}%)
-                      </span>
-                    </td>
-                    <td>{position.score ?? "N/A"}</td>
-                    <td>{position.riskLevel}</td>
-                  </tr>
-                );
-              })}
+              {rows.map((row) => (
+                <tr key={row.id}>
+                  <td>
+                    <strong>{row.symbol}</strong>
+                  </td>
+                  <td>{row.name}</td>
+                  <td>{row.market}</td>
+                  <td>{row.sector}</td>
+                  <td>{currencyFormatter.format(row.buyPrice)}</td>
+                  <td>{currencyFormatter.format(row.currentPrice)}</td>
+                  <td>
+                    <span className={`metric-value metric-value--${row.tone}`}>
+                      {currencyFormatter.format(row.profitLossAmount)} (
+                      {percentFormatter.format(row.profitLossPercent)}%)
+                    </span>
+                  </td>
+                  <td>{row.score ?? "N/A"}</td>
+                  <td>{row.riskLevel}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

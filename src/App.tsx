@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
-import { HoldingsTable } from "./components/HoldingsTable";
+import { HoldingsTable, type HoldingRow } from "./components/HoldingsTable";
 import { PerformanceChart } from "./components/PerformanceChart";
 import { PositionForm } from "./components/PositionForm";
 import { Recommendations } from "./components/Recommendations";
@@ -9,7 +9,7 @@ import { TopBar } from "./components/TopBar";
 import { benchmarkSeries } from "./data/benchmarks";
 import { stockUniverse } from "./data/stocks";
 import { combinedChartSeries } from "./lib/benchmarks";
-import { createPosition, summarizePortfolio } from "./lib/portfolio";
+import { createPosition, summarizePortfolio, unrealizedProfitLoss } from "./lib/portfolio";
 import { rankRecommendations } from "./lib/scoring";
 import { validatePositionInput } from "./lib/validation";
 import type { MarketFilter, PortfolioPosition } from "./types";
@@ -31,6 +31,29 @@ function App() {
   );
   const chartSeries = useMemo(
     () => combinedChartSeries(positions, benchmarkSeries),
+    [positions],
+  );
+  const holdingRows = useMemo<HoldingRow[]>(
+    () =>
+      positions.map((position) => {
+        const profitLoss = unrealizedProfitLoss(
+          position.buyPrice,
+          position.currentPrice,
+        );
+        const tone: HoldingRow["tone"] =
+          profitLoss.amount > 0
+            ? "positive"
+            : profitLoss.amount < 0
+              ? "negative"
+              : "neutral";
+
+        return {
+          ...position,
+          profitLossAmount: profitLoss.amount,
+          profitLossPercent: profitLoss.percent,
+          tone,
+        };
+      }),
     [positions],
   );
 
@@ -87,7 +110,7 @@ function App() {
           />
           <PerformanceChart series={chartSeries} />
           <Recommendations recommendations={recommendations} />
-          <HoldingsTable positions={positions} />
+          <HoldingsTable rows={holdingRows} />
         </div>
       </div>
     </main>
