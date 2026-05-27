@@ -31,7 +31,10 @@ export function HoldingsTable({ rows }: HoldingsTableProps) {
       </div>
 
       {rows.length === 0 ? (
-        <p className="empty-state">No positions added yet.</p>
+        <div className="empty-state empty-state--compact">
+          <strong>No positions yet</strong>
+          <span>Add a symbol and buy price to start tracking performance.</span>
+        </div>
       ) : (
         <div className="table-scroll">
           <table>
