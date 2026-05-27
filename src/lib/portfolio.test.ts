@@ -16,11 +16,11 @@ describe("createPosition", () => {
   });
 
   it("creates a custom position for an unknown stock", () => {
-    const position = createPosition("XYZ", 10, stockUniverse);
+    const position = createPosition("ZZZZ", 10, stockUniverse);
 
     expect(position).toMatchObject({
-      symbol: "XYZ",
-      name: "XYZ",
+      symbol: "ZZZZ",
+      name: "ZZZZ",
       market: "Custom",
       sector: "Unclassified",
       currentPrice: 10,
