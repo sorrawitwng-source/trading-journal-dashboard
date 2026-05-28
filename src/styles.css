@@ -176,7 +176,22 @@ button {
   background: var(--panel);
 }
 
+.language-button {
+  display: inline-flex;
+  min-width: 42px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--panel);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
 .icon-button:hover,
+.language-button:hover,
 .segmented-control__button:hover {
   color: var(--text);
   background: var(--panel-strong);
@@ -821,7 +836,7 @@ button {
 
 table {
   width: 100%;
-  min-width: 1040px;
+  min-width: 1280px;
   border-collapse: collapse;
 }
 
@@ -1062,6 +1077,6 @@ tbody tr:last-child td {
   }
 
   table {
-    min-width: 980px;
+    min-width: 1180px;
   }
 }

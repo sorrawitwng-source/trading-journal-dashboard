@@ -1,5 +1,6 @@
 interface SummaryStripProps {
   averageScore: number | null;
+  language: "en" | "th";
   totalCost: number;
   totalProfitLoss: number;
   totalProfitLossPercent: number;
@@ -19,6 +20,7 @@ const percentFormatter = new Intl.NumberFormat("en-US", {
 
 export function SummaryStrip({
   averageScore,
+  language,
   totalCost,
   totalProfitLoss,
   totalProfitLossPercent,
@@ -26,25 +28,41 @@ export function SummaryStrip({
 }: SummaryStripProps) {
   const profitLossTone =
     totalProfitLoss > 0 ? "positive" : totalProfitLoss < 0 ? "negative" : "neutral";
+  const text = labels[language];
 
   return (
     <section className="summary-strip" aria-label="Portfolio summary">
-      <SummaryItem label="Total cost" value={currencyFormatter.format(totalCost)} />
-      <SummaryItem label="Estimated value" value={currencyFormatter.format(totalValue)} />
+      <SummaryItem label={text.totalCost} value={currencyFormatter.format(totalCost)} />
+      <SummaryItem label={text.estimatedValue} value={currencyFormatter.format(totalValue)} />
       <SummaryItem
-        label="Total P/L"
+        label={text.totalProfitLoss}
         tone={profitLossTone}
         value={`${currencyFormatter.format(totalProfitLoss)} (${percentFormatter.format(
           totalProfitLossPercent,
         )}%)`}
       />
       <SummaryItem
-        label="Average score"
+        label={text.averageScore}
         value={averageScore === null ? "N/A" : averageScore.toFixed(2)}
       />
     </section>
   );
 }
+
+const labels = {
+  en: {
+    averageScore: "Average score",
+    estimatedValue: "Estimated value",
+    totalCost: "Total cost",
+    totalProfitLoss: "Total P/L",
+  },
+  th: {
+    averageScore: "คะแนนเฉลี่ย",
+    estimatedValue: "มูลค่าปัจจุบัน",
+    totalCost: "ต้นทุนรวม",
+    totalProfitLoss: "กำไร/ขาดทุนรวม",
+  },
+};
 
 function SummaryItem({
   label,

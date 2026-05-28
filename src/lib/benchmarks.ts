@@ -6,7 +6,7 @@ export function portfolioPerformanceSeries(
   positions: PortfolioPosition[],
 ): number[] {
   const totalCost = positions.reduce(
-    (sum, position) => sum + position.buyPrice,
+    (sum, position) => sum + position.buyPrice * position.quantity,
     0,
   );
 
@@ -15,7 +15,7 @@ export function portfolioPerformanceSeries(
   }
 
   const totalValue = positions.reduce(
-    (sum, position) => sum + position.currentPrice,
+    (sum, position) => sum + position.currentPrice * position.quantity,
     0,
   );
   const finalPercent = ((totalValue - totalCost) / totalCost) * 100;

@@ -2,6 +2,8 @@ import { Check, Pencil, RefreshCw, Trash2, X } from "lucide-react";
 import type { PortfolioPosition } from "../types";
 
 export interface HoldingRow extends PortfolioPosition {
+  cost: number;
+  currentValue: number;
   profitLossAmount: number;
   profitLossPercent: number;
   tone: "negative" | "neutral" | "positive";
@@ -10,14 +12,17 @@ export interface HoldingRow extends PortfolioPosition {
 interface HoldingsTableProps {
   editDraft: {
     buyPrice: string;
-    errors: { symbol?: string; buyPrice?: string };
+    errors: { symbol?: string; buyPrice?: string; quantity?: string };
     id: string;
+    quantity: string;
     symbol: string;
   } | null;
   isRefreshingPrices: boolean;
+  language: "en" | "th";
   lastPriceUpdate: string | null;
   onEditBuyPriceChange: (buyPrice: string) => void;
   onEditCancel: () => void;
+  onEditQuantityChange: (quantity: string) => void;
   onEditSave: () => void;
   onEditStart: (row: HoldingRow) => void;
   onEditSymbolChange: (symbol: string) => void;
@@ -49,9 +54,11 @@ const percentFormatter = new Intl.NumberFormat("en-US", {
 export function HoldingsTable({
   editDraft,
   isRefreshingPrices,
+  language,
   lastPriceUpdate,
   onEditBuyPriceChange,
   onEditCancel,
+  onEditQuantityChange,
   onEditSave,
   onEditStart,
   onEditSymbolChange,
@@ -60,15 +67,17 @@ export function HoldingsTable({
   priceRefreshError,
   rows,
 }: HoldingsTableProps) {
+  const text = labels[language];
+
   return (
     <section className="panel holdings-panel" aria-labelledby="holdings-title">
       <div className="section-heading section-heading--with-action">
         <div>
-          <p className="eyebrow">Portfolio</p>
-          <h2 id="holdings-title">Holdings</h2>
+          <p className="eyebrow">{text.eyebrow}</p>
+          <h2 id="holdings-title">{text.title}</h2>
           {lastPriceUpdate ? (
             <span className="price-refresh-note">
-              Updated {formatUpdatedTime(lastPriceUpdate)}
+              {text.updated} {formatUpdatedTime(lastPriceUpdate)}
             </span>
           ) : null}
           {priceRefreshError ? (
@@ -84,30 +93,33 @@ export function HoldingsTable({
           type="button"
         >
           <RefreshCw aria-hidden="true" size={16} />
-          {isRefreshingPrices ? "Refreshing" : "Refresh prices"}
+          {isRefreshingPrices ? text.refreshing : text.refreshPrices}
         </button>
       </div>
 
       {rows.length === 0 ? (
         <div className="empty-state empty-state--compact">
-          <strong>No positions yet</strong>
-          <span>Add a symbol and buy price to start tracking performance.</span>
+          <strong>{text.emptyTitle}</strong>
+          <span>{text.emptyDescription}</span>
         </div>
       ) : (
         <div className="table-scroll">
           <table>
             <thead>
               <tr>
-                <th>Symbol</th>
-                <th>Name</th>
-                <th>Market</th>
-                <th>Sector</th>
-                <th>Buy price</th>
-                <th>Current price</th>
-                <th>Est. P/L</th>
-                <th>Score</th>
-                <th>Risk</th>
-                <th>Actions</th>
+                <th>{text.symbol}</th>
+                <th>{text.name}</th>
+                <th>{text.market}</th>
+                <th>{text.sector}</th>
+                <th>{text.buyPrice}</th>
+                <th>{text.quantity}</th>
+                <th>{text.cost}</th>
+                <th>{text.currentPrice}</th>
+                <th>{text.currentValue}</th>
+                <th>{text.estimatedProfitLoss}</th>
+                <th>{text.score}</th>
+                <th>{text.risk}</th>
+                <th>{text.actions}</th>
               </tr>
             </thead>
             <tbody>
@@ -136,7 +148,7 @@ export function HoldingsTable({
                         <EditableCell
                           error={editDraft.errors.buyPrice}
                           inputMode="decimal"
-                          label="Buy price"
+                          label={text.buyPrice}
                           onChange={onEditBuyPriceChange}
                           value={editDraft.buyPrice}
                         />
@@ -144,6 +156,20 @@ export function HoldingsTable({
                         formatMarketCurrency(row.buyPrice, row.market)
                       )}
                     </td>
+                    <td>
+                      {isEditing ? (
+                        <EditableCell
+                          error={editDraft.errors.quantity}
+                          inputMode="decimal"
+                          label={text.quantity}
+                          onChange={onEditQuantityChange}
+                          value={editDraft.quantity}
+                        />
+                      ) : (
+                        formatQuantity(row.quantity)
+                      )}
+                    </td>
+                    <td>{formatMarketCurrency(row.cost, row.market)}</td>
                     <td>
                       <div className="current-price-cell">
                         <span>{formatMarketCurrency(row.currentPrice, row.market)}</span>
@@ -157,6 +183,7 @@ export function HoldingsTable({
                         </span>
                       </div>
                     </td>
+                    <td>{formatMarketCurrency(row.currentValue, row.market)}</td>
                     <td>
                       <span className={`metric-value metric-value--${row.tone}`}>
                         {formatMarketCurrency(row.profitLossAmount, row.market)} (
@@ -221,6 +248,12 @@ export function HoldingsTable({
   );
 }
 
+function formatQuantity(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 4,
+  }).format(value);
+}
+
 function formatMarketCurrency(
   value: number,
   market: PortfolioPosition["market"],
@@ -229,6 +262,53 @@ function formatMarketCurrency(
 
   return currencyFormatters[currency].format(value);
 }
+
+const labels = {
+  en: {
+    actions: "Actions",
+    buyPrice: "Buy price",
+    cost: "Cost",
+    currentPrice: "Current price",
+    currentValue: "Current value",
+    emptyDescription: "Add a symbol, buy price, and quantity to start tracking performance.",
+    emptyTitle: "No positions yet",
+    eyebrow: "Portfolio",
+    estimatedProfitLoss: "Est. P/L",
+    market: "Market",
+    name: "Name",
+    quantity: "Quantity",
+    refreshPrices: "Refresh prices",
+    refreshing: "Refreshing",
+    risk: "Risk",
+    score: "Score",
+    sector: "Sector",
+    symbol: "Symbol",
+    title: "Holdings",
+    updated: "Updated",
+  },
+  th: {
+    actions: "จัดการ",
+    buyPrice: "ราคาซื้อ",
+    cost: "ต้นทุน",
+    currentPrice: "ราคาปัจจุบัน",
+    currentValue: "มูลค่าปัจจุบัน",
+    emptyDescription: "เพิ่มชื่อหุ้น ราคาซื้อ และจำนวนหุ้นเพื่อเริ่มติดตามพอร์ต",
+    emptyTitle: "ยังไม่มีรายการหุ้น",
+    eyebrow: "พอร์ต",
+    estimatedProfitLoss: "กำไร/ขาดทุน",
+    market: "ตลาด",
+    name: "ชื่อ",
+    quantity: "จำนวน",
+    refreshPrices: "อัปเดตราคา",
+    refreshing: "กำลังอัปเดต",
+    risk: "ความเสี่ยง",
+    score: "คะแนน",
+    sector: "กลุ่มธุรกิจ",
+    symbol: "หุ้น",
+    title: "รายการหุ้น",
+    updated: "อัปเดต",
+  },
+};
 
 function priceStatusLabel(status: PortfolioPosition["priceStatus"]): string {
   if (status === "live") {

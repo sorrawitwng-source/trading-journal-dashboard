@@ -10,6 +10,7 @@ const basePosition: PortfolioPosition = {
   market: "US",
   sector: "Technology",
   buyPrice: 100,
+  quantity: 3,
   currentPrice: 120,
   score: 82,
   riskLevel: "Medium",
@@ -23,6 +24,14 @@ describe("portfolioPerformanceSeries", () => {
     expect(values).toHaveLength(12);
     expect(values[0]).toBe(0);
     expect(values.at(-1)).toBeGreaterThan(0);
+  });
+
+  test("uses quantity when calculating portfolio performance", () => {
+    const values = portfolioPerformanceSeries([
+      { ...basePosition, buyPrice: 100, currentPrice: 150, quantity: 2 },
+    ]);
+
+    expect(values.at(-1)).toBe(50);
   });
 });
 

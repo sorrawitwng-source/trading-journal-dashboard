@@ -5,7 +5,9 @@ export type AppView = "ideas" | "portfolio";
 
 interface TopBarProps {
   activeView: AppView;
+  language: "en" | "th";
   marketFilter: MarketFilter;
+  onLanguageToggle: () => void;
   onViewChange: (view: AppView) => void;
   onMarketFilterChange: (marketFilter: MarketFilter) => void;
   theme: "dark" | "light";
@@ -13,32 +15,31 @@ interface TopBarProps {
 }
 
 const marketFilters: MarketFilter[] = ["All", "Thai", "US"];
-const views: { label: string; value: AppView }[] = [
-  { label: "Portfolio", value: "portfolio" },
-  { label: "Stock Ideas", value: "ideas" },
-];
-
 export function TopBar({
   activeView,
+  language,
   marketFilter,
+  onLanguageToggle,
   onViewChange,
   onMarketFilterChange,
   theme,
   onThemeToggle,
 }: TopBarProps) {
   const ThemeIcon = theme === "dark" ? Sun : Moon;
-  const nextThemeLabel = theme === "dark" ? "Switch to light mode" : "Switch to dark mode";
+  const text = labels[language];
+  const nextThemeLabel =
+    theme === "dark" ? text.switchToLight : text.switchToDark;
 
   return (
     <header className="top-bar">
       <div>
-        <p className="eyebrow">Trading Journal</p>
-        <h1>{activeView === "portfolio" ? "Portfolio Dashboard" : "Stock Ideas"}</h1>
+        <p className="eyebrow">{text.eyebrow}</p>
+        <h1>{activeView === "portfolio" ? text.portfolioTitle : text.ideasTitle}</h1>
       </div>
 
       <div className="top-bar__controls" aria-label="Dashboard controls">
         <div className="segmented-control" aria-label="Page selector">
-          {views.map((view) => (
+          {viewOptions.map((view) => (
             <button
               aria-pressed={activeView === view.value}
               className="segmented-control__button segmented-control__button--wide"
@@ -46,7 +47,7 @@ export function TopBar({
               onClick={() => onViewChange(view.value)}
               type="button"
             >
-              {view.label}
+              {text.views[view.value]}
             </button>
           ))}
         </div>
@@ -66,6 +67,16 @@ export function TopBar({
         </div>
 
         <button
+          aria-label={text.languageToggle}
+          className="language-button"
+          onClick={onLanguageToggle}
+          title={text.languageToggle}
+          type="button"
+        >
+          {language === "en" ? "TH" : "EN"}
+        </button>
+
+        <button
           aria-label={nextThemeLabel}
           className="icon-button"
           onClick={onThemeToggle}
@@ -78,3 +89,35 @@ export function TopBar({
     </header>
   );
 }
+
+const viewOptions: { value: AppView }[] = [
+  { value: "portfolio" },
+  { value: "ideas" },
+];
+
+const labels = {
+  en: {
+    eyebrow: "Trading Journal",
+    ideasTitle: "Stock Ideas",
+    languageToggle: "Switch language",
+    portfolioTitle: "Portfolio Dashboard",
+    switchToDark: "Switch to dark mode",
+    switchToLight: "Switch to light mode",
+    views: {
+      ideas: "Stock Ideas",
+      portfolio: "Portfolio",
+    },
+  },
+  th: {
+    eyebrow: "บันทึกการเทรด",
+    ideasTitle: "หุ้นน่าสนใจ",
+    languageToggle: "เปลี่ยนภาษา",
+    portfolioTitle: "พอร์ตการลงทุน",
+    switchToDark: "เปลี่ยนเป็นโหมดมืด",
+    switchToLight: "เปลี่ยนเป็นโหมดสว่าง",
+    views: {
+      ideas: "หุ้นน่าสนใจ",
+      portfolio: "พอร์ต",
+    },
+  },
+};

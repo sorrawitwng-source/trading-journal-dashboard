@@ -14,8 +14,8 @@ describe("positionsStorage", () => {
 
   it("saves and loads portfolio positions", () => {
     const positions = [
-      createPosition("AAPL", 150, stockUniverse),
-      createPosition("PTTGC", 36, stockUniverse),
+      createPosition("AAPL", 150, 2, stockUniverse),
+      createPosition("PTTGC", 36, 4, stockUniverse),
     ];
 
     saveStoredPositions(positions);
@@ -29,5 +29,27 @@ describe("positionsStorage", () => {
     localStorage.setItem(storedPositionsKey, "{bad json");
 
     expect(loadStoredPositions()).toEqual([]);
+  });
+
+  it("defaults missing stored quantity to zero for older saved positions", () => {
+    localStorage.setItem(
+      storedPositionsKey,
+      JSON.stringify([
+        {
+          buyPrice: 150,
+          currentPrice: 160,
+          id: "AAPL-legacy",
+          isCustom: false,
+          market: "US",
+          name: "Apple Inc.",
+          riskLevel: "Low",
+          score: 70,
+          sector: "Technology",
+          symbol: "AAPL",
+        },
+      ]),
+    );
+
+    expect(loadStoredPositions()[0]).toMatchObject({ quantity: 0 });
   });
 });

@@ -26,6 +26,7 @@ export interface PortfolioPosition {
   market: Market;
   sector: string;
   buyPrice: number;
+  quantity: number;
   currentPrice: number;
   priceStatus?: PriceStatus;
   priceUpdatedAt?: string;

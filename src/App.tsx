@@ -22,23 +22,31 @@ import { validatePositionInput } from "./lib/validation";
 import type { MarketFilter, PortfolioPosition } from "./types";
 
 type Theme = "dark" | "light";
+type Language = "en" | "th";
 type EditDraft = {
   buyPrice: string;
-  errors: { symbol?: string; buyPrice?: string };
+  errors: { symbol?: string; buyPrice?: string; quantity?: string };
   id: string;
+  quantity: string;
   symbol: string;
 };
 
 function App() {
   const [theme, setTheme] = useState<Theme>("dark");
+  const [language, setLanguage] = useState<Language>("en");
   const [activeView, setActiveView] = useState<AppView>("portfolio");
   const [marketFilter, setMarketFilter] = useState<MarketFilter>("All");
   const [positions, setPositions] = useState<PortfolioPosition[]>(() =>
     loadStoredPositions(),
   );
-  const [formErrors, setFormErrors] = useState<{ symbol?: string; buyPrice?: string }>({});
+  const [formErrors, setFormErrors] = useState<{
+    symbol?: string;
+    buyPrice?: string;
+    quantity?: string;
+  }>({});
   const [symbol, setSymbol] = useState("");
   const [buyPrice, setBuyPrice] = useState("");
+  const [quantity, setQuantity] = useState("0");
   const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
   const [isRefreshingPrices, setIsRefreshingPrices] = useState(false);
   const [lastPriceUpdate, setLastPriceUpdate] = useState<string | null>(null);
@@ -77,6 +85,7 @@ function App() {
         const profitLoss = unrealizedProfitLoss(
           position.buyPrice,
           position.currentPrice,
+          position.quantity,
         );
         const tone: HoldingRow["tone"] =
           profitLoss.amount > 0
@@ -87,6 +96,8 @@ function App() {
 
         return {
           ...position,
+          cost: position.buyPrice * position.quantity,
+          currentValue: position.currentPrice * position.quantity,
           profitLossAmount: profitLoss.amount,
           profitLossPercent: profitLoss.percent,
           tone,
@@ -106,7 +117,7 @@ function App() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const result = validatePositionInput(symbol, buyPrice);
+    const result = validatePositionInput(symbol, buyPrice, quantity);
 
     if (!result.valid) {
       setFormErrors(result.errors);
@@ -116,6 +127,7 @@ function App() {
     const position = createPosition(
       result.value.symbol,
       result.value.buyPrice,
+      result.value.quantity,
       stockUniverse,
     );
 
@@ -123,6 +135,7 @@ function App() {
     setFormErrors({});
     setSymbol("");
     setBuyPrice("");
+    setQuantity("0");
   }
 
   function handleEditStart(row: HoldingRow) {
@@ -130,6 +143,7 @@ function App() {
       buyPrice: String(row.buyPrice),
       errors: {},
       id: row.id,
+      quantity: String(row.quantity),
       symbol: row.symbol,
     });
   }
@@ -152,12 +166,24 @@ function App() {
     );
   }
 
+  function handleEditQuantityChange(quantityValue: string) {
+    setEditDraft((currentDraft) =>
+      currentDraft
+        ? { ...currentDraft, quantity: quantityValue }
+        : currentDraft,
+    );
+  }
+
   function handleEditSave() {
     if (!editDraft) {
       return;
     }
 
-    const result = validatePositionInput(editDraft.symbol, editDraft.buyPrice);
+    const result = validatePositionInput(
+      editDraft.symbol,
+      editDraft.buyPrice,
+      editDraft.quantity,
+    );
 
     if (!result.valid) {
       setEditDraft({ ...editDraft, errors: result.errors });
@@ -171,6 +197,7 @@ function App() {
               editDraft.id,
               result.value.symbol,
               result.value.buyPrice,
+              result.value.quantity,
               stockUniverse,
             )
           : position,
@@ -224,7 +251,13 @@ function App() {
       <div className="dashboard">
         <TopBar
           activeView={activeView}
+          language={language}
           marketFilter={marketFilter}
+          onLanguageToggle={() =>
+            setLanguage((currentLanguage) =>
+              currentLanguage === "en" ? "th" : "en",
+            )
+          }
           onMarketFilterChange={setMarketFilter}
           onThemeToggle={() =>
             setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"))
@@ -237,6 +270,7 @@ function App() {
           <>
             <SummaryStrip
               averageScore={portfolioSummary.averageScore}
+              language={language}
               totalCost={portfolioSummary.totalCost}
               totalProfitLoss={portfolioSummary.totalProfitLoss}
               totalProfitLossPercent={portfolioSummary.totalProfitLossPercent}
@@ -247,9 +281,12 @@ function App() {
               <PositionForm
                 buyPrice={buyPrice}
                 errors={formErrors}
+                language={language}
                 onBuyPriceChange={setBuyPrice}
+                onQuantityChange={setQuantity}
                 onSubmit={handleSubmit}
                 onSymbolChange={setSymbol}
+                quantity={quantity}
                 symbol={symbol}
               />
               <PerformanceChart series={chartSeries} />
@@ -258,9 +295,11 @@ function App() {
             <HoldingsTable
               editDraft={editDraft}
               isRefreshingPrices={isRefreshingPrices}
+              language={language}
               lastPriceUpdate={lastPriceUpdate}
               onEditBuyPriceChange={handleEditBuyPriceChange}
               onEditCancel={handleEditCancel}
+              onEditQuantityChange={handleEditQuantityChange}
               onEditSave={handleEditSave}
               onEditStart={handleEditStart}
               onEditSymbolChange={handleEditSymbolChange}
@@ -271,7 +310,7 @@ function App() {
             />
           </>
         ) : (
-          <StockIdeasPage categories={recommendationCategories} />
+          <StockIdeasPage categories={recommendationCategories} language={language} />
         )}
       </div>
     </main>

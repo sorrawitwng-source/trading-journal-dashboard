@@ -2,38 +2,46 @@ import type { RecommendationCategory } from "../lib/recommendationCategories";
 
 interface StockIdeasPageProps {
   categories: RecommendationCategory[];
+  language: "en" | "th";
 }
 
-export function StockIdeasPage({ categories }: StockIdeasPageProps) {
+export function StockIdeasPage({ categories, language }: StockIdeasPageProps) {
   const featuredCategories = categories.slice(0, 4);
   const remainingCategories = categories.slice(4);
+  const text = labels[language];
 
   return (
     <section className="ideas-page" aria-labelledby="ideas-title">
       <div className="ideas-hero">
         <div>
-          <p className="eyebrow">Stock Ideas</p>
-          <h2 id="ideas-title">Ranked ideas by investment style</h2>
-          <p>
-            Browse Thai and US stocks by sector, income profile, growth signal,
-            and risk quality.
-          </p>
+          <p className="eyebrow">{text.eyebrow}</p>
+          <h2 id="ideas-title">{text.title}</h2>
+          <p>{text.description}</p>
         </div>
         <div className="ideas-hero__stats" aria-label="Idea category stats">
           <strong>{categories.length}</strong>
-          <span>categories</span>
+          <span>{text.categories}</span>
         </div>
       </div>
 
       <div className="ideas-feature-grid">
         {featuredCategories.map((category) => (
-          <IdeaCategoryCard category={category} isFeatured key={category.id} />
+          <IdeaCategoryCard
+            category={category}
+            emptyText={text.empty}
+            isFeatured
+            key={category.id}
+          />
         ))}
       </div>
 
       <div className="ideas-category-grid">
         {remainingCategories.map((category) => (
-          <IdeaCategoryCard category={category} key={category.id} />
+          <IdeaCategoryCard
+            category={category}
+            emptyText={text.empty}
+            key={category.id}
+          />
         ))}
       </div>
     </section>
@@ -42,9 +50,11 @@ export function StockIdeasPage({ categories }: StockIdeasPageProps) {
 
 function IdeaCategoryCard({
   category,
+  emptyText,
   isFeatured = false,
 }: {
   category: RecommendationCategory;
+  emptyText: string;
   isFeatured?: boolean;
 }) {
   return (
@@ -62,7 +72,7 @@ function IdeaCategoryCard({
       </div>
 
       {category.stocks.length === 0 ? (
-        <div className="idea-empty">No matching ideas for this market filter.</div>
+        <div className="idea-empty">{emptyText}</div>
       ) : (
         <div className="idea-list">
           {category.stocks.map((stock) => (
@@ -83,3 +93,22 @@ function IdeaCategoryCard({
     </article>
   );
 }
+
+const labels = {
+  en: {
+    categories: "categories",
+    description:
+      "Browse Thai and US stocks by sector, income profile, growth signal, and risk quality.",
+    empty: "No matching ideas for this market filter.",
+    eyebrow: "Stock Ideas",
+    title: "Ranked ideas by investment style",
+  },
+  th: {
+    categories: "หมวดหมู่",
+    description:
+      "ค้นหาหุ้นไทยและหุ้นสหรัฐตามกลุ่มธุรกิจ ปันผล โมเมนตัม และระดับความเสี่ยง",
+    empty: "ไม่มีหุ้นที่ตรงกับตัวกรองตลาดนี้",
+    eyebrow: "หุ้นน่าสนใจ",
+    title: "ไอเดียลงทุนแยกตามสไตล์",
+  },
+};

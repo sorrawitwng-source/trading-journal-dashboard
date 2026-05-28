@@ -1,6 +1,7 @@
 type PositionInputErrors = {
   symbol?: string;
   buyPrice?: string;
+  quantity?: string;
 };
 
 export type PositionInputResult =
@@ -9,6 +10,7 @@ export type PositionInputResult =
       value: {
         symbol: string;
         buyPrice: number;
+        quantity: number;
       };
       errors: {};
     }
@@ -20,9 +22,11 @@ export type PositionInputResult =
 export function validatePositionInput(
   symbolInput: string,
   buyPriceInput: string,
+  quantityInput = "",
 ): PositionInputResult {
   const symbol = symbolInput.trim();
   const buyPriceText = buyPriceInput.trim();
+  const quantityText = quantityInput.trim();
   const errors: PositionInputErrors = {};
 
   if (!symbol) {
@@ -41,6 +45,16 @@ export function validatePositionInput(
     }
   }
 
+  if (quantityText) {
+    const quantity = Number(quantityText);
+
+    if (Number.isNaN(quantity)) {
+      errors.quantity = 'Quantity must be a number.';
+    } else if (quantity < 0) {
+      errors.quantity = 'Quantity cannot be negative.';
+    }
+  }
+
   if (Object.keys(errors).length > 0) {
     return { valid: false, errors };
   }
@@ -50,6 +64,7 @@ export function validatePositionInput(
     value: {
       symbol: symbol.toUpperCase(),
       buyPrice: Number(buyPriceText),
+      quantity: quantityText ? Number(quantityText) : 0,
     },
     errors: {},
   };

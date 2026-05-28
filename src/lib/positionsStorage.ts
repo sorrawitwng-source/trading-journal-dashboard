@@ -15,7 +15,7 @@ export function loadStoredPositions(
     const parsedValue: unknown = JSON.parse(rawValue);
 
     return Array.isArray(parsedValue)
-      ? parsedValue.filter(isPortfolioPosition)
+      ? parsedValue.filter(isPortfolioPosition).map(withDefaultQuantity)
       : [];
   } catch {
     return [];
@@ -49,6 +49,8 @@ function isPortfolioPosition(value: unknown): value is PortfolioPosition {
       position.market === "Custom") &&
     typeof position.sector === "string" &&
     typeof position.buyPrice === "number" &&
+    (position.quantity === undefined ||
+      (typeof position.quantity === "number" && position.quantity >= 0)) &&
     typeof position.currentPrice === "number" &&
     (position.priceStatus === undefined ||
       position.priceStatus === "live" ||
@@ -62,4 +64,11 @@ function isPortfolioPosition(value: unknown): value is PortfolioPosition {
       position.riskLevel === "High") &&
     typeof position.isCustom === "boolean"
   );
+}
+
+function withDefaultQuantity(position: PortfolioPosition): PortfolioPosition {
+  return {
+    ...position,
+    quantity: position.quantity ?? 0,
+  };
 }

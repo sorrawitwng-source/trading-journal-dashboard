@@ -6,31 +6,40 @@ interface PositionFormProps {
   errors: {
     symbol?: string;
     buyPrice?: string;
+    quantity?: string;
   };
+  language: "en" | "th";
   onBuyPriceChange: (buyPrice: string) => void;
+  onQuantityChange: (quantity: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onSymbolChange: (symbol: string) => void;
+  quantity: string;
   symbol: string;
 }
 
 export function PositionForm({
   buyPrice,
   errors,
+  language,
   onBuyPriceChange,
+  onQuantityChange,
   onSubmit,
   onSymbolChange,
+  quantity,
   symbol,
 }: PositionFormProps) {
+  const text = labels[language];
+
   return (
     <section className="panel position-form-panel" aria-labelledby="position-form-title">
       <div className="section-heading">
-        <p className="eyebrow">Journal Entry</p>
-        <h2 id="position-form-title">Add position</h2>
+        <p className="eyebrow">{text.eyebrow}</p>
+        <h2 id="position-form-title">{text.title}</h2>
       </div>
 
       <form className="position-form" onSubmit={onSubmit} noValidate>
         <label className="field">
-          <span>Symbol</span>
+          <span>{text.symbol}</span>
           <input
             aria-describedby={errors.symbol ? "symbol-error" : undefined}
             aria-invalid={errors.symbol ? "true" : "false"}
@@ -48,7 +57,7 @@ export function PositionForm({
         </label>
 
         <label className="field">
-          <span>Buy price</span>
+          <span>{text.buyPrice}</span>
           <input
             aria-describedby={errors.buyPrice ? "buy-price-error" : undefined}
             aria-invalid={errors.buyPrice ? "true" : "false"}
@@ -65,11 +74,48 @@ export function PositionForm({
           ) : null}
         </label>
 
+        <label className="field">
+          <span>{text.quantity}</span>
+          <input
+            aria-describedby={errors.quantity ? "quantity-error" : undefined}
+            aria-invalid={errors.quantity ? "true" : "false"}
+            inputMode="decimal"
+            onChange={(event) => onQuantityChange(event.target.value)}
+            placeholder="0"
+            type="text"
+            value={quantity}
+          />
+          {errors.quantity ? (
+            <span className="field-error" id="quantity-error">
+              {errors.quantity}
+            </span>
+          ) : null}
+        </label>
+
         <button className="primary-button" type="submit">
           <Plus aria-hidden="true" size={18} />
-          Add
+          {text.add}
         </button>
       </form>
     </section>
   );
 }
+
+const labels = {
+  en: {
+    add: "Add",
+    buyPrice: "Buy price",
+    eyebrow: "Journal Entry",
+    quantity: "Quantity",
+    symbol: "Symbol",
+    title: "Add position",
+  },
+  th: {
+    add: "เพิ่ม",
+    buyPrice: "ราคาซื้อ",
+    eyebrow: "บันทึกการเทรด",
+    quantity: "จำนวนหุ้น",
+    symbol: "ชื่อหุ้น",
+    title: "เพิ่มรายการหุ้น",
+  },
+};

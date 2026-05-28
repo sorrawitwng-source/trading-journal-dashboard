@@ -12,6 +12,7 @@ interface PortfolioSummary {
 export function createPosition(
   symbol: string,
   buyPrice: number,
+  quantity: number,
   universe: StockProfile[],
 ): PortfolioPosition {
   const normalizedSymbol = symbol.trim().toUpperCase();
@@ -27,6 +28,7 @@ export function createPosition(
       market: "Custom",
       sector: "Unclassified",
       buyPrice,
+      quantity,
       currentPrice: buyPrice,
       priceStatus: "fallback",
       score: null,
@@ -42,6 +44,7 @@ export function createPosition(
     market: stock.market,
     sector: stock.sector,
     buyPrice,
+    quantity,
     currentPrice: stock.currentPrice,
     priceStatus: "fallback",
     score: scoreStock(stock),
@@ -54,10 +57,11 @@ export function updatePosition(
   id: string,
   symbol: string,
   buyPrice: number,
+  quantity: number,
   universe: StockProfile[],
 ): PortfolioPosition {
   return {
-    ...createPosition(symbol, buyPrice, universe),
+    ...createPosition(symbol, buyPrice, quantity, universe),
     id,
   };
 }
@@ -65,9 +69,11 @@ export function updatePosition(
 export function unrealizedProfitLoss(
   buyPrice: number,
   currentPrice: number,
+  quantity: number,
 ): { amount: number; percent: number } {
-  const amount = currentPrice - buyPrice;
-  const percent = buyPrice === 0 ? 0 : (amount / buyPrice) * 100;
+  const amount = (currentPrice - buyPrice) * quantity;
+  const percent =
+    buyPrice === 0 ? 0 : ((currentPrice - buyPrice) / buyPrice) * 100;
 
   return {
     amount: roundCurrency(amount),
@@ -79,10 +85,16 @@ export function summarizePortfolio(
   positions: PortfolioPosition[],
 ): PortfolioSummary {
   const totalCost = roundCurrency(
-    positions.reduce((sum, position) => sum + position.buyPrice, 0),
+    positions.reduce(
+      (sum, position) => sum + position.buyPrice * position.quantity,
+      0,
+    ),
   );
   const totalValue = roundCurrency(
-    positions.reduce((sum, position) => sum + position.currentPrice, 0),
+    positions.reduce(
+      (sum, position) => sum + position.currentPrice * position.quantity,
+      0,
+    ),
   );
   const totalProfitLoss = roundCurrency(totalValue - totalCost);
   const totalProfitLossPercent =

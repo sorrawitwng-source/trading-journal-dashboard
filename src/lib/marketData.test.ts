@@ -100,6 +100,7 @@ function basePosition(
     isCustom: false,
     market,
     name: symbol,
+    quantity: 0,
     riskLevel: "Medium",
     score: 50,
     sector: "Test",
