@@ -2,10 +2,10 @@ import { createRequire } from "node:module";
 import { describe, expect, it } from "vitest";
 
 const require = createRequire(import.meta.url);
-const { _test } = require("./quote.cjs") as {
+const { _test } = require("../functions/quote.cjs") as {
   _test: {
-    parseFinnhubQuote: (payload: unknown, fallbackSymbol: string) => unknown;
     parseFinnhubProfile: (payload: unknown) => unknown;
+    parseFinnhubQuote: (payload: unknown, fallbackSymbol: string) => unknown;
     parseStooqCsvQuote: (payload: string, fallbackSymbol: string) => unknown;
     toFinnhubSymbol: (symbol: string) => string;
     toStooqSymbol: (symbol: string) => string;
