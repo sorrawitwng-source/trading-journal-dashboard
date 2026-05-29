@@ -1,5 +1,11 @@
 import { Check, Pencil, RefreshCw, Trash2, X } from "lucide-react";
 import type { PortfolioPosition } from "../types";
+import {
+  metricLabel,
+  noDataText,
+  scoreMethodologyText,
+  type Language,
+} from "../lib/scoreText";
 
 export interface HoldingRow extends PortfolioPosition {
   cost: number;
@@ -18,7 +24,7 @@ interface HoldingsTableProps {
     symbol: string;
   } | null;
   isRefreshingPrices: boolean;
-  language: "en" | "th";
+  language: Language;
   lastPriceUpdate: string | null;
   onEditBuyPriceChange: (buyPrice: string) => void;
   onEditCancel: () => void;
@@ -216,11 +222,13 @@ export function HoldingsTable({
                         <details className="score-details">
                           <summary>{row.score ?? "N/A"}</summary>
                           <div>
-                            <p>{row.scoreBreakdown.methodology}</p>
+                            <p>{scoreMethodologyText(language)}</p>
                             {row.scoreBreakdown.items.map((item) => (
                               <span key={item.label}>
-                                {item.label}:{" "}
-                                {item.available ? item.value?.toFixed(0) : "No data"}
+                                {metricLabel(item.label, language)}:{" "}
+                                {item.available
+                                  ? item.value?.toFixed(0)
+                                  : noDataText(language)}
                               </span>
                             ))}
                           </div>

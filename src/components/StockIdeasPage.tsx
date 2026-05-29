@@ -1,8 +1,19 @@
 import type { RecommendationCategory } from "../lib/recommendationCategories";
+import {
+  dataQualityText,
+  metricLabel,
+  noDataText,
+  recommendationReasonText,
+  researchPromptText,
+  riskLevelText,
+  riskReasonText,
+  strongestBreakdownItem,
+  type Language,
+} from "../lib/scoreText";
 
 interface StockIdeasPageProps {
   categories: RecommendationCategory[];
-  language: "en" | "th";
+  language: Language;
 }
 
 export function StockIdeasPage({ categories, language }: StockIdeasPageProps) {
@@ -31,6 +42,8 @@ export function StockIdeasPage({ categories, language }: StockIdeasPageProps) {
             emptyText={text.empty}
             isFeatured
             key={category.id}
+            language={language}
+            researchNotesLabel={text.researchNotes}
           />
         ))}
       </div>
@@ -41,6 +54,8 @@ export function StockIdeasPage({ categories, language }: StockIdeasPageProps) {
             category={category}
             emptyText={text.empty}
             key={category.id}
+            language={language}
+            researchNotesLabel={text.researchNotes}
           />
         ))}
       </div>
@@ -52,10 +67,14 @@ function IdeaCategoryCard({
   category,
   emptyText,
   isFeatured = false,
+  language,
+  researchNotesLabel,
 }: {
   category: RecommendationCategory;
   emptyText: string;
   isFeatured?: boolean;
+  language: Language;
+  researchNotesLabel: string;
 }) {
   return (
     <article
@@ -75,33 +94,48 @@ function IdeaCategoryCard({
         <div className="idea-empty">{emptyText}</div>
       ) : (
         <div className="idea-list">
-          {category.stocks.map((stock) => (
-            <div className="idea-row" key={stock.symbol}>
-              <div>
-                <strong>{stock.symbol}</strong>
-                <span>{stock.name}</span>
-                <small>{stock.reason}</small>
-              </div>
-              <div className="idea-row__meta">
-                <span>{stock.market}</span>
-                <span>{stock.riskLevel}</span>
-                <span>{stock.dataQuality}</span>
-                <b>{stock.score ?? "N/A"}</b>
-              </div>
-              <details className="idea-research">
-                <summary>Research notes</summary>
-                <p>{stock.researchPrompt}</p>
-                <p>{stock.keyRisk}</p>
+          {category.stocks.map((stock) => {
+            const strongest = strongestBreakdownItem(stock.scoreBreakdown.items);
+
+            return (
+              <div className="idea-row" key={stock.symbol}>
                 <div>
-                  {stock.scoreBreakdown.items.map((item) => (
-                    <span key={item.label}>
-                      {item.label}: {item.available ? item.value?.toFixed(0) : "No data"}
-                    </span>
-                  ))}
+                  <strong>{stock.symbol}</strong>
+                  <span>{stock.name}</span>
+                  <small>
+                    {recommendationReasonText(
+                      stock.score,
+                      strongest?.label,
+                      language,
+                    )}
+                  </small>
                 </div>
-              </details>
-            </div>
-          ))}
+                <div className="idea-row__meta">
+                  <span>{stock.market}</span>
+                  <span>{riskLevelText(stock.riskLevel, language)}</span>
+                  <span>{dataQualityText(stock.dataQuality, language)}</span>
+                  <b>{stock.score ?? "N/A"}</b>
+                </div>
+                <details className="idea-research">
+                  <summary>{researchNotesLabel}</summary>
+                  <p>
+                    {researchPromptText(stock.score, strongest?.label, language)}
+                  </p>
+                  <p>{riskReasonText(stock.riskLevel, language)}</p>
+                  <div>
+                    {stock.scoreBreakdown.items.map((item) => (
+                      <span key={item.label}>
+                        {metricLabel(item.label, language)}:{" "}
+                        {item.available
+                          ? item.value?.toFixed(0)
+                          : noDataText(language)}
+                      </span>
+                    ))}
+                  </div>
+                </details>
+              </div>
+            );
+          })}
         </div>
       )}
     </article>
@@ -115,6 +149,7 @@ const labels = {
       "Browse Thai and US stocks by sector, income profile, growth signal, and risk quality.",
     empty: "No matching ideas for this market filter.",
     eyebrow: "Stock Ideas",
+    researchNotes: "Research notes",
     title: "Ranked ideas by investment style",
   },
   th: {
@@ -123,6 +158,7 @@ const labels = {
       "ค้นหาหุ้นไทยและหุ้นสหรัฐตามกลุ่มธุรกิจ ปันผล โมเมนตัม และระดับความเสี่ยง",
     empty: "ไม่มีหุ้นที่ตรงกับตัวกรองตลาดนี้",
     eyebrow: "หุ้นน่าสนใจ",
+    researchNotes: "บันทึกเพื่อวิจัยต่อ",
     title: "ไอเดียลงทุนแยกตามสไตล์",
   },
 };
