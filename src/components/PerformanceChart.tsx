@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { BenchmarkSeries } from "../types";
 
 interface PerformanceChartProps {
@@ -147,9 +148,17 @@ export function PerformanceChart({ series }: PerformanceChartProps) {
                 .join(" ");
               const isBaselineLine =
                 item.symbol === "PORTFOLIO" && isPortfolioBaseline;
+              const firstX = xForIndex(0, item.values.length);
+              const lastX = xForIndex(item.values.length - 1, item.values.length);
 
               return (
                 <g className="performance-chart__series" key={item.symbol}>
+                  {item.symbol === "PORTFOLIO" ? (
+                    <polygon
+                      className="performance-chart__area"
+                      points={`${firstX},${zeroY} ${points} ${lastX},${zeroY}`}
+                    />
+                  ) : null}
                   <polyline
                     className={`performance-chart__line${
                       isBaselineLine ? " performance-chart__line--baseline" : ""
@@ -182,7 +191,15 @@ export function PerformanceChart({ series }: PerformanceChartProps) {
               finalValue > 0 ? "positive" : finalValue < 0 ? "negative" : "neutral";
 
             return (
-              <div className="performance-legend__item" key={item.symbol}>
+              <div
+                className="performance-legend__item"
+                key={item.symbol}
+                style={
+                  {
+                    "--legend-color": chartColors[index % chartColors.length],
+                  } as CSSProperties
+                }
+              >
                 <span
                   className="performance-legend__swatch"
                   style={{ backgroundColor: chartColors[index % chartColors.length] }}
