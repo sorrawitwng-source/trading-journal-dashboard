@@ -1,5 +1,6 @@
 export type Market = "Thai" | "US" | "Custom";
 export type MarketFilter = "All" | "Thai" | "US";
+export type Currency = "THB" | "USD";
 export type DataQuality = "complete" | "limited" | "no-data" | "partial";
 export type PriceStatus = "cached" | "fallback" | "live";
 export type RiskLevel = "Low" | "Medium" | "High" | "No data";
@@ -44,6 +45,7 @@ export interface PortfolioPosition {
   sector: string;
   sectorSource?: SectorSource;
   buyPrice: number;
+  currency?: Currency;
   quantity: number;
   currentPrice: number;
   priceStatus?: PriceStatus;

@@ -1,13 +1,21 @@
-import type { PortfolioPosition, StockProfile } from "../types";
+import type { Currency, Market, PortfolioPosition, StockProfile } from "../types";
 import { buildScoreBreakdown, riskLabel, scoreStock } from "./scoring";
 
 interface PortfolioSummary {
+  baseCurrency: Currency;
   totalCost: number;
   totalValue: number;
   totalProfitLoss: number;
   totalProfitLossPercent: number;
   averageScore: number | null;
 }
+
+interface PortfolioSummaryOptions {
+  baseCurrency: Currency;
+  usdThbRate: number;
+}
+
+export const fallbackUsdThbRate = 36.5;
 
 export function createPosition(
   symbol: string,
@@ -29,6 +37,7 @@ export function createPosition(
       sector: "Unclassified",
       sectorSource: "unknown",
       buyPrice,
+      currency: "USD",
       quantity,
       currentPrice: buyPrice,
       priceStatus: "fallback",
@@ -63,6 +72,7 @@ export function createPosition(
     sector: stock.sector,
     sectorSource: stock.sectorSource,
     buyPrice,
+    currency: currencyForMarket(stock.market),
     quantity,
     currentPrice: stock.currentPrice,
     priceStatus: "fallback",
@@ -105,16 +115,34 @@ export function unrealizedProfitLoss(
 
 export function summarizePortfolio(
   positions: PortfolioPosition[],
+  options: PortfolioSummaryOptions = {
+    baseCurrency: "USD",
+    usdThbRate: fallbackUsdThbRate,
+  },
 ): PortfolioSummary {
   const totalCost = roundCurrency(
     positions.reduce(
-      (sum, position) => sum + position.buyPrice * position.quantity,
+      (sum, position) =>
+        sum +
+        convertCurrency(
+          position.buyPrice * position.quantity,
+          positionCurrency(position),
+          options.baseCurrency,
+          options.usdThbRate,
+        ),
       0,
     ),
   );
   const totalValue = roundCurrency(
     positions.reduce(
-      (sum, position) => sum + position.currentPrice * position.quantity,
+      (sum, position) =>
+        sum +
+        convertCurrency(
+          position.currentPrice * position.quantity,
+          positionCurrency(position),
+          options.baseCurrency,
+          options.usdThbRate,
+        ),
       0,
     ),
   );
@@ -134,12 +162,38 @@ export function summarizePortfolio(
         );
 
   return {
+    baseCurrency: options.baseCurrency,
     totalCost,
     totalValue,
     totalProfitLoss,
     totalProfitLossPercent,
     averageScore,
   };
+}
+
+export function convertCurrency(
+  value: number,
+  fromCurrency: Currency,
+  toCurrency: Currency,
+  usdThbRate: number,
+): number {
+  if (fromCurrency === toCurrency) {
+    return roundCurrency(value);
+  }
+
+  if (fromCurrency === "USD" && toCurrency === "THB") {
+    return roundCurrency(value * usdThbRate);
+  }
+
+  return roundCurrency(value / usdThbRate);
+}
+
+export function currencyForMarket(market: Market): Currency {
+  return market === "Thai" ? "THB" : "USD";
+}
+
+export function positionCurrency(position: PortfolioPosition): Currency {
+  return position.currency ?? currencyForMarket(position.market);
 }
 
 function createPositionId(symbol: string): string {

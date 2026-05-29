@@ -1,10 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PortfolioPosition } from "../types";
 import {
   applyCachedQuotes,
   parseYahooChartQuote,
+  refreshUsdThbRate,
   toYahooSymbol,
 } from "./marketData";
+
+beforeEach(() => {
+  localStorage.clear();
+});
 
 describe("toYahooSymbol", () => {
   it("maps Thai stocks to the Bangkok exchange suffix", () => {
@@ -88,6 +93,23 @@ describe("applyCachedQuotes", () => {
   });
 });
 
+describe("refreshUsdThbRate", () => {
+  it("loads the USD/THB rate from the quote endpoint", async () => {
+    const fetcher = vi.fn(async () => ({
+      json: async () => ({
+        price: 35.77,
+        providerSymbol: "THB=X",
+      }),
+      ok: true,
+    })) as unknown as typeof fetch;
+
+    await expect(refreshUsdThbRate(localStorage, fetcher)).resolves.toMatchObject({
+      rate: 35.77,
+      status: "live",
+    });
+  });
+});
+
 function basePosition(
   symbol: string,
   market: PortfolioPosition["market"],
@@ -96,6 +118,7 @@ function basePosition(
   return {
     buyPrice: currentPrice,
     currentPrice,
+    currency: market === "Thai" ? "THB" : "USD",
     id: symbol,
     isCustom: false,
     market,

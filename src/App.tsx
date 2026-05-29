@@ -10,16 +10,23 @@ import { benchmarkSeries } from "./data/benchmarks";
 import { stockUniverse } from "./data/stocks";
 import { combinedChartSeries } from "./lib/benchmarks";
 import {
+  convertCurrency,
   createPosition,
+  fallbackUsdThbRate,
+  positionCurrency,
   summarizePortfolio,
   unrealizedProfitLoss,
   updatePosition,
 } from "./lib/portfolio";
-import { refreshPositionPrices } from "./lib/marketData";
+import {
+  loadUsdThbRate,
+  refreshPositionPrices,
+  refreshUsdThbRate,
+} from "./lib/marketData";
 import { loadStoredPositions, saveStoredPositions } from "./lib/positionsStorage";
 import { buildRecommendationCategories } from "./lib/recommendationCategories";
 import { validatePositionInput } from "./lib/validation";
-import type { MarketFilter, PortfolioPosition } from "./types";
+import type { Currency, MarketFilter, PortfolioPosition, PriceStatus } from "./types";
 
 type Theme = "dark" | "light";
 type Language = "en" | "th";
@@ -34,6 +41,7 @@ type EditDraft = {
 function App() {
   const [theme, setTheme] = useState<Theme>("dark");
   const [language, setLanguage] = useState<Language>("en");
+  const [baseCurrency, setBaseCurrency] = useState<Currency>("THB");
   const [activeView, setActiveView] = useState<AppView>("portfolio");
   const [marketFilter, setMarketFilter] = useState<MarketFilter>("All");
   const [positions, setPositions] = useState<PortfolioPosition[]>(() =>
@@ -50,13 +58,26 @@ function App() {
   const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
   const [isRefreshingPrices, setIsRefreshingPrices] = useState(false);
   const [lastPriceUpdate, setLastPriceUpdate] = useState<string | null>(null);
+  const cachedExchangeRate = loadUsdThbRate();
+  const [usdThbRate, setUsdThbRate] = useState(
+    cachedExchangeRate?.rate ?? fallbackUsdThbRate,
+  );
+  const [fxStatus, setFxStatus] = useState<PriceStatus>(
+    cachedExchangeRate?.status ?? "fallback",
+  );
+  const [fxUpdatedAt, setFxUpdatedAt] = useState<string | null>(
+    cachedExchangeRate?.fetchedAt ?? null,
+  );
   const [priceRefreshError, setPriceRefreshError] = useState<string | null>(null);
 
   useEffect(() => {
     saveStoredPositions(positions);
   }, [positions]);
 
-  const portfolioSummary = useMemo(() => summarizePortfolio(positions), [positions]);
+  const portfolioSummary = useMemo(
+    () => summarizePortfolio(positions, { baseCurrency, usdThbRate }),
+    [baseCurrency, positions, usdThbRate],
+  );
   const recommendationCategories = useMemo(
     () => buildRecommendationCategories(stockUniverse, marketFilter),
     [marketFilter],
@@ -96,6 +117,24 @@ function App() {
 
         return {
           ...position,
+          baseCost: convertCurrency(
+            position.buyPrice * position.quantity,
+            positionCurrency(position),
+            baseCurrency,
+            usdThbRate,
+          ),
+          baseCurrentValue: convertCurrency(
+            position.currentPrice * position.quantity,
+            positionCurrency(position),
+            baseCurrency,
+            usdThbRate,
+          ),
+          baseProfitLossAmount: convertCurrency(
+            profitLoss.amount,
+            positionCurrency(position),
+            baseCurrency,
+            usdThbRate,
+          ),
           cost: position.buyPrice * position.quantity,
           currentValue: position.currentPrice * position.quantity,
           profitLossAmount: profitLoss.amount,
@@ -103,8 +142,12 @@ function App() {
           tone,
         };
       }),
-    [positions],
+    [baseCurrency, positions, usdThbRate],
   );
+
+  useEffect(() => {
+    void handleRefreshExchangeRate();
+  }, []);
 
   useEffect(() => {
     if (!refreshablePositionKey) {
@@ -225,6 +268,7 @@ function App() {
 
     try {
       const refreshedPositions = await refreshPositionPrices(positionSnapshot);
+      const refreshedExchangeRate = await refreshUsdThbRate();
 
       setPositions((currentPositions) =>
         currentPositions.map((currentPosition) => {
@@ -238,6 +282,9 @@ function App() {
           return refreshedPosition ?? currentPosition;
         }),
       );
+      setUsdThbRate(refreshedExchangeRate.rate);
+      setFxStatus(refreshedExchangeRate.status);
+      setFxUpdatedAt(refreshedExchangeRate.fetchedAt);
       setLastPriceUpdate(new Date().toISOString());
     } catch {
       setPriceRefreshError("Could not refresh prices right now.");
@@ -246,13 +293,23 @@ function App() {
     }
   }
 
+  async function handleRefreshExchangeRate() {
+    const refreshedExchangeRate = await refreshUsdThbRate();
+
+    setUsdThbRate(refreshedExchangeRate.rate);
+    setFxStatus(refreshedExchangeRate.status);
+    setFxUpdatedAt(refreshedExchangeRate.fetchedAt);
+  }
+
   return (
     <main className="app-shell" data-theme={theme}>
       <div className="dashboard">
         <TopBar
           activeView={activeView}
+          baseCurrency={baseCurrency}
           language={language}
           marketFilter={marketFilter}
+          onBaseCurrencyChange={setBaseCurrency}
           onLanguageToggle={() =>
             setLanguage((currentLanguage) =>
               currentLanguage === "en" ? "th" : "en",
@@ -270,11 +327,15 @@ function App() {
           <>
             <SummaryStrip
               averageScore={portfolioSummary.averageScore}
+              baseCurrency={baseCurrency}
+              fxStatus={fxStatus}
+              fxUpdatedAt={fxUpdatedAt}
               language={language}
               totalCost={portfolioSummary.totalCost}
               totalProfitLoss={portfolioSummary.totalProfitLoss}
               totalProfitLossPercent={portfolioSummary.totalProfitLossPercent}
               totalValue={portfolioSummary.totalValue}
+              usdThbRate={usdThbRate}
             />
 
             <div className="portfolio-workspace">
@@ -293,6 +354,7 @@ function App() {
             </div>
 
             <HoldingsTable
+              baseCurrency={baseCurrency}
               editDraft={editDraft}
               isRefreshingPrices={isRefreshingPrices}
               language={language}

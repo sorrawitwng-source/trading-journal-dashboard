@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  convertCurrency,
   createPosition,
   summarizePortfolio,
   unrealizedProfitLoss,
@@ -15,6 +16,7 @@ describe("createPosition", () => {
       symbol: "AAPL",
       name: "Apple Inc.",
       market: "US",
+      currency: "USD",
       quantity: 12,
       isCustom: false,
     });
@@ -28,6 +30,7 @@ describe("createPosition", () => {
       symbol: "ZZZZ",
       name: "ZZZZ",
       market: "Custom",
+      currency: "USD",
       sector: "Unclassified",
       currentPrice: 10,
       quantity: 0,
@@ -58,6 +61,7 @@ describe("updatePosition", () => {
       symbol: "PTTGC",
       name: "PTT Global Chemical Public Company Limited",
       market: "Thai",
+      currency: "THB",
       sector: "Petrochemicals",
       buyPrice: 36,
       quantity: 8,
@@ -67,16 +71,27 @@ describe("updatePosition", () => {
 });
 
 describe("summarizePortfolio", () => {
-  it("summarizes totals and average score", () => {
+  it("summarizes mixed-market totals in the selected base currency", () => {
     const positions = [
       createPosition("AAPL", 150, 2, stockUniverse),
       createPosition("PTT", 30, 3, stockUniverse),
     ];
 
-    const summary = summarizePortfolio(positions);
+    const summary = summarizePortfolio(positions, {
+      baseCurrency: "THB",
+      usdThbRate: 35,
+    });
 
-    expect(summary.totalCost).toBe(390);
+    expect(summary.baseCurrency).toBe("THB");
+    expect(summary.totalCost).toBe(10590);
     expect(summary.totalValue).toBeGreaterThan(0);
     expect(summary.averageScore).not.toBeNull();
+  });
+});
+
+describe("convertCurrency", () => {
+  it("converts between USD and THB", () => {
+    expect(convertCurrency(10, "USD", "THB", 35)).toBe(350);
+    expect(convertCurrency(350, "THB", "USD", 35)).toBe(10);
   });
 });

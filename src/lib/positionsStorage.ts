@@ -1,4 +1,5 @@
 import type { PortfolioPosition } from "../types";
+import { currencyForMarket } from "./portfolio";
 
 export const storedPositionsKey = "trading-journal.positions.v1";
 
@@ -47,6 +48,9 @@ function isPortfolioPosition(value: unknown): value is PortfolioPosition {
     (position.market === "Thai" ||
       position.market === "US" ||
       position.market === "Custom") &&
+    (position.currency === undefined ||
+      position.currency === "THB" ||
+      position.currency === "USD") &&
     typeof position.sector === "string" &&
     typeof position.buyPrice === "number" &&
     (position.quantity === undefined ||
@@ -77,6 +81,7 @@ function isPortfolioPosition(value: unknown): value is PortfolioPosition {
 function withDefaultQuantity(position: PortfolioPosition): PortfolioPosition {
   return {
     ...position,
+    currency: position.currency ?? currencyForMarket(position.market),
     quantity: position.quantity ?? 0,
   };
 }

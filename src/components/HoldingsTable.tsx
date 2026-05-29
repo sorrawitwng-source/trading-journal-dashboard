@@ -1,5 +1,6 @@
 import { Check, Pencil, RefreshCw, Trash2, X } from "lucide-react";
-import type { PortfolioPosition } from "../types";
+import type { ReactNode } from "react";
+import type { Currency, PortfolioPosition } from "../types";
 import {
   metricLabel,
   noDataText,
@@ -8,6 +9,9 @@ import {
 } from "../lib/scoreText";
 
 export interface HoldingRow extends PortfolioPosition {
+  baseCost: number;
+  baseCurrentValue: number;
+  baseProfitLossAmount: number;
   cost: number;
   currentValue: number;
   profitLossAmount: number;
@@ -24,6 +28,7 @@ interface HoldingsTableProps {
     symbol: string;
   } | null;
   isRefreshingPrices: boolean;
+  baseCurrency: Currency;
   language: Language;
   lastPriceUpdate: string | null;
   onEditBuyPriceChange: (buyPrice: string) => void;
@@ -60,6 +65,7 @@ const percentFormatter = new Intl.NumberFormat("en-US", {
 export function HoldingsTable({
   editDraft,
   isRefreshingPrices,
+  baseCurrency,
   language,
   lastPriceUpdate,
   onEditBuyPriceChange,
@@ -171,7 +177,7 @@ export function HoldingsTable({
                           value={editDraft.buyPrice}
                         />
                       ) : (
-                        formatMarketCurrency(row.buyPrice, row.market)
+                        formatPositionCurrency(row.buyPrice, row)
                       )}
                     </td>
                     <td>
@@ -187,10 +193,19 @@ export function HoldingsTable({
                         formatQuantity(row.quantity)
                       )}
                     </td>
-                    <td>{formatMarketCurrency(row.cost, row.market)}</td>
+                    <td>
+                      <MoneyCell
+                        primary={formatPositionCurrency(row.cost, row)}
+                        secondary={formatConvertedCurrency(
+                          row.baseCost,
+                          baseCurrency,
+                          row.currency,
+                        )}
+                      />
+                    </td>
                     <td>
                       <div className="current-price-cell">
-                        <span>{formatMarketCurrency(row.currentPrice, row.market)}</span>
+                        <span>{formatPositionCurrency(row.currentPrice, row)}</span>
                         <span
                           className={`price-status price-status--${
                             row.priceStatus ?? "fallback"
@@ -201,12 +216,30 @@ export function HoldingsTable({
                         </span>
                       </div>
                     </td>
-                    <td>{formatMarketCurrency(row.currentValue, row.market)}</td>
                     <td>
-                      <span className={`metric-value metric-value--${row.tone}`}>
-                        {formatMarketCurrency(row.profitLossAmount, row.market)} (
-                        {percentFormatter.format(row.profitLossPercent)}%)
-                      </span>
+                      <MoneyCell
+                        primary={formatPositionCurrency(row.currentValue, row)}
+                        secondary={formatConvertedCurrency(
+                          row.baseCurrentValue,
+                          baseCurrency,
+                          row.currency,
+                        )}
+                      />
+                    </td>
+                    <td>
+                      <MoneyCell
+                        primary={
+                          <span className={`metric-value metric-value--${row.tone}`}>
+                            {formatPositionCurrency(row.profitLossAmount, row)} (
+                            {percentFormatter.format(row.profitLossPercent)}%)
+                          </span>
+                        }
+                        secondary={formatConvertedCurrency(
+                          row.baseProfitLossAmount,
+                          baseCurrency,
+                          row.currency,
+                        )}
+                      />
                     </td>
                     <td>
                       <span
@@ -300,13 +333,25 @@ function formatQuantity(value: number): string {
   }).format(value);
 }
 
-function formatMarketCurrency(
+function formatPositionCurrency(
   value: number,
-  market: PortfolioPosition["market"],
+  position: Pick<PortfolioPosition, "currency" | "market">,
 ): string {
-  const currency = market === "Thai" ? "THB" : "USD";
+  const currency = position.currency ?? (position.market === "Thai" ? "THB" : "USD");
 
   return currencyFormatters[currency].format(value);
+}
+
+function formatConvertedCurrency(
+  value: number,
+  baseCurrency: Currency,
+  rowCurrency?: Currency,
+): string | null {
+  if (rowCurrency === baseCurrency) {
+    return null;
+  }
+
+  return `≈ ${currencyFormatters[baseCurrency].format(value)}`;
 }
 
 function dataQualityLabel(status: PortfolioPosition["dataQuality"]): string {
@@ -403,6 +448,21 @@ function formatUpdatedTime(value: string): string {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(value));
+}
+
+function MoneyCell({
+  primary,
+  secondary,
+}: {
+  primary: ReactNode;
+  secondary?: string | null;
+}) {
+  return (
+    <div className="money-cell">
+      <span>{primary}</span>
+      {secondary ? <small>{secondary}</small> : null}
+    </div>
+  );
 }
 
 function EditableCell({

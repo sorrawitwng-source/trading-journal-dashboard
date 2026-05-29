@@ -1,17 +1,17 @@
+import type { Currency, PriceStatus } from "../types";
+
 interface SummaryStripProps {
   averageScore: number | null;
+  baseCurrency: Currency;
+  fxStatus: PriceStatus;
+  fxUpdatedAt: string | null;
   language: "en" | "th";
   totalCost: number;
   totalProfitLoss: number;
   totalProfitLossPercent: number;
   totalValue: number;
+  usdThbRate: number;
 }
-
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  currency: "USD",
-  maximumFractionDigits: 2,
-  style: "currency",
-});
 
 const percentFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
@@ -20,44 +20,62 @@ const percentFormatter = new Intl.NumberFormat("en-US", {
 
 export function SummaryStrip({
   averageScore,
+  baseCurrency,
+  fxStatus,
+  fxUpdatedAt,
   language,
   totalCost,
   totalProfitLoss,
   totalProfitLossPercent,
   totalValue,
+  usdThbRate,
 }: SummaryStripProps) {
   const profitLossTone =
     totalProfitLoss > 0 ? "positive" : totalProfitLoss < 0 ? "negative" : "neutral";
   const text = labels[language];
+  const currencyFormatter = currencyFormatterFor(baseCurrency);
 
   return (
-    <section className="summary-strip" aria-label="Portfolio summary">
-      <SummaryItem label={text.totalCost} value={currencyFormatter.format(totalCost)} />
-      <SummaryItem label={text.estimatedValue} value={currencyFormatter.format(totalValue)} />
-      <SummaryItem
-        label={text.totalProfitLoss}
-        tone={profitLossTone}
-        value={`${currencyFormatter.format(totalProfitLoss)} (${percentFormatter.format(
-          totalProfitLossPercent,
-        )}%)`}
-      />
-      <SummaryItem
-        label={text.averageScore}
-        value={averageScore === null ? "N/A" : averageScore.toFixed(2)}
-      />
-    </section>
+    <div className="summary-area">
+      <div className="currency-note">
+        <span>
+          {text.baseCurrency}: <strong>{baseCurrency}</strong>
+        </span>
+        <span>
+          USD/THB {usdThbRate.toFixed(4)} · {statusLabel(fxStatus, language)}
+          {fxUpdatedAt ? ` · ${formatUpdatedTime(fxUpdatedAt)}` : ""}
+        </span>
+      </div>
+      <section className="summary-strip" aria-label="Portfolio summary">
+        <SummaryItem label={text.totalCost} value={currencyFormatter.format(totalCost)} />
+        <SummaryItem label={text.estimatedValue} value={currencyFormatter.format(totalValue)} />
+        <SummaryItem
+          label={text.totalProfitLoss}
+          tone={profitLossTone}
+          value={`${currencyFormatter.format(totalProfitLoss)} (${percentFormatter.format(
+            totalProfitLossPercent,
+          )}%)`}
+        />
+        <SummaryItem
+          label={text.averageScore}
+          value={averageScore === null ? "N/A" : averageScore.toFixed(2)}
+        />
+      </section>
+    </div>
   );
 }
 
 const labels = {
   en: {
     averageScore: "Average score",
+    baseCurrency: "Portfolio currency",
     estimatedValue: "Estimated value",
     totalCost: "Total cost",
     totalProfitLoss: "Total P/L",
   },
   th: {
     averageScore: "คะแนนเฉลี่ย",
+    baseCurrency: "สกุลเงินพอร์ต",
     estimatedValue: "มูลค่าปัจจุบัน",
     totalCost: "ต้นทุนรวม",
     totalProfitLoss: "กำไร/ขาดทุนรวม",
@@ -79,4 +97,31 @@ function SummaryItem({
       <strong className={`metric-value metric-value--${tone}`}>{value}</strong>
     </div>
   );
+}
+
+function currencyFormatterFor(currency: Currency): Intl.NumberFormat {
+  return new Intl.NumberFormat(currency === "THB" ? "th-TH" : "en-US", {
+    currency,
+    maximumFractionDigits: 2,
+    style: "currency",
+  });
+}
+
+function statusLabel(status: PriceStatus, language: "en" | "th"): string {
+  if (status === "live") {
+    return language === "th" ? "สด" : "Live";
+  }
+
+  if (status === "cached") {
+    return language === "th" ? "แคช" : "Cached";
+  }
+
+  return language === "th" ? "สำรอง" : "Fallback";
+}
+
+function formatUpdatedTime(value: string): string {
+  return new Intl.DateTimeFormat("th-TH", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
 }

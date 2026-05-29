@@ -1,12 +1,14 @@
 import { Moon, Sun } from "lucide-react";
-import type { MarketFilter } from "../types";
+import type { Currency, MarketFilter } from "../types";
 
 export type AppView = "ideas" | "portfolio";
 
 interface TopBarProps {
   activeView: AppView;
+  baseCurrency: Currency;
   language: "en" | "th";
   marketFilter: MarketFilter;
+  onBaseCurrencyChange: (currency: Currency) => void;
   onLanguageToggle: () => void;
   onViewChange: (view: AppView) => void;
   onMarketFilterChange: (marketFilter: MarketFilter) => void;
@@ -15,10 +17,13 @@ interface TopBarProps {
 }
 
 const marketFilters: MarketFilter[] = ["All", "Thai", "US"];
+const baseCurrencies: Currency[] = ["THB", "USD"];
 export function TopBar({
   activeView,
+  baseCurrency,
   language,
   marketFilter,
+  onBaseCurrencyChange,
   onLanguageToggle,
   onViewChange,
   onMarketFilterChange,
@@ -66,6 +71,20 @@ export function TopBar({
           ))}
         </div>
 
+        <div className="segmented-control" aria-label={text.baseCurrency}>
+          {baseCurrencies.map((currency) => (
+            <button
+              aria-pressed={baseCurrency === currency}
+              className="segmented-control__button"
+              key={currency}
+              onClick={() => onBaseCurrencyChange(currency)}
+              type="button"
+            >
+              {currency}
+            </button>
+          ))}
+        </div>
+
         <button
           aria-label={text.languageToggle}
           className="language-button"
@@ -100,6 +119,7 @@ const labels = {
     eyebrow: "Trading Journal",
     ideasTitle: "Stock Ideas",
     languageToggle: "Switch language",
+    baseCurrency: "Portfolio currency",
     portfolioTitle: "Portfolio Dashboard",
     switchToDark: "Switch to dark mode",
     switchToLight: "Switch to light mode",
@@ -112,6 +132,7 @@ const labels = {
     eyebrow: "บันทึกการเทรด",
     ideasTitle: "หุ้นน่าสนใจ",
     languageToggle: "เปลี่ยนภาษา",
+    baseCurrency: "สกุลเงินพอร์ต",
     portfolioTitle: "พอร์ตการลงทุน",
     switchToDark: "เปลี่ยนเป็นโหมดมืด",
     switchToLight: "เปลี่ยนเป็นโหมดสว่าง",

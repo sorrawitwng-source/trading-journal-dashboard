@@ -67,6 +67,7 @@ export function PositionForm({
             type="text"
             value={buyPrice}
           />
+          <small className="field-help">{text.priceHint}</small>
           {errors.buyPrice ? (
             <span className="field-error" id="buy-price-error">
               {errors.buyPrice}
@@ -107,6 +108,7 @@ const labels = {
     buyPrice: "Buy price",
     eyebrow: "Journal Entry",
     quantity: "Quantity",
+    priceHint: "Thai stocks use THB. US stocks use USD.",
     symbol: "Symbol",
     title: "Add position",
   },
@@ -115,6 +117,7 @@ const labels = {
     buyPrice: "ราคาซื้อ",
     eyebrow: "บันทึกการเทรด",
     quantity: "จำนวนหุ้น",
+    priceHint: "หุ้นไทยใช้เงินบาท หุ้น US ใช้ดอลลาร์",
     symbol: "ชื่อหุ้น",
     title: "เพิ่มรายการหุ้น",
   },

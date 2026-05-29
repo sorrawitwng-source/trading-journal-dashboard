@@ -31,7 +31,7 @@ describe("positionsStorage", () => {
     expect(loadStoredPositions()).toEqual([]);
   });
 
-  it("defaults missing stored quantity to zero for older saved positions", () => {
+  it("defaults missing stored quantity and currency for older saved positions", () => {
     localStorage.setItem(
       storedPositionsKey,
       JSON.stringify([
@@ -50,6 +50,9 @@ describe("positionsStorage", () => {
       ]),
     );
 
-    expect(loadStoredPositions()[0]).toMatchObject({ quantity: 0 });
+    expect(loadStoredPositions()[0]).toMatchObject({
+      currency: "USD",
+      quantity: 0,
+    });
   });
 });

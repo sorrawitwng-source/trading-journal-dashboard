@@ -4,6 +4,7 @@ import type {
   PriceStatus,
   SectorSource,
 } from "../types";
+import { fallbackUsdThbRate } from "./portfolio";
 
 export interface MarketQuote {
   currency?: string;
@@ -21,10 +22,17 @@ export interface CachedQuote extends MarketQuote {
   fetchedAt: string;
 }
 
+export interface ExchangeRateQuote {
+  fetchedAt: string;
+  rate: number;
+  status: PriceStatus;
+}
+
 type QuoteCache = Record<string, CachedQuote>;
 type Fetcher = typeof fetch;
 
 export const storedQuoteCacheKey = "trading-journal.quotes.v1";
+export const storedExchangeRateKey = "trading-journal.usd-thb-rate.v1";
 
 export function toYahooSymbol(symbol: string, market: Market): string {
   const normalizedSymbol = symbol.trim().toUpperCase();
@@ -168,6 +176,61 @@ export function saveQuoteCache(
   }
 }
 
+export function loadUsdThbRate(
+  storage: Storage = localStorage,
+): ExchangeRateQuote | null {
+  try {
+    const rawValue = storage.getItem(storedExchangeRateKey);
+
+    if (!rawValue) {
+      return null;
+    }
+
+    const parsedValue = asRecord(JSON.parse(rawValue));
+    const rate = finiteNumber(parsedValue?.rate);
+    const fetchedAt = stringValue(parsedValue?.fetchedAt);
+    const status = priceStatusValue(parsedValue?.status);
+
+    if (rate === null || !fetchedAt || !status) {
+      return null;
+    }
+
+    return { fetchedAt, rate, status };
+  } catch {
+    return null;
+  }
+}
+
+export async function refreshUsdThbRate(
+  storage: Storage = localStorage,
+  fetcher: Fetcher = fetch,
+): Promise<ExchangeRateQuote> {
+  const cachedRate = loadUsdThbRate(storage);
+
+  try {
+    const quote = await fetchUsdThbQuote(fetcher);
+    const nextRate = {
+      fetchedAt: new Date().toISOString(),
+      rate: roundTo(quote.price, 4),
+      status: "live" as PriceStatus,
+    };
+
+    saveUsdThbRate(nextRate, storage);
+
+    return nextRate;
+  } catch {
+    if (cachedRate) {
+      return { ...cachedRate, status: "cached" };
+    }
+
+    return {
+      fetchedAt: new Date().toISOString(),
+      rate: fallbackUsdThbRate,
+      status: "fallback",
+    };
+  }
+}
+
 function quoteCacheKey(symbol: string, market: Market): string {
   return `${market}:${symbol.trim().toUpperCase()}`;
 }
@@ -206,6 +269,44 @@ async function fetchMarketQuote(
   throw new Error(`No quote available for ${providerSymbol}`);
 }
 
+async function fetchUsdThbQuote(fetcher: Fetcher): Promise<MarketQuote> {
+  const providerSymbol = "THB=X";
+  const endpoints = [
+    `/.netlify/functions/quote?symbol=${encodeURIComponent(providerSymbol)}`,
+    `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
+      providerSymbol,
+    )}?range=1d&interval=1m`,
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetcher(endpoint);
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const quote = parseYahooChartQuote(await response.json(), providerSymbol);
+
+      if (quote && quote.price > 0) {
+        return quote;
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  throw new Error("USD/THB rate unavailable");
+}
+
+function saveUsdThbRate(rate: ExchangeRateQuote, storage: Storage = localStorage) {
+  try {
+    storage.setItem(storedExchangeRateKey, JSON.stringify(rate));
+  } catch {
+    // FX caching is optional; the app can continue with the fallback rate.
+  }
+}
+
 function applyQuote(
   position: PortfolioPosition,
   quote: CachedQuote,
@@ -214,6 +315,7 @@ function applyQuote(
   return {
     ...position,
     currentPrice: roundTo(quote.price, 2),
+    currency: currencyValue(quote.currency) ?? position.currency,
     name: quote.name ?? position.name,
     priceStatus,
     priceUpdatedAt: quote.fetchedAt,
@@ -304,6 +406,16 @@ function sectorSourceValue(value: unknown): SectorSource | undefined {
   return value === "curated" || value === "provider" || value === "unknown"
     ? value
     : undefined;
+}
+
+function priceStatusValue(value: unknown): PriceStatus | undefined {
+  return value === "live" || value === "cached" || value === "fallback"
+    ? value
+    : undefined;
+}
+
+function currencyValue(value: unknown): PortfolioPosition["currency"] | undefined {
+  return value === "THB" || value === "USD" ? value : undefined;
 }
 
 function roundTo(value: number, decimals: number): number {

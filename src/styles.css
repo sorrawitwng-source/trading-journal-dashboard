@@ -197,11 +197,30 @@ button {
   background: var(--panel-strong);
 }
 
+.summary-area {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.currency-note {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 14px;
+  color: var(--muted-text);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.currency-note strong {
+  color: var(--text);
+}
+
 .summary-strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
-  margin-bottom: 16px;
 }
 
 .summary-item,
@@ -323,6 +342,13 @@ button {
   color: var(--negative);
   font-size: 0.8rem;
   font-weight: 700;
+}
+
+.field-help {
+  color: var(--muted-text);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .primary-button {
@@ -890,6 +916,24 @@ tbody tr:last-child td {
   display: grid;
   gap: 5px;
   min-width: 106px;
+}
+
+.money-cell {
+  display: grid;
+  gap: 4px;
+  min-width: 114px;
+}
+
+.money-cell > span {
+  display: block;
+}
+
+.money-cell small {
+  color: var(--muted-text);
+  font-size: 0.74rem;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .stacked-cell {
