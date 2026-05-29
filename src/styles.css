@@ -681,7 +681,8 @@ button {
 }
 
 .idea-row strong,
-.idea-row span {
+.idea-row span,
+.idea-row small {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -694,6 +695,11 @@ button {
 .idea-row span {
   color: var(--muted-text);
   font-size: 0.76rem;
+}
+
+.idea-row small {
+  color: var(--muted-text);
+  font-size: 0.72rem;
 }
 
 .idea-row__meta {
@@ -720,6 +726,12 @@ button {
   color: var(--button-text);
   background: var(--accent);
   font-size: 0.82rem;
+}
+
+.idea-research {
+  grid-column: 1 / -1;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
 }
 
 .idea-empty {
@@ -836,7 +848,7 @@ button {
 
 table {
   width: 100%;
-  min-width: 1280px;
+  min-width: 1420px;
   border-collapse: collapse;
 }
 
@@ -880,6 +892,12 @@ tbody tr:last-child td {
   min-width: 106px;
 }
 
+.stacked-cell {
+  display: grid;
+  gap: 5px;
+  min-width: 104px;
+}
+
 .price-status {
   width: fit-content;
   padding: 3px 7px;
@@ -906,6 +924,73 @@ tbody tr:last-child td {
 .price-status--fallback {
   border-color: color-mix(in srgb, var(--warning) 44%, var(--border));
   color: var(--warning);
+}
+
+.data-badge {
+  width: fit-content;
+  padding: 3px 7px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  background: var(--panel-strong);
+  font-size: 0.68rem;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.data-badge--complete,
+.data-badge--provider {
+  border-color: color-mix(in srgb, var(--positive) 45%, var(--border));
+  color: var(--positive);
+}
+
+.data-badge--partial,
+.data-badge--curated {
+  border-color: color-mix(in srgb, var(--blue) 45%, var(--border));
+  color: var(--blue);
+}
+
+.data-badge--limited {
+  border-color: color-mix(in srgb, var(--warning) 44%, var(--border));
+  color: var(--warning);
+}
+
+.data-badge--no-data,
+.data-badge--unknown {
+  border-color: color-mix(in srgb, var(--negative) 36%, var(--border));
+  color: var(--muted-text);
+}
+
+.score-details {
+  min-width: 150px;
+}
+
+.score-details summary,
+.idea-research summary {
+  color: var(--text);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.score-details div,
+.idea-research {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--muted-text);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.score-details p,
+.idea-research p {
+  margin: 0;
+}
+
+.score-details span,
+.idea-research span {
+  display: block;
 }
 
 .table-action {

@@ -32,7 +32,8 @@ describe("createPosition", () => {
       currentPrice: 10,
       quantity: 0,
       score: null,
-      riskLevel: "Medium",
+      riskLevel: "No data",
+      dataQuality: "no-data",
       isCustom: true,
     });
   });

@@ -5,6 +5,7 @@ const require = createRequire(import.meta.url);
 const { _test } = require("./quote.cjs") as {
   _test: {
     parseFinnhubQuote: (payload: unknown, fallbackSymbol: string) => unknown;
+    parseFinnhubProfile: (payload: unknown) => unknown;
     parseStooqCsvQuote: (payload: string, fallbackSymbol: string) => unknown;
     toFinnhubSymbol: (symbol: string) => string;
     toStooqSymbol: (symbol: string) => string;
@@ -47,6 +48,20 @@ describe("quote provider helpers", () => {
       price: 261.74,
       providerSymbol: "aapl.us",
       source: "stooq",
+    });
+  });
+
+  it("parses Finnhub profile payloads", () => {
+    expect(
+      _test.parseFinnhubProfile({
+        finnhubIndustry: "Technology",
+        name: "Apple Inc",
+        ticker: "AAPL",
+      }),
+    ).toEqual({
+      name: "Apple Inc",
+      sector: "Technology",
+      sectorSource: "provider",
     });
   });
 });

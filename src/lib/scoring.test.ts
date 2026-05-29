@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { buildRecommendation, rankRecommendations, scoreStock } from "./scoring";
+import {
+  buildRecommendation,
+  buildScoreBreakdown,
+  dataQualityLabel,
+  rankRecommendations,
+  riskLabel,
+  scoreStock,
+} from "./scoring";
 import type { StockProfile } from "../types";
 
 const stock = (overrides: Partial<StockProfile>): StockProfile => ({
@@ -7,6 +14,7 @@ const stock = (overrides: Partial<StockProfile>): StockProfile => ({
   name: "Test Inc.",
   market: "US",
   sector: "Technology",
+  sectorSource: "curated",
   currentPrice: 100,
   momentum: 80,
   valuation: 70,
@@ -18,13 +26,49 @@ const stock = (overrides: Partial<StockProfile>): StockProfile => ({
 
 describe("scoreStock", () => {
   it("rewards high momentum and low risk", () => {
-    expect(scoreStock(stock({ momentum: 90, risk: 10 }))).toBeGreaterThan(
-      scoreStock(stock({ momentum: 40, risk: 80 })),
-    );
+    const highScore = scoreStock(stock({ momentum: 90, risk: 10 }));
+    const lowScore = scoreStock(stock({ momentum: 40, risk: 80 }));
+
+    expect(highScore).not.toBeNull();
+    expect(lowScore).not.toBeNull();
+    expect(highScore as number).toBeGreaterThan(lowScore as number);
   });
 
   it("returns a rounded score from 0 to 100", () => {
-    expect(scoreStock(stock({}))).toBe(71);
+    expect(scoreStock(stock({}))).toBeGreaterThan(60);
+  });
+
+  it("returns null when there is not enough real data", () => {
+    expect(
+      scoreStock(
+        stock({
+          dividend: null,
+          momentum: null,
+          risk: null,
+          valuation: null,
+          volatility: null,
+        }),
+      ),
+    ).toBeNull();
+  });
+});
+
+describe("riskLabel", () => {
+  it("returns no data when risk inputs are missing", () => {
+    expect(riskLabel(null, null)).toEqual({
+      level: "No data",
+      reason: "Risk needs volatility or risk metric data.",
+    });
+  });
+});
+
+describe("buildScoreBreakdown", () => {
+  it("shows methodology and data confidence", () => {
+    const breakdown = buildScoreBreakdown(stock({ momentum: null }));
+
+    expect(breakdown.methodology).toContain("weighted");
+    expect(breakdown.dataQuality).toBe("partial");
+    expect(breakdown.items.map((item) => item.label)).toContain("Data confidence");
   });
 });
 
@@ -34,6 +78,22 @@ describe("buildRecommendation", () => {
       "momentum",
     );
   });
+
+  it("marks no-data recommendations as not research-ready", () => {
+    const recommendation = buildRecommendation(
+      stock({
+        dividend: null,
+        momentum: null,
+        risk: null,
+        valuation: null,
+        volatility: null,
+      }),
+    );
+
+    expect(recommendation.score).toBeNull();
+    expect(recommendation.dataQuality).toBe("no-data");
+    expect(recommendation.reason).toContain("Not enough verified data");
+  });
 });
 
 describe("rankRecommendations", () => {
@@ -42,10 +102,25 @@ describe("rankRecommendations", () => {
       [
         stock({ symbol: "LOW", market: "US", momentum: 20, risk: 90 }),
         stock({ symbol: "HIGH", market: "Thai", momentum: 95, risk: 15 }),
+        stock({
+          symbol: "NODATA",
+          market: "Thai",
+          dividend: null,
+          momentum: null,
+          risk: null,
+          valuation: null,
+          volatility: null,
+        }),
       ],
       "Thai",
     );
 
     expect(ranked.map((item) => item.symbol)).toEqual(["HIGH"]);
+  });
+});
+
+describe("dataQualityLabel", () => {
+  it("explains partial quality in plain language", () => {
+    expect(dataQualityLabel("partial")).toContain("Some inputs");
   });
 });

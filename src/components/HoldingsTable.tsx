@@ -117,6 +117,7 @@ export function HoldingsTable({
                 <th>{text.currentPrice}</th>
                 <th>{text.currentValue}</th>
                 <th>{text.estimatedProfitLoss}</th>
+                <th>{text.data}</th>
                 <th>{text.score}</th>
                 <th>{text.risk}</th>
                 <th>{text.actions}</th>
@@ -142,7 +143,18 @@ export function HoldingsTable({
                     </td>
                     <td>{row.name}</td>
                     <td>{row.market}</td>
-                    <td>{row.sector}</td>
+                    <td>
+                      <div className="stacked-cell">
+                        <span>{row.sector}</span>
+                        <span
+                          className={`data-badge data-badge--${
+                            row.sectorSource ?? "unknown"
+                          }`}
+                        >
+                          {sectorSourceLabel(row.sectorSource)}
+                        </span>
+                      </div>
+                    </td>
                     <td>
                       {isEditing ? (
                         <EditableCell
@@ -190,8 +202,34 @@ export function HoldingsTable({
                         {percentFormatter.format(row.profitLossPercent)}%)
                       </span>
                     </td>
-                    <td>{row.score ?? "N/A"}</td>
-                    <td>{row.riskLevel}</td>
+                    <td>
+                      <span
+                        className={`data-badge data-badge--${
+                          row.dataQuality ?? "no-data"
+                        }`}
+                      >
+                        {dataQualityLabel(row.dataQuality)}
+                      </span>
+                    </td>
+                    <td>
+                      {row.scoreBreakdown ? (
+                        <details className="score-details">
+                          <summary>{row.score ?? "N/A"}</summary>
+                          <div>
+                            <p>{row.scoreBreakdown.methodology}</p>
+                            {row.scoreBreakdown.items.map((item) => (
+                              <span key={item.label}>
+                                {item.label}:{" "}
+                                {item.available ? item.value?.toFixed(0) : "No data"}
+                              </span>
+                            ))}
+                          </div>
+                        </details>
+                      ) : (
+                        "N/A"
+                      )}
+                    </td>
+                    <td title={row.riskReason ?? undefined}>{row.riskLevel}</td>
                     <td>
                       {isEditing ? (
                         <div className="row-actions" aria-label={`Edit ${row.symbol}`}>
@@ -263,6 +301,34 @@ function formatMarketCurrency(
   return currencyFormatters[currency].format(value);
 }
 
+function dataQualityLabel(status: PortfolioPosition["dataQuality"]): string {
+  if (status === "complete") {
+    return "Complete";
+  }
+
+  if (status === "partial") {
+    return "Partial";
+  }
+
+  if (status === "limited") {
+    return "Limited";
+  }
+
+  return "No data";
+}
+
+function sectorSourceLabel(source: PortfolioPosition["sectorSource"]): string {
+  if (source === "provider") {
+    return "Provider";
+  }
+
+  if (source === "curated") {
+    return "Curated";
+  }
+
+  return "Unknown";
+}
+
 const labels = {
   en: {
     actions: "Actions",
@@ -270,6 +336,7 @@ const labels = {
     cost: "Cost",
     currentPrice: "Current price",
     currentValue: "Current value",
+    data: "Data",
     emptyDescription: "Add a symbol, buy price, and quantity to start tracking performance.",
     emptyTitle: "No positions yet",
     eyebrow: "Portfolio",
@@ -292,6 +359,7 @@ const labels = {
     cost: "ต้นทุน",
     currentPrice: "ราคาปัจจุบัน",
     currentValue: "มูลค่าปัจจุบัน",
+    data: "ข้อมูล",
     emptyDescription: "เพิ่มชื่อหุ้น ราคาซื้อ และจำนวนหุ้นเพื่อเริ่มติดตามพอร์ต",
     emptyTitle: "ยังไม่มีรายการหุ้น",
     eyebrow: "พอร์ต",

@@ -17,6 +17,25 @@ describe("stockUniverse", () => {
     expect(bySymbol("ASML")).toMatchObject({ market: "US" });
   });
 
+  it("does not invent sector or scoring metrics for stocks without curated data", () => {
+    expect(bySymbol("AMAT")).toMatchObject({
+      sector: "Unknown",
+      sectorSource: "unknown",
+      momentum: null,
+      valuation: null,
+      volatility: null,
+      dividend: null,
+      risk: null,
+    });
+  });
+
+  it("keeps curated data explicitly marked", () => {
+    expect(bySymbol("PTTGC")).toMatchObject({
+      sector: "Petrochemicals",
+      sectorSource: "curated",
+    });
+  });
+
   it("expands beyond the original small mock list", () => {
     expect(stockUniverse.length).toBeGreaterThanOrEqual(600);
   });

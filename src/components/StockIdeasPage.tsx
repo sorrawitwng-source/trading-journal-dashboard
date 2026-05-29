@@ -80,12 +80,26 @@ function IdeaCategoryCard({
               <div>
                 <strong>{stock.symbol}</strong>
                 <span>{stock.name}</span>
+                <small>{stock.reason}</small>
               </div>
               <div className="idea-row__meta">
                 <span>{stock.market}</span>
                 <span>{stock.riskLevel}</span>
-                <b>{stock.score}</b>
+                <span>{stock.dataQuality}</span>
+                <b>{stock.score ?? "N/A"}</b>
               </div>
+              <details className="idea-research">
+                <summary>Research notes</summary>
+                <p>{stock.researchPrompt}</p>
+                <p>{stock.keyRisk}</p>
+                <div>
+                  {stock.scoreBreakdown.items.map((item) => (
+                    <span key={item.label}>
+                      {item.label}: {item.available ? item.value?.toFixed(0) : "No data"}
+                    </span>
+                  ))}
+                </div>
+              </details>
             </div>
           ))}
         </div>

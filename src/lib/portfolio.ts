@@ -1,5 +1,5 @@
 import type { PortfolioPosition, StockProfile } from "../types";
-import { riskLabel, scoreStock } from "./scoring";
+import { buildScoreBreakdown, riskLabel, scoreStock } from "./scoring";
 
 interface PortfolioSummary {
   totalCost: number;
@@ -27,15 +27,33 @@ export function createPosition(
       name: normalizedSymbol,
       market: "Custom",
       sector: "Unclassified",
+      sectorSource: "unknown",
       buyPrice,
       quantity,
       currentPrice: buyPrice,
       priceStatus: "fallback",
+      dataQuality: "no-data",
       score: null,
-      riskLevel: "Medium",
+      scoreBreakdown: buildScoreBreakdown({
+        currentPrice: buyPrice,
+        dividend: null,
+        market: "Custom",
+        momentum: null,
+        name: normalizedSymbol,
+        risk: null,
+        sector: "Unclassified",
+        sectorSource: "unknown",
+        symbol: normalizedSymbol,
+        valuation: null,
+        volatility: null,
+      }),
+      riskLevel: "No data",
+      riskReason: "Custom symbols need verified market data before risk can be assessed.",
       isCustom: true,
     };
   }
+  const scoreBreakdown = buildScoreBreakdown(stock);
+  const risk = riskLabel(stock.risk, stock.volatility);
 
   return {
     id: createPositionId(stock.symbol),
@@ -43,12 +61,16 @@ export function createPosition(
     name: stock.name,
     market: stock.market,
     sector: stock.sector,
+    sectorSource: stock.sectorSource,
     buyPrice,
     quantity,
     currentPrice: stock.currentPrice,
     priceStatus: "fallback",
+    dataQuality: scoreBreakdown.dataQuality,
     score: scoreStock(stock),
-    riskLevel: riskLabel(stock.risk),
+    scoreBreakdown,
+    riskLevel: risk.level,
+    riskReason: risk.reason,
     isCustom: false,
   };
 }

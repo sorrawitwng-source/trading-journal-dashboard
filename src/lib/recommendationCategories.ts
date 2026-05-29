@@ -26,7 +26,7 @@ const categoryDefinitions: CategoryDefinition[] = [
     id: "dividend",
     label: "Dividend",
     description: "Higher income names with stronger dividend metrics.",
-    matches: (stock) => stock.dividend >= 55,
+    matches: (stock) => stock.dividend !== null && stock.dividend >= 55,
   },
   sectorCategory("real-estate", "Real Estate", "Property developers, REIT-like names, and land-linked businesses.", [
     "property",
@@ -71,13 +71,15 @@ const categoryDefinitions: CategoryDefinition[] = [
     id: "growth",
     label: "Growth / Momentum",
     description: "Stocks with strong momentum and above-average score potential.",
-    matches: (stock) => stock.momentum >= 68,
+    matches: (stock) => stock.momentum !== null && stock.momentum >= 68,
   },
   {
     id: "low-risk",
     label: "Low Risk",
     description: "Lower-risk names with steadier volatility profiles.",
-    matches: (stock) => stock.risk <= 35 || stock.volatility <= 32,
+    matches: (stock) =>
+      (stock.risk !== null && stock.risk <= 35) ||
+      (stock.volatility !== null && stock.volatility <= 32),
   },
   {
     id: "thai",
@@ -108,6 +110,10 @@ export function buildRecommendationCategories(
     stocks: filteredStocks
       .filter(category.matches)
       .map(buildRecommendation)
+      .filter(
+        (stock): stock is StockRecommendation & { score: number } =>
+          stock.score !== null,
+      )
       .sort((left, right) => right.score - left.score)
       .slice(0, 6),
   }));

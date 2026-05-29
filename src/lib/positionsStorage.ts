@@ -58,10 +58,18 @@ function isPortfolioPosition(value: unknown): value is PortfolioPosition {
       position.priceStatus === "fallback") &&
     (position.priceUpdatedAt === undefined ||
       typeof position.priceUpdatedAt === "string") &&
+    (position.dataQuality === undefined ||
+      position.dataQuality === "complete" ||
+      position.dataQuality === "partial" ||
+      position.dataQuality === "limited" ||
+      position.dataQuality === "no-data") &&
     (typeof position.score === "number" || position.score === null) &&
     (position.riskLevel === "Low" ||
       position.riskLevel === "Medium" ||
-      position.riskLevel === "High") &&
+      position.riskLevel === "High" ||
+      position.riskLevel === "No data") &&
+    (position.riskReason === undefined ||
+      typeof position.riskReason === "string") &&
     typeof position.isCustom === "boolean"
   );
 }

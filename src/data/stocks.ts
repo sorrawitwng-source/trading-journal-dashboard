@@ -169,33 +169,6 @@ const usOverrides: Record<string, StockOverride> = {
   },
 };
 
-const thaiSectors = [
-  "Energy",
-  "Banking",
-  "Commerce",
-  "Property",
-  "Food & Beverage",
-  "Transportation",
-  "Health Care",
-  "Telecommunications",
-  "Finance",
-  "Industrial",
-];
-
-const usSectors = [
-  "Technology",
-  "Financials",
-  "Health Care",
-  "Consumer Discretionary",
-  "Communication Services",
-  "Industrials",
-  "Consumer Staples",
-  "Energy",
-  "Utilities",
-  "Real Estate",
-  "Materials",
-];
-
 export const stockUniverse: StockProfile[] = buildStockUniverse();
 
 function buildStockUniverse(): StockProfile[] {
@@ -239,13 +212,14 @@ function createStockProfile(
     symbol,
     name: override.name ?? defaultName(symbol, market),
     market,
-    sector: override.sector ?? defaultSector(symbol, market),
-    currentPrice: override.currentPrice ?? mockPrice(symbol, market),
-    momentum: override.momentum ?? mockMetric(symbol, "momentum", 35, 92),
-    valuation: override.valuation ?? mockMetric(symbol, "valuation", 28, 86),
-    volatility: override.volatility ?? mockMetric(symbol, "volatility", 22, 78),
-    dividend: override.dividend ?? mockMetric(symbol, "dividend", 0, 82),
-    risk: override.risk ?? mockMetric(symbol, "risk", 18, 84),
+    sector: override.sector ?? "Unknown",
+    sectorSource: override.sector ? "curated" : "unknown",
+    currentPrice: override.currentPrice ?? 0,
+    momentum: override.momentum ?? null,
+    valuation: override.valuation ?? null,
+    volatility: override.volatility ?? null,
+    dividend: override.dividend ?? null,
+    risk: override.risk ?? null,
   };
 }
 
@@ -253,41 +227,4 @@ function defaultName(symbol: string, market: Market): string {
   return market === "Thai"
     ? `${symbol} Public Company Limited`
     : `${symbol} Corporation`;
-}
-
-function defaultSector(symbol: string, market: Market): string {
-  const sectors = market === "Thai" ? thaiSectors : usSectors;
-
-  return sectors[hashSymbol(symbol) % sectors.length];
-}
-
-function mockPrice(symbol: string, market: Market): number {
-  const hash = hashSymbol(`${symbol}-price`);
-  const base = market === "Thai" ? 5 + (hash % 280) : 12 + (hash % 720);
-  const cents = (hash % 100) / 100;
-
-  return roundTo(base + cents, 2);
-}
-
-function mockMetric(
-  symbol: string,
-  salt: string,
-  minValue: number,
-  maxValue: number,
-): number {
-  const range = maxValue - minValue + 1;
-
-  return minValue + (hashSymbol(`${symbol}-${salt}`) % range);
-}
-
-function hashSymbol(value: string): number {
-  return value.split("").reduce((hash, char) => {
-    return (hash * 31 + char.charCodeAt(0)) >>> 0;
-  }, 17);
-}
-
-function roundTo(value: number, decimals: number): number {
-  const multiplier = 10 ** decimals;
-
-  return Math.round(value * multiplier) / multiplier;
 }

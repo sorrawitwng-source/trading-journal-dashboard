@@ -1,14 +1,30 @@
 export type Market = "Thai" | "US" | "Custom";
 export type MarketFilter = "All" | "Thai" | "US";
+export type DataQuality = "complete" | "limited" | "no-data" | "partial";
 export type PriceStatus = "cached" | "fallback" | "live";
-export type RiskLevel = "Low" | "Medium" | "High";
+export type RiskLevel = "Low" | "Medium" | "High" | "No data";
+export type SectorSource = "curated" | "provider" | "unknown";
 
 export interface StockMetrics {
-  momentum: number;
-  valuation: number;
-  volatility: number;
-  dividend: number;
-  risk: number;
+  momentum: number | null;
+  valuation: number | null;
+  volatility: number | null;
+  dividend: number | null;
+  risk: number | null;
+}
+
+export interface ScoreBreakdownItem {
+  available: boolean;
+  contribution: number;
+  label: string;
+  value: number | null;
+  weight: number;
+}
+
+export interface ScoreBreakdown {
+  dataQuality: DataQuality;
+  items: ScoreBreakdownItem[];
+  methodology: string;
 }
 
 export interface StockProfile extends StockMetrics {
@@ -16,6 +32,7 @@ export interface StockProfile extends StockMetrics {
   name: string;
   market: Market;
   sector: string;
+  sectorSource: SectorSource;
   currentPrice: number;
 }
 
@@ -25,13 +42,17 @@ export interface PortfolioPosition {
   name: string;
   market: Market;
   sector: string;
+  sectorSource?: SectorSource;
   buyPrice: number;
   quantity: number;
   currentPrice: number;
   priceStatus?: PriceStatus;
   priceUpdatedAt?: string;
+  dataQuality?: DataQuality;
   score: number | null;
+  scoreBreakdown?: ScoreBreakdown;
   riskLevel: RiskLevel;
+  riskReason?: string;
   isCustom: boolean;
 }
 

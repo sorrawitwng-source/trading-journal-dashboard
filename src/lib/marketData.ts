@@ -1,11 +1,20 @@
-import type { Market, PortfolioPosition, PriceStatus } from "../types";
+import type {
+  Market,
+  PortfolioPosition,
+  PriceStatus,
+  SectorSource,
+} from "../types";
 
 export interface MarketQuote {
   currency?: string;
   exchangeName?: string;
   fetchedAt?: string;
+  name?: string;
   price: number;
   providerSymbol: string;
+  sector?: string;
+  sectorSource?: SectorSource;
+  source?: string;
 }
 
 export interface CachedQuote extends MarketQuote {
@@ -205,8 +214,11 @@ function applyQuote(
   return {
     ...position,
     currentPrice: roundTo(quote.price, 2),
+    name: quote.name ?? position.name,
     priceStatus,
     priceUpdatedAt: quote.fetchedAt,
+    sector: quote.sector ?? position.sector,
+    sectorSource: quote.sectorSource ?? position.sectorSource,
   };
 }
 
@@ -234,8 +246,12 @@ function parseFlatQuote(
   return {
     currency: stringValue(record?.currency),
     exchangeName: stringValue(record?.exchangeName),
+    name: stringValue(record?.name),
     price,
     providerSymbol: stringValue(record?.providerSymbol) ?? fallbackSymbol,
+    sector: stringValue(record?.sector),
+    sectorSource: sectorSourceValue(record?.sectorSource),
+    source: stringValue(record?.source),
   };
 }
 
@@ -282,6 +298,12 @@ function finiteNumber(value: unknown): number | null {
 
 function stringValue(value: unknown): string | undefined {
   return typeof value === "string" && value ? value : undefined;
+}
+
+function sectorSourceValue(value: unknown): SectorSource | undefined {
+  return value === "curated" || value === "provider" || value === "unknown"
+    ? value
+    : undefined;
 }
 
 function roundTo(value: number, decimals: number): number {

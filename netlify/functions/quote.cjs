@@ -1,5 +1,6 @@
 const yahooChartBaseUrl = "https://query1.finance.yahoo.com/v8/finance/chart";
 const finnhubQuoteUrl = "https://finnhub.io/api/v1/quote";
+const finnhubProfileUrl = "https://finnhub.io/api/v1/stock/profile2";
 const stooqQuoteUrl = "https://stooq.com/q/l/";
 
 exports.handler = async (event) => {
@@ -66,7 +67,37 @@ async function fetchFinnhubQuote(symbol) {
     return null;
   }
 
-  return parseFinnhubQuote(await response.json(), toFinnhubSymbol(symbol));
+  const quote = parseFinnhubQuote(await response.json(), toFinnhubSymbol(symbol));
+
+  if (!quote) {
+    return null;
+  }
+
+  const profile = await fetchFinnhubProfile(symbol, apiKey);
+
+  return {
+    ...quote,
+    ...profile,
+  };
+}
+
+async function fetchFinnhubProfile(symbol, apiKey) {
+  const response = await fetch(
+    `${finnhubProfileUrl}?symbol=${encodeURIComponent(toFinnhubSymbol(symbol))}`,
+    {
+      headers: {
+        accept: "application/json",
+        "user-agent": "Mozilla/5.0 Netlify Function",
+        "x-finnhub-token": apiKey,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    return {};
+  }
+
+  return parseFinnhubProfile(await response.json()) ?? {};
 }
 
 async function fetchYahooQuote(symbol) {
@@ -121,6 +152,20 @@ function parseFinnhubQuote(payload, fallbackSymbol) {
     price,
     providerSymbol: fallbackSymbol,
     source: "finnhub",
+  };
+}
+
+function parseFinnhubProfile(payload) {
+  const sector = stringValue(payload?.finnhubIndustry);
+  const name = stringValue(payload?.name);
+
+  if (!sector && !name) {
+    return null;
+  }
+
+  return {
+    ...(name ? { name } : {}),
+    ...(sector ? { sector, sectorSource: "provider" } : {}),
   };
 }
 
@@ -242,6 +287,7 @@ function jsonResponse(statusCode, body) {
 }
 
 exports._test = {
+  parseFinnhubProfile,
   parseFinnhubQuote,
   parseStooqCsvQuote,
   toFinnhubSymbol,

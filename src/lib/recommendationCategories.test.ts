@@ -86,6 +86,7 @@ function stock(
     market,
     name: `${symbol} Public Company Limited`,
     sector,
+    sectorSource: "curated",
     symbol,
   };
 }
