@@ -3,6 +3,7 @@ import type { Currency, PortfolioPosition } from "../types";
 import {
   type AnalyticsBucket,
   type AnalyticsHolding,
+  type MonthlyPerformance,
   type RiskSignal,
   buildPortfolioAnalytics,
 } from "../lib/analytics";
@@ -26,6 +27,7 @@ export function AnalyticsPage({
   usdThbRate,
 }: AnalyticsPageProps) {
   const text = labels[language];
+  const monthText = monthlyLabels[language];
   const analytics = buildPortfolioAnalytics(positions, {
     baseCurrency,
     usdThbRate,
@@ -76,6 +78,13 @@ export function AnalyticsPage({
         ))}
       </section>
 
+      <MonthlyPerformanceReport
+        language={language}
+        moneyFormatter={moneyFormatter}
+        months={analytics.monthlyPerformance}
+        text={monthText}
+      />
+
       <section className="analytics-grid">
         <AnalyticsPanel title={text.sectorExposure}>
           <AllocationBars
@@ -115,6 +124,135 @@ export function AnalyticsPage({
           />
         </AnalyticsPanel>
       </section>
+    </div>
+  );
+}
+
+function MonthlyPerformanceReport({
+  language,
+  moneyFormatter,
+  months,
+  text,
+}: {
+  language: "en" | "th";
+  moneyFormatter: Intl.NumberFormat;
+  months: MonthlyPerformance[];
+  text: (typeof monthlyLabels)["en"];
+}) {
+  return (
+    <section className="panel monthly-report" aria-labelledby="monthly-report-title">
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">{text.eyebrow}</p>
+          <h2 id="monthly-report-title">{text.title}</h2>
+        </div>
+      </div>
+      {months.length === 0 ? (
+        <p className="analytics-muted">{text.empty}</p>
+      ) : (
+        <div className="monthly-report__list">
+          {months.slice(0, 6).map((month) => (
+            <MonthlyPerformanceCard
+              key={month.key}
+              language={language}
+              moneyFormatter={moneyFormatter}
+              month={month}
+              text={text}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function MonthlyPerformanceCard({
+  language,
+  moneyFormatter,
+  month,
+  text,
+}: {
+  language: "en" | "th";
+  moneyFormatter: Intl.NumberFormat;
+  month: MonthlyPerformance;
+  text: (typeof monthlyLabels)["en"];
+}) {
+  const tone =
+    month.profitLoss > 0 ? "positive" : month.profitLoss < 0 ? "negative" : "neutral";
+
+  return (
+    <article className="monthly-report-card">
+      <div className="monthly-report-card__header">
+        <div>
+          <span>{formatMonthKey(month.key, language)}</span>
+          <strong className={`metric-value metric-value--${tone}`}>
+            {moneyFormatter.format(month.profitLoss)}
+          </strong>
+        </div>
+        <b>{percentFormatter.format(month.profitLossPercent)}%</b>
+      </div>
+
+      <div className="monthly-report-card__metrics">
+        <MetricPill label={text.trades} value={String(month.tradeCount)} />
+        <MetricPill label={text.winRate} value={`${percentFormatter.format(month.winRate)}%`} />
+        <MetricPill label={text.open} value={String(month.openCount)} />
+        <MetricPill label={text.sold} value={String(month.soldCount)} />
+      </div>
+
+      <div className="monthly-report-card__extremes">
+        <TradeSnapshot
+          holding={month.bestTrade}
+          label={text.bestTrade}
+          moneyFormatter={moneyFormatter}
+        />
+        <TradeSnapshot
+          holding={month.worstTrade}
+          label={text.worstTrade}
+          moneyFormatter={moneyFormatter}
+        />
+      </div>
+    </article>
+  );
+}
+
+function MetricPill({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="monthly-report-pill">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function TradeSnapshot({
+  holding,
+  label,
+  moneyFormatter,
+}: {
+  holding: AnalyticsHolding | null;
+  label: string;
+  moneyFormatter: Intl.NumberFormat;
+}) {
+  const tone =
+    holding && holding.profitLoss > 0
+      ? "positive"
+      : holding && holding.profitLoss < 0
+        ? "negative"
+        : "neutral";
+
+  return (
+    <div className="monthly-report-trade">
+      <span>{label}</span>
+      {holding ? (
+        <strong>
+          {holding.symbol}
+          <b className={`metric-value metric-value--${tone}`}>
+            {moneyFormatter.format(holding.profitLoss)}
+          </b>
+        </strong>
+      ) : (
+        <strong>-</strong>
+      )}
     </div>
   );
 }
@@ -240,6 +378,42 @@ function currencyFormatterFor(currency: Currency): Intl.NumberFormat {
     style: "currency",
   });
 }
+
+function formatMonthKey(key: string, language: "en" | "th"): string {
+  if (!/^\d{4}-\d{2}$/.test(key)) {
+    return key;
+  }
+
+  return new Intl.DateTimeFormat(language === "th" ? "th-TH-u-ca-gregory" : "en-US", {
+    month: "short",
+    year: "numeric",
+  }).format(new Date(`${key}-01T00:00:00`));
+}
+
+const monthlyLabels = {
+  en: {
+    bestTrade: "Best",
+    empty: "Monthly performance appears after you add dated holdings.",
+    eyebrow: "Monthly report",
+    open: "Open",
+    sold: "Sold",
+    title: "Performance by Trade Month",
+    trades: "Trades",
+    winRate: "Win rate",
+    worstTrade: "Worst",
+  },
+  th: {
+    bestTrade: "ดีที่สุด",
+    empty: "รายงานรายเดือนจะแสดงหลังจากเพิ่มหุ้นพร้อมวันที่ซื้อ",
+    eyebrow: "รายงานรายเดือน",
+    open: "ถืออยู่",
+    sold: "ขายแล้ว",
+    title: "ผลลัพธ์ตามเดือนที่ซื้อ",
+    trades: "รายการ",
+    winRate: "Win rate",
+    worstTrade: "แย่ที่สุด",
+  },
+};
 
 const labels = {
   en: {

@@ -3,6 +3,7 @@ import {
   convertCurrency,
   positionCurrency,
   positionExitPrice,
+  positionStatus,
   unrealizedProfitLoss,
 } from "./portfolio";
 
@@ -13,6 +14,7 @@ export interface AnalyticsBucket {
 }
 
 export interface AnalyticsHolding {
+  buyDate: string;
   cost: number;
   currency: Currency;
   market: PortfolioPosition["market"];
@@ -21,9 +23,24 @@ export interface AnalyticsHolding {
   profitLossPercent: number;
   score: number | null;
   sector: string;
+  status: "open" | "sold";
   symbol: string;
   value: number;
   weight: number;
+}
+
+export interface MonthlyPerformance {
+  bestTrade: AnalyticsHolding | null;
+  key: string;
+  openCount: number;
+  profitLoss: number;
+  profitLossPercent: number;
+  soldCount: number;
+  totalCost: number;
+  totalValue: number;
+  tradeCount: number;
+  winRate: number;
+  worstTrade: AnalyticsHolding | null;
 }
 
 export interface RiskSignal {
@@ -37,6 +54,7 @@ export interface PortfolioAnalytics {
   dataQuality: AnalyticsBucket[];
   holdings: AnalyticsHolding[];
   marketExposure: AnalyticsBucket[];
+  monthlyPerformance: MonthlyPerformance[];
   riskSignals: RiskSignal[];
   sectorExposure: AnalyticsBucket[];
   topContributors: AnalyticsHolding[];
@@ -78,6 +96,7 @@ export function buildPortfolioAnalytics(
       );
 
       return {
+        buyDate: position.buyDate,
         cost,
         currency,
         market: position.market,
@@ -86,6 +105,7 @@ export function buildPortfolioAnalytics(
         profitLossPercent: originalProfitLoss.percent,
         score: position.score,
         sector: position.sector,
+        status: positionStatus(position),
         symbol: position.symbol,
         value,
         weight: 0,
@@ -119,6 +139,7 @@ export function buildPortfolioAnalytics(
     ),
     holdings: weightedHoldings,
     marketExposure: bucketBy(weightedHoldings, (holding) => holding.market),
+    monthlyPerformance: buildMonthlyPerformance(weightedHoldings),
     riskSignals: buildRiskSignals(weightedHoldings),
     sectorExposure: bucketBy(weightedHoldings, (holding) => holding.sector),
     topContributors: [...weightedHoldings]
@@ -131,6 +152,54 @@ export function buildPortfolioAnalytics(
     totalProfitLoss,
     totalValue,
   };
+}
+
+function buildMonthlyPerformance(holdings: AnalyticsHolding[]): MonthlyPerformance[] {
+  const groups = new Map<string, AnalyticsHolding[]>();
+
+  for (const holding of holdings) {
+    const key = monthKeyFromDate(holding.buyDate);
+    const group = groups.get(key) ?? [];
+
+    group.push(holding);
+    groups.set(key, group);
+  }
+
+  return Array.from(groups.entries())
+    .map(([key, monthHoldings]) => {
+      const totalCost = roundTo(
+        monthHoldings.reduce((sum, holding) => sum + holding.cost, 0),
+        2,
+      );
+      const totalValue = roundTo(
+        monthHoldings.reduce((sum, holding) => sum + holding.value, 0),
+        2,
+      );
+      const profitLoss = roundTo(totalValue - totalCost, 2);
+      const sortedByProfitLoss = [...monthHoldings].sort(
+        (left, right) => right.profitLoss - left.profitLoss,
+      );
+      const winCount = monthHoldings.filter((holding) => holding.profitLoss > 0).length;
+
+      return {
+        bestTrade: sortedByProfitLoss[0] ?? null,
+        key,
+        openCount: monthHoldings.filter((holding) => holding.status === "open").length,
+        profitLoss,
+        profitLossPercent:
+          totalCost === 0 ? 0 : roundTo((profitLoss / totalCost) * 100, 2),
+        soldCount: monthHoldings.filter((holding) => holding.status === "sold").length,
+        totalCost,
+        totalValue,
+        tradeCount: monthHoldings.length,
+        winRate:
+          monthHoldings.length === 0
+            ? 0
+            : roundTo((winCount / monthHoldings.length) * 100, 2),
+        worstTrade: sortedByProfitLoss.at(-1) ?? null,
+      };
+    })
+    .sort((left, right) => right.key.localeCompare(left.key));
 }
 
 function buildRiskSignals(holdings: AnalyticsHolding[]): RiskSignal[] {
@@ -198,6 +267,10 @@ function bucketBy<T>(
       weight: total === 0 ? 0 : roundTo((value / total) * 100, 2),
     }))
     .sort((left, right) => right.value - left.value);
+}
+
+function monthKeyFromDate(value: string): string {
+  return /^\d{4}-\d{2}/.test(value) ? value.slice(0, 7) : "Unknown";
 }
 
 function formatPercent(value: number): string {
