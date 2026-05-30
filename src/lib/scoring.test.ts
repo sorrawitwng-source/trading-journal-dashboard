@@ -5,6 +5,7 @@ import {
   dataQualityLabel,
   rankRecommendations,
   riskLabel,
+  scoreComponentGuides,
   scoreStock,
 } from "./scoring";
 import type { StockProfile } from "../types";
@@ -69,6 +70,17 @@ describe("buildScoreBreakdown", () => {
     expect(breakdown.methodology).toContain("weighted");
     expect(breakdown.dataQuality).toBe("partial");
     expect(breakdown.items.map((item) => item.label)).toContain("Data confidence");
+  });
+
+  it("exposes component weights for explaining the score", () => {
+    expect(scoreComponentGuides).toEqual([
+      { key: "momentum", label: "Momentum", weight: 0.25 },
+      { key: "valuation", label: "Valuation", weight: 0.2 },
+      { key: "stability", label: "Stability", weight: 0.2 },
+      { key: "dividend", label: "Dividend", weight: 0.1 },
+      { key: "riskProfile", label: "Risk profile", weight: 0.15 },
+      { key: "dataConfidence", label: "Data confidence", weight: 0.1 },
+    ]);
   });
 });
 

@@ -22,6 +22,12 @@ export interface StockRecommendation {
   researchPrompt: string;
 }
 
+export interface ScoreComponentGuide {
+  key: string;
+  label: string;
+  weight: number;
+}
+
 interface RiskAssessment {
   level: RiskLevel;
   reason: string;
@@ -64,6 +70,11 @@ const scoringComponents = [
     weight: 0.15,
   },
 ] as const;
+
+export const scoreComponentGuides: ScoreComponentGuide[] = [
+  ...scoringComponents.map(({ key, label, weight }) => ({ key, label, weight })),
+  { key: "dataConfidence", label: "Data confidence", weight: 0.1 },
+];
 
 const clampScore = (score: number): number => Math.min(100, Math.max(0, score));
 

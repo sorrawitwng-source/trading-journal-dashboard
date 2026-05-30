@@ -8,15 +8,15 @@ const metricLabels: Record<string, Record<Language, string>> = {
   Momentum: { en: "Momentum", th: "โมเมนตัม" },
   "Risk profile": { en: "Risk profile", th: "โปรไฟล์ความเสี่ยง" },
   Stability: { en: "Stability", th: "ความนิ่งของราคา" },
-  Valuation: { en: "Valuation", th: "มูลค่าพื้นฐาน" },
+  Valuation: { en: "Valuation", th: "มูลค่าเทียบราคา" },
 };
 
 export function scoreMethodologyText(language: Language): string {
   if (language === "th") {
-    return "คะแนนเป็นการถ่วงน้ำหนักจากข้อมูลที่มี เช่น โมเมนตัม มูลค่าพื้นฐาน ความนิ่งของราคา ปันผล โปรไฟล์ความเสี่ยง และความครบของข้อมูล ถ้าข้อมูลหาย คะแนนความเชื่อมั่นจะลดลงแทนการเดาค่า";
+    return "คะแนนรวม 0-100 มาจากผลรวมของแต่ละปัจจัยแบบถ่วงน้ำหนัก: โมเมนตัม 25%, มูลค่าเทียบราคา 20%, ความนิ่งของราคา 20%, ปันผล 10%, โปรไฟล์ความเสี่ยง 15% และความครบของข้อมูล 10% ถ้าข้อมูลหาย ระบบจะไม่เดาค่า แต่ลดความมั่นใจแทน";
   }
 
-  return "Score is a weighted blend of available momentum, valuation, stability, dividend, risk profile, and data confidence inputs. Missing inputs reduce confidence instead of being guessed.";
+  return "The 0-100 score is the weighted sum of available inputs: momentum 25%, valuation 20%, stability 20%, dividend 10%, risk profile 15%, and data confidence 10%. Missing inputs are not guessed; they reduce confidence.";
 }
 
 export function metricLabel(label: string, language: Language): string {
@@ -66,14 +66,14 @@ export function recommendationReasonText(
 ): string {
   if (score === null) {
     return language === "th"
-      ? "ข้อมูลที่ตรวจสอบได้ยังไม่พอสำหรับจัดอันดับหุ้นตัวนี้"
+      ? "ข้อมูลที่ยืนยันได้ยังไม่พอสำหรับจัดอันดับหุ้นตัวนี้"
       : "Not enough verified data to rank this stock yet.";
   }
 
   const metric = metricLabel(strongestLabel ?? "verified data", language);
 
   return language === "th"
-    ? `${metric} เป็นปัจจัยบวกหลักของคะแนนนี้`
+    ? `${metric} เป็นตัวขับเคลื่อนคะแนนหลักของไอเดียนี้`
     : `Strong ${metric.toLowerCase()} is the main positive input in this score.`;
 }
 
@@ -84,14 +84,14 @@ export function researchPromptText(
 ): string {
   if (score === null) {
     return language === "th"
-      ? "ควรหาข้อมูลพื้นฐาน กลุ่มธุรกิจ ความผันผวน และปันผลที่ตรวจสอบได้ก่อนนำเข้ารายการวิจัย"
+      ? "หาข้อมูลพื้นฐาน กลุ่มธุรกิจ ความผันผวน และปันผลที่ยืนยันได้ก่อนนำเข้ารายการวิจัย"
       : "Find verified fundamentals, sector, volatility, and dividend data before making this a candidate.";
   }
 
   const metric = metricLabel(strongestLabel ?? "verified data", language);
 
   return language === "th"
-    ? `ตรวจต่อว่า ${metric} แนวโน้มกลุ่มธุรกิจ และมูลค่าพื้นฐานยังสนับสนุนคะแนนนี้อยู่หรือไม่`
+    ? `ตรวจว่า ${metric} ยังแข็งแรงจริงหรือไม่ แล้วเทียบกับแนวโน้มกลุ่มธุรกิจและมูลค่าเทียบราคา`
     : `Research whether ${metric.toLowerCase()}, sector outlook, and valuation still support the score.`;
 }
 
@@ -116,18 +116,18 @@ export function riskReasonText(
   }
 
   if (riskLevel === "No data") {
-    return "ยังประเมินความเสี่ยงไม่ได้ เพราะไม่มีข้อมูลความผันผวนหรือค่าความเสี่ยง";
+    return "ยังอ่านความเสี่ยงไม่ได้ เพราะไม่มีข้อมูลความผันผวนหรือค่าความเสี่ยง";
   }
 
   if (riskLevel === "Low") {
-    return "ค่าความเสี่ยงอยู่ในช่วงต่ำของสเกล 0-100";
+    return "ความเสี่ยงอยู่ในช่วงล่างของสเกล 0-100";
   }
 
   if (riskLevel === "Medium") {
-    return "ค่าความเสี่ยงอยู่ในช่วงกลางของสเกล 0-100";
+    return "ความเสี่ยงอยู่ในช่วงกลางของสเกล 0-100";
   }
 
-  return "ค่าความเสี่ยงอยู่ในช่วงสูงของสเกล 0-100";
+  return "ความเสี่ยงอยู่ในช่วงบนของสเกล 0-100";
 }
 
 export function strongestBreakdownItem(
