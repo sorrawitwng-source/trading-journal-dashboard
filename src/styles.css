@@ -493,6 +493,7 @@ summary {
 
 .holdings-panel {
   margin-top: 0;
+  overflow: hidden;
 }
 
 .performance-chart-card {
@@ -1258,22 +1259,37 @@ summary {
 
 .table-scroll {
   overflow-x: auto;
-  margin: 0 -2px;
-  padding: 0 2px 2px;
+  margin: 0 -6px;
+  padding: 0 6px 8px;
   scrollbar-color: color-mix(in srgb, var(--accent) 42%, var(--border)) transparent;
   scrollbar-width: thin;
 }
 
+.table-scroll::-webkit-scrollbar {
+  height: 10px;
+}
+
+.table-scroll::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--panel-strong) 68%, transparent);
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 44%, var(--border));
+}
+
 table {
   width: 100%;
-  min-width: 1740px;
+  min-width: 2040px;
   border-collapse: separate;
   border-spacing: 0;
+  table-layout: fixed;
 }
 
 th,
 td {
-  padding: 13px 12px;
+  padding: 14px 12px;
   border-bottom: 1px solid var(--border);
   text-align: left;
   vertical-align: middle;
@@ -1282,18 +1298,27 @@ td {
 th {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 3;
   color: var(--muted);
-  background: var(--panel);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 42%, var(--panel)),
+      var(--panel)
+    );
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 td {
   color: var(--text);
   font-size: 0.9rem;
-  overflow-wrap: anywhere;
+  line-height: 1.35;
+  overflow: hidden;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 tbody tr:hover {
@@ -1311,18 +1336,21 @@ tbody tr:last-child td {
 .row-actions {
   display: inline-flex;
   gap: 6px;
+  white-space: nowrap;
 }
 
 .current-price-cell {
   display: grid;
   gap: 5px;
-  min-width: 106px;
+  justify-items: end;
+  min-width: 112px;
 }
 
 .money-cell {
   display: grid;
   gap: 4px;
-  min-width: 114px;
+  justify-items: end;
+  min-width: 124px;
 }
 
 .money-cell > span {
@@ -1340,7 +1368,93 @@ tbody tr:last-child td {
 .stacked-cell {
   display: grid;
   gap: 5px;
-  min-width: 104px;
+  min-width: 0;
+}
+
+.stacked-cell > span:first-child,
+.text-truncate {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.symbol-cell {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 4px 0;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.col-symbol {
+  width: 92px;
+}
+
+.col-name {
+  width: 230px;
+}
+
+.col-date {
+  width: 118px;
+}
+
+.col-status {
+  width: 94px;
+}
+
+.col-market {
+  width: 78px;
+}
+
+.col-sector {
+  width: 180px;
+}
+
+.col-money {
+  width: 142px;
+  text-align: right;
+}
+
+.col-quantity {
+  width: 96px;
+  text-align: right;
+}
+
+.col-profit {
+  width: 170px;
+  text-align: right;
+}
+
+.col-data {
+  width: 108px;
+}
+
+.col-score {
+  width: 110px;
+}
+
+.col-risk {
+  width: 104px;
+}
+
+.col-actions {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  width: 104px;
+  background: color-mix(in srgb, var(--panel) 96%, transparent);
+  box-shadow: -12px 0 18px rgba(3, 10, 21, 0.15);
+}
+
+th.col-actions {
+  z-index: 4;
+}
+
+tbody tr:hover .col-actions {
+  background: color-mix(in srgb, var(--accent) 8%, var(--panel));
 }
 
 .price-status {
@@ -1354,6 +1468,7 @@ tbody tr:last-child td {
   font-weight: 900;
   line-height: 1;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .position-status {
@@ -1410,6 +1525,8 @@ tbody tr:last-child td {
   font-weight: 900;
   line-height: 1;
   text-transform: uppercase;
+  white-space: nowrap;
+  word-break: normal;
 }
 
 .data-badge--complete,
@@ -1436,7 +1553,7 @@ tbody tr:last-child td {
 }
 
 .score-details {
-  min-width: 150px;
+  min-width: 0;
 }
 
 .score-details summary,
@@ -1444,6 +1561,7 @@ tbody tr:last-child td {
   color: var(--text);
   font-weight: 900;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .score-details div,
@@ -1454,6 +1572,20 @@ tbody tr:last-child td {
   color: var(--muted-text);
   font-size: 0.76rem;
   line-height: 1.35;
+}
+
+.score-details[open] {
+  position: relative;
+  z-index: 5;
+}
+
+.score-details[open] div {
+  width: 240px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-strong);
+  box-shadow: var(--soft-shadow);
 }
 
 .score-details p,
@@ -1501,7 +1633,7 @@ tbody tr:last-child td {
 .table-edit-field {
   display: grid;
   gap: 4px;
-  min-width: 120px;
+  min-width: 0;
 }
 
 .table-edit-field span {
@@ -1515,7 +1647,7 @@ tbody tr:last-child td {
 
 .table-edit-field input {
   width: 100%;
-  min-height: 34px;
+  min-height: 36px;
   padding: 7px 9px;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -1649,6 +1781,6 @@ tbody tr:last-child td {
   }
 
   table {
-    min-width: 1500px;
+    min-width: 1980px;
   }
 }

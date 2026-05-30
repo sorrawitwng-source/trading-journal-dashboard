@@ -135,25 +135,25 @@ export function HoldingsTable({
           <table>
             <thead>
               <tr>
-                <th>{text.symbol}</th>
-                <th>{text.name}</th>
-                <th>{text.month}</th>
-                <th>{text.buyDate}</th>
-                <th>{text.status}</th>
-                <th>{text.market}</th>
-                <th>{text.sector}</th>
-                <th>{text.buyPrice}</th>
-                <th>{text.quantity}</th>
-                <th>{text.cost}</th>
-                <th>{text.currentPrice}</th>
-                <th>{text.sellPrice}</th>
-                <th>{text.sellDate}</th>
-                <th>{text.currentValue}</th>
-                <th>{text.estimatedProfitLoss}</th>
-                <th>{text.data}</th>
-                <th>{text.score}</th>
-                <th>{text.risk}</th>
-                <th>{text.actions}</th>
+                <th className="col-symbol">{text.symbol}</th>
+                <th className="col-name">{text.name}</th>
+                <th className="col-date">{text.month}</th>
+                <th className="col-date">{text.buyDate}</th>
+                <th className="col-status">{text.status}</th>
+                <th className="col-market">{text.market}</th>
+                <th className="col-sector">{text.sector}</th>
+                <th className="col-money">{text.buyPrice}</th>
+                <th className="col-quantity">{text.quantity}</th>
+                <th className="col-money">{text.cost}</th>
+                <th className="col-money">{text.currentPrice}</th>
+                <th className="col-money">{text.sellPrice}</th>
+                <th className="col-date">{text.sellDate}</th>
+                <th className="col-money">{text.currentValue}</th>
+                <th className="col-profit">{text.estimatedProfitLoss}</th>
+                <th className="col-data">{text.data}</th>
+                <th className="col-score">{text.score}</th>
+                <th className="col-risk">{text.risk}</th>
+                <th className="col-actions">{text.actions}</th>
               </tr>
             </thead>
             <tbody>
@@ -162,7 +162,7 @@ export function HoldingsTable({
 
                 return (
                   <tr key={row.id}>
-                    <td>
+                    <td className="col-symbol">
                       {isEditing ? (
                         <EditableCell
                           error={editDraft.errors.symbol}
@@ -171,12 +171,16 @@ export function HoldingsTable({
                           value={editDraft.symbol}
                         />
                       ) : (
-                        <strong>{row.symbol}</strong>
+                        <strong className="symbol-cell">{row.symbol}</strong>
                       )}
                     </td>
-                    <td>{row.name}</td>
-                    <td>{formatMonth(row.buyDate)}</td>
-                    <td>
+                    <td className="col-name">
+                      <span className="text-truncate" title={row.name}>
+                        {row.name}
+                      </span>
+                    </td>
+                    <td className="col-date">{formatMonth(row.buyDate)}</td>
+                    <td className="col-date">
                       {isEditing ? (
                         <EditableCell
                           error={editDraft.errors.buyDate}
@@ -189,7 +193,7 @@ export function HoldingsTable({
                         formatDate(row.buyDate)
                       )}
                     </td>
-                    <td>
+                    <td className="col-status">
                       <span
                         className={`position-status position-status--${
                           row.sellPrice !== undefined && row.sellDate ? "sold" : "open"
@@ -200,10 +204,10 @@ export function HoldingsTable({
                           : text.open}
                       </span>
                     </td>
-                    <td>{row.market}</td>
-                    <td>
+                    <td className="col-market">{row.market}</td>
+                    <td className="col-sector">
                       <div className="stacked-cell">
-                        <span>{row.sector}</span>
+                        <span title={row.sector}>{row.sector}</span>
                         <span
                           className={`data-badge data-badge--${
                             row.sectorSource ?? "unknown"
@@ -213,7 +217,7 @@ export function HoldingsTable({
                         </span>
                       </div>
                     </td>
-                    <td>
+                    <td className="col-money">
                       {isEditing ? (
                         <EditableCell
                           error={editDraft.errors.buyPrice}
@@ -226,7 +230,7 @@ export function HoldingsTable({
                         formatPositionCurrency(row.buyPrice, row)
                       )}
                     </td>
-                    <td>
+                    <td className="col-quantity">
                       {isEditing ? (
                         <EditableCell
                           error={editDraft.errors.quantity}
@@ -239,7 +243,7 @@ export function HoldingsTable({
                         formatQuantity(row.quantity)
                       )}
                     </td>
-                    <td>
+                    <td className="col-money">
                       <MoneyCell
                         primary={formatPositionCurrency(row.cost, row)}
                         secondary={formatConvertedCurrency(
@@ -249,7 +253,7 @@ export function HoldingsTable({
                         )}
                       />
                     </td>
-                    <td>
+                    <td className="col-money">
                       <div className="current-price-cell">
                         <span>{formatPositionCurrency(row.currentPrice, row)}</span>
                         <span
@@ -262,7 +266,7 @@ export function HoldingsTable({
                         </span>
                       </div>
                     </td>
-                    <td>
+                    <td className="col-money">
                       {isEditing ? (
                         <EditableCell
                           error={editDraft.errors.sellPrice}
@@ -277,7 +281,7 @@ export function HoldingsTable({
                         <span className="muted-cell">-</span>
                       )}
                     </td>
-                    <td>
+                    <td className="col-date">
                       {isEditing ? (
                         <EditableCell
                           error={editDraft.errors.sellDate}
@@ -292,7 +296,7 @@ export function HoldingsTable({
                         <span className="muted-cell">-</span>
                       )}
                     </td>
-                    <td>
+                    <td className="col-money">
                       <MoneyCell
                         primary={formatPositionCurrency(row.currentValue, row)}
                         secondary={formatConvertedCurrency(
@@ -302,7 +306,7 @@ export function HoldingsTable({
                         )}
                       />
                     </td>
-                    <td>
+                    <td className="col-profit">
                       <MoneyCell
                         primary={
                           <span className={`metric-value metric-value--${row.tone}`}>
@@ -317,7 +321,7 @@ export function HoldingsTable({
                         )}
                       />
                     </td>
-                    <td>
+                    <td className="col-data">
                       <span
                         className={`data-badge data-badge--${
                           row.dataQuality ?? "no-data"
@@ -326,7 +330,7 @@ export function HoldingsTable({
                         {dataQualityLabel(row.dataQuality)}
                       </span>
                     </td>
-                    <td>
+                    <td className="col-score">
                       {row.scoreBreakdown ? (
                         <details className="score-details">
                           <summary>{row.score ?? "N/A"}</summary>
@@ -346,8 +350,10 @@ export function HoldingsTable({
                         "N/A"
                       )}
                     </td>
-                    <td title={row.riskReason ?? undefined}>{row.riskLevel}</td>
-                    <td>
+                    <td className="col-risk" title={row.riskReason ?? undefined}>
+                      {row.riskLevel}
+                    </td>
+                    <td className="col-actions">
                       {isEditing ? (
                         <div className="row-actions" aria-label={`Edit ${row.symbol}`}>
                           <button
