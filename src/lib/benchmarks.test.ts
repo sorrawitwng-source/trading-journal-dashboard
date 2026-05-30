@@ -10,6 +10,7 @@ const basePosition: PortfolioPosition = {
   market: "US",
   sector: "Technology",
   buyPrice: 100,
+  currency: "USD",
   quantity: 3,
   currentPrice: 120,
   score: 82,
@@ -32,6 +33,27 @@ describe("portfolioPerformanceSeries", () => {
     ]);
 
     expect(values.at(-1)).toBe(50);
+  });
+
+  test("normalizes mixed currency holdings before calculating performance", () => {
+    const values = portfolioPerformanceSeries(
+      [
+        basePosition,
+        {
+          ...basePosition,
+          id: "position-2",
+          symbol: "PTTGC",
+          market: "Thai",
+          buyPrice: 30,
+          currency: "THB",
+          currentPrice: 33,
+          quantity: 10,
+        },
+      ],
+      { baseCurrency: "THB", usdThbRate: 35 },
+    );
+
+    expect(values.at(-1)).toBeCloseTo(19.72, 2);
   });
 });
 

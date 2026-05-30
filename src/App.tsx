@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
+import { AnalyticsPage } from "./components/AnalyticsPage";
 import { HoldingsTable, type HoldingRow } from "./components/HoldingsTable";
 import { PerformanceChart } from "./components/PerformanceChart";
 import { PositionForm } from "./components/PositionForm";
@@ -83,8 +84,12 @@ function App() {
     [marketFilter],
   );
   const chartSeries = useMemo(
-    () => combinedChartSeries(positions, benchmarkSeries),
-    [positions],
+    () =>
+      combinedChartSeries(positions, benchmarkSeries, {
+        baseCurrency,
+        usdThbRate,
+      }),
+    [baseCurrency, positions, usdThbRate],
   );
   const refreshablePositionKey = useMemo(
     () =>
@@ -371,6 +376,13 @@ function App() {
               rows={holdingRows}
             />
           </>
+        ) : activeView === "analytics" ? (
+          <AnalyticsPage
+            baseCurrency={baseCurrency}
+            language={language}
+            positions={positions}
+            usdThbRate={usdThbRate}
+          />
         ) : (
           <StockIdeasPage categories={recommendationCategories} language={language} />
         )}

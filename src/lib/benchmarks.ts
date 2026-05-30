@@ -1,12 +1,25 @@
 import type { BenchmarkSeries, PortfolioPosition } from "../types";
+import type { Currency } from "../types";
+import { convertCurrency, fallbackUsdThbRate, positionCurrency } from "./portfolio";
 
 const SERIES_POINTS = 12;
 
 export function portfolioPerformanceSeries(
   positions: PortfolioPosition[],
+  options: { baseCurrency: Currency; usdThbRate: number } = {
+    baseCurrency: "USD",
+    usdThbRate: fallbackUsdThbRate,
+  },
 ): number[] {
   const totalCost = positions.reduce(
-    (sum, position) => sum + position.buyPrice * position.quantity,
+    (sum, position) =>
+      sum +
+      convertCurrency(
+        position.buyPrice * position.quantity,
+        positionCurrency(position),
+        options.baseCurrency,
+        options.usdThbRate,
+      ),
     0,
   );
 
@@ -15,7 +28,14 @@ export function portfolioPerformanceSeries(
   }
 
   const totalValue = positions.reduce(
-    (sum, position) => sum + position.currentPrice * position.quantity,
+    (sum, position) =>
+      sum +
+      convertCurrency(
+        position.currentPrice * position.quantity,
+        positionCurrency(position),
+        options.baseCurrency,
+        options.usdThbRate,
+      ),
     0,
   );
   const finalPercent = ((totalValue - totalCost) / totalCost) * 100;
@@ -28,12 +48,13 @@ export function portfolioPerformanceSeries(
 export function combinedChartSeries(
   positions: PortfolioPosition[],
   benchmarks: BenchmarkSeries[],
+  options?: { baseCurrency: Currency; usdThbRate: number },
 ): BenchmarkSeries[] {
   return [
     {
       symbol: "PORTFOLIO",
       label: "Portfolio",
-      values: portfolioPerformanceSeries(positions),
+      values: portfolioPerformanceSeries(positions, options),
     },
     ...benchmarks,
   ];

@@ -1,7 +1,7 @@
 import { Moon, Sun } from "lucide-react";
 import type { Currency, MarketFilter } from "../types";
 
-export type AppView = "ideas" | "portfolio";
+export type AppView = "analytics" | "ideas" | "portfolio";
 
 interface TopBarProps {
   activeView: AppView;
@@ -39,7 +39,7 @@ export function TopBar({
     <header className="top-bar">
       <div>
         <p className="eyebrow">{text.eyebrow}</p>
-        <h1>{activeView === "portfolio" ? text.portfolioTitle : text.ideasTitle}</h1>
+        <h1>{text.titles[activeView]}</h1>
       </div>
 
       <div className="top-bar__controls" aria-label="Dashboard controls">
@@ -111,32 +111,41 @@ export function TopBar({
 
 const viewOptions: { value: AppView }[] = [
   { value: "portfolio" },
+  { value: "analytics" },
   { value: "ideas" },
 ];
 
 const labels = {
   en: {
     eyebrow: "Trading Journal",
-    ideasTitle: "Stock Ideas",
     languageToggle: "Switch language",
     baseCurrency: "Portfolio currency",
-    portfolioTitle: "Portfolio Dashboard",
     switchToDark: "Switch to dark mode",
     switchToLight: "Switch to light mode",
+    titles: {
+      analytics: "Portfolio Analytics",
+      ideas: "Stock Ideas",
+      portfolio: "Portfolio Dashboard",
+    },
     views: {
+      analytics: "Analytics",
       ideas: "Stock Ideas",
       portfolio: "Portfolio",
     },
   },
   th: {
     eyebrow: "บันทึกการเทรด",
-    ideasTitle: "หุ้นน่าสนใจ",
     languageToggle: "เปลี่ยนภาษา",
     baseCurrency: "สกุลเงินพอร์ต",
-    portfolioTitle: "พอร์ตการลงทุน",
     switchToDark: "เปลี่ยนเป็นโหมดมืด",
     switchToLight: "เปลี่ยนเป็นโหมดสว่าง",
+    titles: {
+      analytics: "วิเคราะห์พอร์ต",
+      ideas: "หุ้นน่าสนใจ",
+      portfolio: "พอร์ตการลงทุน",
+    },
     views: {
+      analytics: "วิเคราะห์",
       ideas: "หุ้นน่าสนใจ",
       portfolio: "พอร์ต",
     },
