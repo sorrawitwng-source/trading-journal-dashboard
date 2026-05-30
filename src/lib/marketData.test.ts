@@ -116,6 +116,7 @@ function basePosition(
   currentPrice: number,
 ): PortfolioPosition {
   return {
+    buyDate: "2026-05-31",
     buyPrice: currentPrice,
     currentPrice,
     currency: market === "Thai" ? "THB" : "USD",

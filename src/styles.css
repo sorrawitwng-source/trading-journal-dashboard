@@ -1266,7 +1266,7 @@ summary {
 
 table {
   width: 100%;
-  min-width: 1360px;
+  min-width: 1740px;
   border-collapse: separate;
   border-spacing: 0;
 }
@@ -1354,6 +1354,34 @@ tbody tr:last-child td {
   font-weight: 900;
   line-height: 1;
   text-transform: uppercase;
+}
+
+.position-status {
+  width: fit-content;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel-strong);
+  font-size: 0.7rem;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.position-status--open {
+  border-color: color-mix(in srgb, var(--blue) 45%, var(--border));
+  color: var(--blue);
+}
+
+.position-status--sold {
+  border-color: color-mix(in srgb, var(--positive) 45%, var(--border));
+  color: var(--positive);
+}
+
+.muted-cell {
+  color: var(--muted-text);
+  font-weight: 800;
 }
 
 .price-status--live {
@@ -1621,6 +1649,6 @@ tbody tr:last-child td {
   }
 
   table {
-    min-width: 1180px;
+    min-width: 1500px;
   }
 }

@@ -2,13 +2,16 @@ import { Plus } from "lucide-react";
 import type { FormEvent } from "react";
 
 interface PositionFormProps {
+  buyDate: string;
   buyPrice: string;
   errors: {
+    buyDate?: string;
     symbol?: string;
     buyPrice?: string;
     quantity?: string;
   };
   language: "en" | "th";
+  onBuyDateChange: (buyDate: string) => void;
   onBuyPriceChange: (buyPrice: string) => void;
   onQuantityChange: (quantity: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
@@ -18,9 +21,11 @@ interface PositionFormProps {
 }
 
 export function PositionForm({
+  buyDate,
   buyPrice,
   errors,
   language,
+  onBuyDateChange,
   onBuyPriceChange,
   onQuantityChange,
   onSubmit,
@@ -52,6 +57,23 @@ export function PositionForm({
           {errors.symbol ? (
             <span className="field-error" id="symbol-error">
               {errors.symbol}
+            </span>
+          ) : null}
+        </label>
+
+        <label className="field">
+          <span>{text.buyDate}</span>
+          <input
+            aria-describedby={errors.buyDate ? "buy-date-error" : undefined}
+            aria-invalid={errors.buyDate ? "true" : "false"}
+            onChange={(event) => onBuyDateChange(event.target.value)}
+            type="date"
+            value={buyDate}
+          />
+          <small className="field-help">{text.monthHint}</small>
+          {errors.buyDate ? (
+            <span className="field-error" id="buy-date-error">
+              {errors.buyDate}
             </span>
           ) : null}
         </label>
@@ -105,19 +127,23 @@ export function PositionForm({
 const labels = {
   en: {
     add: "Add",
+    buyDate: "Buy date",
     buyPrice: "Buy price",
     eyebrow: "Journal Entry",
     quantity: "Quantity",
     priceHint: "Thai stocks use THB. US stocks use USD.",
+    monthHint: "This date is used for monthly journal grouping.",
     symbol: "Symbol",
     title: "Add position",
   },
   th: {
     add: "เพิ่ม",
+    buyDate: "วันที่ซื้อ",
     buyPrice: "ราคาซื้อ",
     eyebrow: "บันทึกการเทรด",
     quantity: "จำนวนหุ้น",
     priceHint: "หุ้นไทยใช้เงินบาท หุ้น US ใช้ดอลลาร์",
+    monthHint: "ระบบจะใช้วันที่นี้จัดกลุ่มรายเดือน",
     symbol: "ชื่อหุ้น",
     title: "เพิ่มรายการหุ้น",
   },

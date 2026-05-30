@@ -9,6 +9,7 @@ const basePosition: PortfolioPosition = {
   name: "Apple",
   market: "US",
   sector: "Technology",
+  buyDate: "2026-05-31",
   buyPrice: 100,
   currency: "USD",
   quantity: 3,

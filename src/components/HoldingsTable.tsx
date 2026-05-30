@@ -21,19 +21,32 @@ export interface HoldingRow extends PortfolioPosition {
 
 interface HoldingsTableProps {
   editDraft: {
+    buyDate: string;
     buyPrice: string;
-    errors: { symbol?: string; buyPrice?: string; quantity?: string };
+    errors: {
+      buyDate?: string;
+      symbol?: string;
+      buyPrice?: string;
+      quantity?: string;
+      sellDate?: string;
+      sellPrice?: string;
+    };
     id: string;
     quantity: string;
+    sellDate: string;
+    sellPrice: string;
     symbol: string;
   } | null;
   isRefreshingPrices: boolean;
   baseCurrency: Currency;
   language: Language;
   lastPriceUpdate: string | null;
+  onEditBuyDateChange: (buyDate: string) => void;
   onEditBuyPriceChange: (buyPrice: string) => void;
   onEditCancel: () => void;
   onEditQuantityChange: (quantity: string) => void;
+  onEditSellDateChange: (sellDate: string) => void;
+  onEditSellPriceChange: (sellPrice: string) => void;
   onEditSave: () => void;
   onEditStart: (row: HoldingRow) => void;
   onEditSymbolChange: (symbol: string) => void;
@@ -68,9 +81,12 @@ export function HoldingsTable({
   baseCurrency,
   language,
   lastPriceUpdate,
+  onEditBuyDateChange,
   onEditBuyPriceChange,
   onEditCancel,
   onEditQuantityChange,
+  onEditSellDateChange,
+  onEditSellPriceChange,
   onEditSave,
   onEditStart,
   onEditSymbolChange,
@@ -121,12 +137,17 @@ export function HoldingsTable({
               <tr>
                 <th>{text.symbol}</th>
                 <th>{text.name}</th>
+                <th>{text.month}</th>
+                <th>{text.buyDate}</th>
+                <th>{text.status}</th>
                 <th>{text.market}</th>
                 <th>{text.sector}</th>
                 <th>{text.buyPrice}</th>
                 <th>{text.quantity}</th>
                 <th>{text.cost}</th>
                 <th>{text.currentPrice}</th>
+                <th>{text.sellPrice}</th>
+                <th>{text.sellDate}</th>
                 <th>{text.currentValue}</th>
                 <th>{text.estimatedProfitLoss}</th>
                 <th>{text.data}</th>
@@ -154,6 +175,31 @@ export function HoldingsTable({
                       )}
                     </td>
                     <td>{row.name}</td>
+                    <td>{formatMonth(row.buyDate)}</td>
+                    <td>
+                      {isEditing ? (
+                        <EditableCell
+                          error={editDraft.errors.buyDate}
+                          inputType="date"
+                          label={text.buyDate}
+                          onChange={onEditBuyDateChange}
+                          value={editDraft.buyDate}
+                        />
+                      ) : (
+                        formatDate(row.buyDate)
+                      )}
+                    </td>
+                    <td>
+                      <span
+                        className={`position-status position-status--${
+                          row.sellPrice !== undefined && row.sellDate ? "sold" : "open"
+                        }`}
+                      >
+                        {row.sellPrice !== undefined && row.sellDate
+                          ? text.sold
+                          : text.open}
+                      </span>
+                    </td>
                     <td>{row.market}</td>
                     <td>
                       <div className="stacked-cell">
@@ -215,6 +261,36 @@ export function HoldingsTable({
                           {priceStatusLabel(row.priceStatus)}
                         </span>
                       </div>
+                    </td>
+                    <td>
+                      {isEditing ? (
+                        <EditableCell
+                          error={editDraft.errors.sellPrice}
+                          inputMode="decimal"
+                          label={text.sellPrice}
+                          onChange={onEditSellPriceChange}
+                          value={editDraft.sellPrice}
+                        />
+                      ) : row.sellPrice !== undefined ? (
+                        formatPositionCurrency(row.sellPrice, row)
+                      ) : (
+                        <span className="muted-cell">-</span>
+                      )}
+                    </td>
+                    <td>
+                      {isEditing ? (
+                        <EditableCell
+                          error={editDraft.errors.sellDate}
+                          inputType="date"
+                          label={text.sellDate}
+                          onChange={onEditSellDateChange}
+                          value={editDraft.sellDate}
+                        />
+                      ) : row.sellDate ? (
+                        formatDate(row.sellDate)
+                      ) : (
+                        <span className="muted-cell">-</span>
+                      )}
                     </td>
                     <td>
                       <MoneyCell
@@ -385,6 +461,7 @@ function sectorSourceLabel(source: PortfolioPosition["sectorSource"]): string {
 const labels = {
   en: {
     actions: "Actions",
+    buyDate: "Buy date",
     buyPrice: "Buy price",
     cost: "Cost",
     currentPrice: "Current price",
@@ -395,19 +472,26 @@ const labels = {
     eyebrow: "Portfolio",
     estimatedProfitLoss: "Est. P/L",
     market: "Market",
+    month: "Month",
     name: "Name",
+    open: "Open",
     quantity: "Quantity",
     refreshPrices: "Refresh prices",
     refreshing: "Refreshing",
     risk: "Risk",
     score: "Score",
     sector: "Sector",
+    sellDate: "Sell date",
+    sellPrice: "Sell price",
+    sold: "Sold",
+    status: "Status",
     symbol: "Symbol",
     title: "Holdings",
     updated: "Updated",
   },
   th: {
     actions: "จัดการ",
+    buyDate: "วันที่ซื้อ",
     buyPrice: "ราคาซื้อ",
     cost: "ต้นทุน",
     currentPrice: "ราคาปัจจุบัน",
@@ -418,13 +502,19 @@ const labels = {
     eyebrow: "พอร์ต",
     estimatedProfitLoss: "กำไร/ขาดทุน",
     market: "ตลาด",
+    month: "เดือน",
     name: "ชื่อ",
+    open: "ถืออยู่",
     quantity: "จำนวน",
     refreshPrices: "อัปเดตราคา",
     refreshing: "กำลังอัปเดต",
     risk: "ความเสี่ยง",
     score: "คะแนน",
     sector: "กลุ่มธุรกิจ",
+    sellDate: "วันที่ขาย",
+    sellPrice: "ราคาขาย",
+    sold: "ขายแล้ว",
+    status: "สถานะ",
     symbol: "หุ้น",
     title: "รายการหุ้น",
     updated: "อัปเดต",
@@ -450,6 +540,21 @@ function formatUpdatedTime(value: string): string {
   }).format(new Date(value));
 }
 
+function formatDate(value: string): string {
+  return new Intl.DateTimeFormat("th-TH", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function formatMonth(value: string): string {
+  return new Intl.DateTimeFormat("th-TH", {
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
 function MoneyCell({
   primary,
   secondary,
@@ -468,12 +573,14 @@ function MoneyCell({
 function EditableCell({
   error,
   inputMode,
+  inputType = "text",
   label,
   onChange,
   value,
 }: {
   error?: string;
   inputMode?: "decimal";
+  inputType?: "date" | "text";
   label: string;
   onChange: (value: string) => void;
   value: string;
@@ -486,7 +593,7 @@ function EditableCell({
         inputMode={inputMode}
         onChange={(event) => onChange(event.target.value)}
         onFocus={(event) => event.target.select()}
-        type="text"
+        type={inputType}
         value={value}
       />
       {error ? <em>{error}</em> : null}

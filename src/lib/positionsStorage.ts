@@ -52,10 +52,16 @@ function isPortfolioPosition(value: unknown): value is PortfolioPosition {
       position.currency === "THB" ||
       position.currency === "USD") &&
     typeof position.sector === "string" &&
+    (position.buyDate === undefined ||
+      (typeof position.buyDate === "string" && isValidDateText(position.buyDate))) &&
     typeof position.buyPrice === "number" &&
     (position.quantity === undefined ||
       (typeof position.quantity === "number" && position.quantity >= 0)) &&
     typeof position.currentPrice === "number" &&
+    (position.sellPrice === undefined ||
+      (typeof position.sellPrice === "number" && position.sellPrice > 0)) &&
+    (position.sellDate === undefined ||
+      (typeof position.sellDate === "string" && isValidDateText(position.sellDate))) &&
     (position.priceStatus === undefined ||
       position.priceStatus === "live" ||
       position.priceStatus === "cached" ||
@@ -81,7 +87,22 @@ function isPortfolioPosition(value: unknown): value is PortfolioPosition {
 function withDefaultQuantity(position: PortfolioPosition): PortfolioPosition {
   return {
     ...position,
+    buyDate: position.buyDate ?? todayDateString(),
     currency: position.currency ?? currencyForMarket(position.market),
     quantity: position.quantity ?? 0,
   };
+}
+
+function todayDateString(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function isValidDateText(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+
+  const date = new Date(value);
+
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }

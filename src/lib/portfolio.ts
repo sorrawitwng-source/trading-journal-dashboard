@@ -22,6 +22,9 @@ export function createPosition(
   buyPrice: number,
   quantity: number,
   universe: StockProfile[],
+  buyDate = todayDateString(),
+  sellPrice?: number,
+  sellDate?: string,
 ): PortfolioPosition {
   const normalizedSymbol = symbol.trim().toUpperCase();
   const stock = universe.find(
@@ -36,6 +39,7 @@ export function createPosition(
       market: "Custom",
       sector: "Unclassified",
       sectorSource: "unknown",
+      buyDate,
       buyPrice,
       currency: "USD",
       quantity,
@@ -59,6 +63,8 @@ export function createPosition(
       riskLevel: "No data",
       riskReason: "Custom symbols need verified market data before risk can be assessed.",
       isCustom: true,
+      ...(sellPrice !== undefined ? { sellPrice } : {}),
+      ...(sellDate ? { sellDate } : {}),
     };
   }
   const scoreBreakdown = buildScoreBreakdown(stock);
@@ -71,6 +77,7 @@ export function createPosition(
     market: stock.market,
     sector: stock.sector,
     sectorSource: stock.sectorSource,
+    buyDate,
     buyPrice,
     currency: currencyForMarket(stock.market),
     quantity,
@@ -82,6 +89,8 @@ export function createPosition(
     riskLevel: risk.level,
     riskReason: risk.reason,
     isCustom: false,
+    ...(sellPrice !== undefined ? { sellPrice } : {}),
+    ...(sellDate ? { sellDate } : {}),
   };
 }
 
@@ -91,9 +100,12 @@ export function updatePosition(
   buyPrice: number,
   quantity: number,
   universe: StockProfile[],
+  buyDate = todayDateString(),
+  sellPrice?: number,
+  sellDate?: string,
 ): PortfolioPosition {
   return {
-    ...createPosition(symbol, buyPrice, quantity, universe),
+    ...createPosition(symbol, buyPrice, quantity, universe, buyDate, sellPrice, sellDate),
     id,
   };
 }
@@ -138,7 +150,7 @@ export function summarizePortfolio(
       (sum, position) =>
         sum +
         convertCurrency(
-          position.currentPrice * position.quantity,
+          positionExitPrice(position) * position.quantity,
           positionCurrency(position),
           options.baseCurrency,
           options.usdThbRate,
@@ -171,6 +183,14 @@ export function summarizePortfolio(
   };
 }
 
+export function positionExitPrice(position: PortfolioPosition): number {
+  return position.sellPrice ?? position.currentPrice;
+}
+
+export function positionStatus(position: PortfolioPosition): "open" | "sold" {
+  return position.sellPrice !== undefined && position.sellDate ? "sold" : "open";
+}
+
 export function convertCurrency(
   value: number,
   fromCurrency: Currency,
@@ -198,6 +218,10 @@ export function positionCurrency(position: PortfolioPosition): Currency {
 
 function createPositionId(symbol: string): string {
   return `${symbol}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function todayDateString(): string {
+  return new Date().toISOString().slice(0, 10);
 }
 
 function roundCurrency(value: number): number {

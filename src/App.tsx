@@ -15,6 +15,7 @@ import {
   createPosition,
   fallbackUsdThbRate,
   positionCurrency,
+  positionExitPrice,
   summarizePortfolio,
   unrealizedProfitLoss,
   updatePosition,
@@ -26,16 +27,26 @@ import {
 } from "./lib/marketData";
 import { loadStoredPositions, saveStoredPositions } from "./lib/positionsStorage";
 import { buildRecommendationCategories } from "./lib/recommendationCategories";
-import { validatePositionInput } from "./lib/validation";
+import { todayDateString, validatePositionInput } from "./lib/validation";
 import type { Currency, MarketFilter, PortfolioPosition, PriceStatus } from "./types";
 
 type Theme = "dark" | "light";
 type Language = "en" | "th";
 type EditDraft = {
+  buyDate: string;
   buyPrice: string;
-  errors: { symbol?: string; buyPrice?: string; quantity?: string };
+  errors: {
+    buyDate?: string;
+    symbol?: string;
+    buyPrice?: string;
+    quantity?: string;
+    sellDate?: string;
+    sellPrice?: string;
+  };
   id: string;
   quantity: string;
+  sellDate: string;
+  sellPrice: string;
   symbol: string;
 };
 
@@ -49,11 +60,15 @@ function App() {
     loadStoredPositions(),
   );
   const [formErrors, setFormErrors] = useState<{
+    buyDate?: string;
     symbol?: string;
     buyPrice?: string;
     quantity?: string;
+    sellDate?: string;
+    sellPrice?: string;
   }>({});
   const [symbol, setSymbol] = useState("");
+  const [buyDate, setBuyDate] = useState(todayDateString());
   const [buyPrice, setBuyPrice] = useState("");
   const [quantity, setQuantity] = useState("0");
   const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
@@ -110,7 +125,7 @@ function App() {
       positions.map((position) => {
         const profitLoss = unrealizedProfitLoss(
           position.buyPrice,
-          position.currentPrice,
+          positionExitPrice(position),
           position.quantity,
         );
         const tone: HoldingRow["tone"] =
@@ -129,7 +144,7 @@ function App() {
             usdThbRate,
           ),
           baseCurrentValue: convertCurrency(
-            position.currentPrice * position.quantity,
+            positionExitPrice(position) * position.quantity,
             positionCurrency(position),
             baseCurrency,
             usdThbRate,
@@ -141,7 +156,7 @@ function App() {
             usdThbRate,
           ),
           cost: position.buyPrice * position.quantity,
-          currentValue: position.currentPrice * position.quantity,
+          currentValue: positionExitPrice(position) * position.quantity,
           profitLossAmount: profitLoss.amount,
           profitLossPercent: profitLoss.percent,
           tone,
@@ -165,7 +180,7 @@ function App() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const result = validatePositionInput(symbol, buyPrice, quantity);
+    const result = validatePositionInput(symbol, buyPrice, quantity, buyDate);
 
     if (!result.valid) {
       setFormErrors(result.errors);
@@ -177,21 +192,26 @@ function App() {
       result.value.buyPrice,
       result.value.quantity,
       stockUniverse,
+      result.value.buyDate,
     );
 
     setPositions((currentPositions) => [...currentPositions, position]);
     setFormErrors({});
     setSymbol("");
+    setBuyDate(todayDateString());
     setBuyPrice("");
     setQuantity("0");
   }
 
   function handleEditStart(row: HoldingRow) {
     setEditDraft({
+      buyDate: row.buyDate,
       buyPrice: String(row.buyPrice),
       errors: {},
       id: row.id,
       quantity: String(row.quantity),
+      sellDate: row.sellDate ?? "",
+      sellPrice: row.sellPrice === undefined ? "" : String(row.sellPrice),
       symbol: row.symbol,
     });
   }
@@ -214,11 +234,31 @@ function App() {
     );
   }
 
+  function handleEditBuyDateChange(buyDateValue: string) {
+    setEditDraft((currentDraft) =>
+      currentDraft ? { ...currentDraft, buyDate: buyDateValue } : currentDraft,
+    );
+  }
+
   function handleEditQuantityChange(quantityValue: string) {
     setEditDraft((currentDraft) =>
       currentDraft
         ? { ...currentDraft, quantity: quantityValue }
         : currentDraft,
+    );
+  }
+
+  function handleEditSellPriceChange(sellPriceValue: string) {
+    setEditDraft((currentDraft) =>
+      currentDraft
+        ? { ...currentDraft, sellPrice: sellPriceValue }
+        : currentDraft,
+    );
+  }
+
+  function handleEditSellDateChange(sellDateValue: string) {
+    setEditDraft((currentDraft) =>
+      currentDraft ? { ...currentDraft, sellDate: sellDateValue } : currentDraft,
     );
   }
 
@@ -231,6 +271,9 @@ function App() {
       editDraft.symbol,
       editDraft.buyPrice,
       editDraft.quantity,
+      editDraft.buyDate,
+      editDraft.sellPrice,
+      editDraft.sellDate,
     );
 
     if (!result.valid) {
@@ -247,6 +290,9 @@ function App() {
               result.value.buyPrice,
               result.value.quantity,
               stockUniverse,
+              result.value.buyDate,
+              result.value.sellPrice,
+              result.value.sellDate,
             )
           : position,
       ),
@@ -345,9 +391,11 @@ function App() {
 
             <div className="portfolio-workspace">
               <PositionForm
+                buyDate={buyDate}
                 buyPrice={buyPrice}
                 errors={formErrors}
                 language={language}
+                onBuyDateChange={setBuyDate}
                 onBuyPriceChange={setBuyPrice}
                 onQuantityChange={setQuantity}
                 onSubmit={handleSubmit}
@@ -364,9 +412,12 @@ function App() {
               isRefreshingPrices={isRefreshingPrices}
               language={language}
               lastPriceUpdate={lastPriceUpdate}
+              onEditBuyDateChange={handleEditBuyDateChange}
               onEditBuyPriceChange={handleEditBuyPriceChange}
               onEditCancel={handleEditCancel}
               onEditQuantityChange={handleEditQuantityChange}
+              onEditSellDateChange={handleEditSellDateChange}
+              onEditSellPriceChange={handleEditSellPriceChange}
               onEditSave={handleEditSave}
               onEditStart={handleEditStart}
               onEditSymbolChange={handleEditSymbolChange}

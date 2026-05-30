@@ -1,6 +1,11 @@
 import type { BenchmarkSeries, PortfolioPosition } from "../types";
 import type { Currency } from "../types";
-import { convertCurrency, fallbackUsdThbRate, positionCurrency } from "./portfolio";
+import {
+  convertCurrency,
+  fallbackUsdThbRate,
+  positionCurrency,
+  positionExitPrice,
+} from "./portfolio";
 
 const SERIES_POINTS = 12;
 
@@ -31,7 +36,7 @@ export function portfolioPerformanceSeries(
     (sum, position) =>
       sum +
       convertCurrency(
-        position.currentPrice * position.quantity,
+        positionExitPrice(position) * position.quantity,
         positionCurrency(position),
         options.baseCurrency,
         options.usdThbRate,

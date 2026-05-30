@@ -1,5 +1,10 @@
 import type { Currency, PortfolioPosition } from "../types";
-import { convertCurrency, positionCurrency, unrealizedProfitLoss } from "./portfolio";
+import {
+  convertCurrency,
+  positionCurrency,
+  positionExitPrice,
+  unrealizedProfitLoss,
+} from "./portfolio";
 
 export interface AnalyticsBucket {
   key: string;
@@ -60,7 +65,7 @@ export function buildPortfolioAnalytics(
         options.usdThbRate,
       );
       const value = convertCurrency(
-        position.currentPrice * position.quantity,
+        positionExitPrice(position) * position.quantity,
         currency,
         options.baseCurrency,
         options.usdThbRate,
@@ -68,7 +73,7 @@ export function buildPortfolioAnalytics(
       const profitLoss = value - cost;
       const originalProfitLoss = unrealizedProfitLoss(
         position.buyPrice,
-        position.currentPrice,
+        positionExitPrice(position),
         position.quantity,
       );
 

@@ -31,9 +31,9 @@ describe('validatePositionInput', () => {
   });
 
   it('defaults an empty quantity to zero', () => {
-    expect(validatePositionInput(' aapl ', ' 120.5 ', '')).toEqual({
+    expect(validatePositionInput(' aapl ', ' 120.5 ', '', '2026-05-31')).toEqual({
       valid: true,
-      value: { symbol: 'AAPL', buyPrice: 120.5, quantity: 0 },
+      value: { symbol: 'AAPL', buyDate: '2026-05-31', buyPrice: 120.5, quantity: 0 },
       errors: {},
     });
   });
@@ -46,10 +46,36 @@ describe('validatePositionInput', () => {
   });
 
   it('normalizes valid input', () => {
-    expect(validatePositionInput(' aapl ', ' 120.5 ', ' 25 ')).toEqual({
+    expect(validatePositionInput(' aapl ', ' 120.5 ', ' 25 ', '2026-05-31')).toEqual({
       valid: true,
-      value: { symbol: 'AAPL', buyPrice: 120.5, quantity: 25 },
+      value: { symbol: 'AAPL', buyDate: '2026-05-31', buyPrice: 120.5, quantity: 25 },
       errors: {},
+    });
+  });
+
+  it('accepts a sell price and sell date for closed trades', () => {
+    expect(
+      validatePositionInput('AAPL', '120.5', '25', '2026-05-01', '140', '2026-05-31'),
+    ).toEqual({
+      valid: true,
+      value: {
+        symbol: 'AAPL',
+        buyDate: '2026-05-01',
+        buyPrice: 120.5,
+        quantity: 25,
+        sellDate: '2026-05-31',
+        sellPrice: 140,
+      },
+      errors: {},
+    });
+  });
+
+  it('rejects a sell date before the buy date', () => {
+    expect(
+      validatePositionInput('AAPL', '120.5', '25', '2026-05-31', '140', '2026-05-01'),
+    ).toEqual({
+      valid: false,
+      errors: { sellDate: 'Sell date cannot be before buy date.' },
     });
   });
 });

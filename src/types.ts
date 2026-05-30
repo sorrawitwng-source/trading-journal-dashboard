@@ -3,6 +3,7 @@ export type MarketFilter = "All" | "Thai" | "US";
 export type Currency = "THB" | "USD";
 export type DataQuality = "complete" | "limited" | "no-data" | "partial";
 export type PriceStatus = "cached" | "fallback" | "live";
+export type PositionStatus = "open" | "sold";
 export type RiskLevel = "Low" | "Medium" | "High" | "No data";
 export type SectorSource = "curated" | "provider" | "unknown";
 
@@ -44,10 +45,13 @@ export interface PortfolioPosition {
   market: Market;
   sector: string;
   sectorSource?: SectorSource;
+  buyDate: string;
   buyPrice: number;
   currency?: Currency;
   quantity: number;
   currentPrice: number;
+  sellDate?: string;
+  sellPrice?: number;
   priceStatus?: PriceStatus;
   priceUpdatedAt?: string;
   dataQuality?: DataQuality;
