@@ -12,6 +12,7 @@ import {
   strongestBreakdownItem,
   type Language,
 } from "../lib/scoreText";
+import { weeklyThemeUpdatedAt, weeklyThemes } from "../lib/weeklyThemes";
 import type { ScoreBreakdownItem } from "../types";
 
 interface StockIdeasPageProps {
@@ -62,6 +63,42 @@ export function StockIdeasPage({ categories, language }: StockIdeasPageProps) {
           </div>
         </div>
       </div>
+
+      <section className="weekly-themes" aria-labelledby="weekly-themes-title">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">{text.weeklyEyebrow}</p>
+            <h2 id="weekly-themes-title">{text.weeklyTitle}</h2>
+            <p>{text.weeklyDescription}</p>
+          </div>
+          <span>{formatDate(weeklyThemeUpdatedAt, language)}</span>
+        </div>
+        <div className="weekly-theme-grid">
+          {weeklyThemes.map((theme) => (
+            <article className={`weekly-theme weekly-theme--${theme.signal}`} key={theme.id}>
+              <div className="weekly-theme__header">
+                <span>{theme.market}</span>
+                <b>{signalText(theme.signal, language)}</b>
+              </div>
+              <h3>{theme.title[language]}</h3>
+              <p>{theme.thesis[language]}</p>
+              <div className="weekly-theme__chips">
+                {theme.sectors.map((sector) => (
+                  <span key={sector}>{sector}</span>
+                ))}
+              </div>
+              <div className="weekly-theme__symbols" aria-label={text.relatedStocks}>
+                {theme.symbols.map((symbol) => (
+                  <b key={symbol}>{symbol}</b>
+                ))}
+              </div>
+              <a href={theme.sourceUrl} rel="noreferrer" target="_blank">
+                {text.source}: {theme.sourceLabel}
+              </a>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <div className="ideas-feature-grid">
         {featuredCategories.map((category) => (
@@ -269,6 +306,24 @@ function scoreBandText(score: number | null, language: Language): string {
   return language === "th" ? "เฝ้าดู" : "Watch";
 }
 
+function signalText(signal: "hot" | "mixed" | "watch", language: Language): string {
+  const labels = {
+    hot: { en: "Hot", th: "เด่น" },
+    mixed: { en: "Mixed", th: "เริ่มกระจาย" },
+    watch: { en: "Watch", th: "จับตา" },
+  };
+
+  return labels[signal][language];
+}
+
+function formatDate(value: string, language: Language): string {
+  return new Intl.DateTimeFormat(language === "th" ? "th-TH-u-ca-gregory" : "en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(`${value}T00:00:00`));
+}
+
 const labels = {
   en: {
     categories: "categories",
@@ -286,7 +341,13 @@ const labels = {
     scoreModel: "Score model",
     scoreModelDescription:
       "The rank is a screen, not a buy signal. It blends factor strength with data confidence.",
+    relatedStocks: "Related stocks",
+    source: "Source",
     title: "Ranked ideas by investment style",
+    weeklyDescription:
+      "A short weekly lens from market news, kept separate from the score model so headlines do not overwrite the ranking.",
+    weeklyEyebrow: "Weekly themes",
+    weeklyTitle: "What is moving this week",
   },
   th: {
     categories: "หมวดหมู่",
@@ -304,6 +365,12 @@ const labels = {
     scoreModel: "โมเดลคะแนน",
     scoreModelDescription:
       "คะแนนเป็นตัวช่วยคัดกรอง ไม่ใช่สัญญาณซื้อ โดยรวมความแข็งแรงของปัจจัยกับความครบของข้อมูล",
+    relatedStocks: "หุ้นที่เกี่ยวข้อง",
+    source: "แหล่งข่าว",
     title: "ไอเดียลงทุนแยกตามสไตล์",
+    weeklyDescription:
+      "สรุปธีมจากข่าวตลาดรายสัปดาห์ แยกจากโมเดลคะแนน เพื่อให้เห็นว่ากลุ่มไหนกำลังมี narrative โดยไม่ปนกับ ranking",
+    weeklyEyebrow: "ธีมรายสัปดาห์",
+    weeklyTitle: "ช่วงนี้กลุ่มไหนกำลังถูกพูดถึง",
   },
 };

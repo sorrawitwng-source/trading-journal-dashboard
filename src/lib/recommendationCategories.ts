@@ -112,6 +112,10 @@ export function buildRecommendationCategories(
     stocks: filteredStocks
       .filter(category.matches)
       .map(buildRecommendation)
+      .filter(
+        (stock): stock is StockRecommendation & { score: number } =>
+          stock.score !== null,
+      )
       .sort(compareRecommendations)
       .slice(0, ideasPerCategory),
   }));

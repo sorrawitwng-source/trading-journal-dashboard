@@ -39,7 +39,7 @@ describe("buildRecommendationCategories", () => {
     ).toBe(true);
   });
 
-  it("keeps watchlist candidates when score data is incomplete", () => {
+  it("excludes candidates when score data is incomplete", () => {
     const categories = buildRecommendationCategories(
       [
         ...sampleStocks,
@@ -55,9 +55,8 @@ describe("buildRecommendationCategories", () => {
     );
     const techCategory = categories.find((category) => category.id === "tech");
 
-    expect(techCategory?.stocks.map((stock) => stock.symbol)).toContain("ASML");
-    expect(techCategory?.stocks.at(-1)?.symbol).toBe("ASML");
-    expect(techCategory?.stocks.at(-1)?.score).toBeNull();
+    expect(techCategory?.stocks.map((stock) => stock.symbol)).not.toContain("ASML");
+    expect(techCategory?.stocks.every((stock) => stock.score !== null)).toBe(true);
   });
 });
 
