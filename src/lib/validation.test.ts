@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { validatePositionInput } from './validation';
+import {
+  displayDateString,
+  normalizeDateInput,
+  validatePositionInput,
+} from './validation';
 
 describe('validatePositionInput', () => {
   it('requires a symbol', () => {
@@ -46,7 +50,7 @@ describe('validatePositionInput', () => {
   });
 
   it('normalizes valid input', () => {
-    expect(validatePositionInput(' aapl ', ' 120.5 ', ' 25 ', '2026-05-31')).toEqual({
+    expect(validatePositionInput(' aapl ', ' 120.5 ', ' 25 ', '31/05/2026')).toEqual({
       valid: true,
       value: { symbol: 'AAPL', buyDate: '2026-05-31', buyPrice: 120.5, quantity: 25 },
       errors: {},
@@ -77,5 +81,13 @@ describe('validatePositionInput', () => {
       valid: false,
       errors: { sellDate: 'Sell date cannot be before buy date.' },
     });
+  });
+
+  it('formats stored dates as DD/MM/YYYY for editing', () => {
+    expect(displayDateString('2026-05-31')).toBe('31/05/2026');
+  });
+
+  it('normalizes DD/MM/YYYY input back to ISO storage format', () => {
+    expect(normalizeDateInput('3/5/2026')).toBe('2026-05-03');
   });
 });

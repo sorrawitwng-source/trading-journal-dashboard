@@ -184,9 +184,10 @@ export function HoldingsTable({
                       {isEditing ? (
                         <EditableCell
                           error={editDraft.errors.buyDate}
-                          inputType="date"
+                          inputMode="numeric"
                           label={text.buyDate}
                           onChange={onEditBuyDateChange}
+                          placeholder="31/05/2026"
                           value={editDraft.buyDate}
                         />
                       ) : (
@@ -285,9 +286,10 @@ export function HoldingsTable({
                       {isEditing ? (
                         <EditableCell
                           error={editDraft.errors.sellDate}
-                          inputType="date"
+                          inputMode="numeric"
                           label={text.sellDate}
                           onChange={onEditSellDateChange}
+                          placeholder="31/05/2026"
                           value={editDraft.sellDate}
                         />
                       ) : row.sellDate ? (
@@ -547,11 +549,9 @@ function formatUpdatedTime(value: string): string {
 }
 
 function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("th-TH", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(value));
+  const [year, month, day] = value.split("-");
+
+  return `${day}/${month}/${year}`;
 }
 
 function formatMonth(value: string): string {
@@ -582,13 +582,15 @@ function EditableCell({
   inputType = "text",
   label,
   onChange,
+  placeholder,
   value,
 }: {
   error?: string;
-  inputMode?: "decimal";
+  inputMode?: "decimal" | "numeric";
   inputType?: "date" | "text";
   label: string;
   onChange: (value: string) => void;
+  placeholder?: string;
   value: string;
 }) {
   return (
@@ -599,6 +601,7 @@ function EditableCell({
         inputMode={inputMode}
         onChange={(event) => onChange(event.target.value)}
         onFocus={(event) => event.target.select()}
+        placeholder={placeholder}
         type={inputType}
         value={value}
       />

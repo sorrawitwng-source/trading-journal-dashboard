@@ -36,9 +36,9 @@ export function validatePositionInput(
   const symbol = symbolInput.trim();
   const buyPriceText = buyPriceInput.trim();
   const quantityText = quantityInput.trim();
-  const buyDateText = buyDateInput.trim();
+  const buyDateText = normalizeDateInput(buyDateInput.trim());
   const sellPriceText = sellPriceInput.trim();
-  const sellDateText = sellDateInput.trim();
+  const sellDateText = normalizeDateInput(sellDateInput.trim());
   const errors: PositionInputErrors = {};
 
   if (!symbol) {
@@ -120,6 +120,34 @@ export function validatePositionInput(
 
 export function todayDateString(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+export function displayDateString(value: string): string {
+  const normalizedDate = normalizeDateInput(value);
+
+  if (!isValidDateText(normalizedDate)) {
+    return value;
+  }
+
+  const [year, month, day] = normalizedDate.split("-");
+
+  return `${day}/${month}/${year}`;
+}
+
+export function normalizeDateInput(value: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value;
+  }
+
+  const match = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+
+  if (!match) {
+    return value;
+  }
+
+  const [, day, month, year] = match;
+
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 }
 
 function isValidDateText(value: string): boolean {

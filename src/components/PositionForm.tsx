@@ -66,8 +66,10 @@ export function PositionForm({
           <input
             aria-describedby={errors.buyDate ? "buy-date-error" : undefined}
             aria-invalid={errors.buyDate ? "true" : "false"}
+            inputMode="numeric"
             onChange={(event) => onBuyDateChange(event.target.value)}
-            type="date"
+            placeholder="31/05/2026"
+            type="text"
             value={buyDate}
           />
           <small className="field-help">{text.monthHint}</small>

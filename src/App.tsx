@@ -27,7 +27,11 @@ import {
 } from "./lib/marketData";
 import { loadStoredPositions, saveStoredPositions } from "./lib/positionsStorage";
 import { buildRecommendationCategories } from "./lib/recommendationCategories";
-import { todayDateString, validatePositionInput } from "./lib/validation";
+import {
+  displayDateString,
+  todayDateString,
+  validatePositionInput,
+} from "./lib/validation";
 import type { Currency, MarketFilter, PortfolioPosition, PriceStatus } from "./types";
 
 type Theme = "dark" | "light";
@@ -68,7 +72,7 @@ function App() {
     sellPrice?: string;
   }>({});
   const [symbol, setSymbol] = useState("");
-  const [buyDate, setBuyDate] = useState(todayDateString());
+  const [buyDate, setBuyDate] = useState(displayDateString(todayDateString()));
   const [buyPrice, setBuyPrice] = useState("");
   const [quantity, setQuantity] = useState("0");
   const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
@@ -198,19 +202,19 @@ function App() {
     setPositions((currentPositions) => [...currentPositions, position]);
     setFormErrors({});
     setSymbol("");
-    setBuyDate(todayDateString());
+    setBuyDate(displayDateString(todayDateString()));
     setBuyPrice("");
     setQuantity("0");
   }
 
   function handleEditStart(row: HoldingRow) {
     setEditDraft({
-      buyDate: row.buyDate,
+      buyDate: displayDateString(row.buyDate),
       buyPrice: String(row.buyPrice),
       errors: {},
       id: row.id,
       quantity: String(row.quantity),
-      sellDate: row.sellDate ?? "",
+      sellDate: row.sellDate ? displayDateString(row.sellDate) : "",
       sellPrice: row.sellPrice === undefined ? "" : String(row.sellPrice),
       symbol: row.symbol,
     });
