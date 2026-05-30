@@ -1,4 +1,5 @@
 import { Check, Pencil, RefreshCw, Trash2, X } from "lucide-react";
+import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { Currency, PortfolioPosition } from "../types";
 import {
@@ -96,7 +97,14 @@ export function HoldingsTable({
   rows,
 }: HoldingsTableProps) {
   const text = labels[language];
-  const monthlyGroups = groupRowsByMonth(rows);
+  const monthlyGroups = useMemo(() => groupRowsByMonth(rows), [rows]);
+  const [selectedMonth, setSelectedMonth] = useState("all");
+  const selectedMonthlyGroups =
+    selectedMonth === "all"
+      ? monthlyGroups
+      : monthlyGroups.filter((group) => group.key === selectedMonth);
+  const visibleGroups =
+    selectedMonthlyGroups.length > 0 ? selectedMonthlyGroups : monthlyGroups;
 
   return (
     <section className="panel holdings-panel" aria-labelledby="holdings-title">
@@ -133,7 +141,32 @@ export function HoldingsTable({
         </div>
       ) : (
         <div className="monthly-holdings-list">
-          {monthlyGroups.map((group) => {
+          <div className="month-filter">
+            <div>
+              <span>{text.selectMonth}</span>
+              <strong>
+                {selectedMonth === "all"
+                  ? text.allMonths
+                  : monthlyGroups.find((group) => group.key === selectedMonth)?.label ??
+                    text.allMonths}
+              </strong>
+            </div>
+            <label>
+              <span>{text.selectMonth}</span>
+              <select
+                onChange={(event) => setSelectedMonth(event.target.value)}
+                value={selectedMonth}
+              >
+                <option value="all">{text.allMonths}</option>
+                {monthlyGroups.map((group) => (
+                  <option key={group.key} value={group.key}>
+                    {group.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {visibleGroups.map((group) => {
             const groupTone =
               group.profitLoss > 0
                 ? "positive"
@@ -549,6 +582,7 @@ function roundCurrency(value: number): number {
 const labels = {
   en: {
     actions: "Actions",
+    allMonths: "All months",
     buyDate: "Buy date",
     buyPrice: "Buy price",
     cost: "Cost",
@@ -570,6 +604,7 @@ const labels = {
     risk: "Risk",
     score: "Score",
     sector: "Sector",
+    selectMonth: "View month",
     sellDate: "Sell date",
     sellPrice: "Sell price",
     sold: "Sold",
@@ -580,6 +615,7 @@ const labels = {
   },
   th: {
     actions: "จัดการ",
+    allMonths: "ทุกเดือน",
     buyDate: "วันที่ซื้อ",
     buyPrice: "ราคาซื้อ",
     cost: "ต้นทุน",
@@ -601,6 +637,7 @@ const labels = {
     risk: "ความเสี่ยง",
     score: "คะแนน",
     sector: "กลุ่มธุรกิจ",
+    selectMonth: "เลือกเดือน",
     sellDate: "วันที่ขาย",
     sellPrice: "ราคาขาย",
     sold: "ขายแล้ว",

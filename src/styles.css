@@ -19,7 +19,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -37,6 +38,7 @@ summary:focus-visible {
 
 button,
 input,
+select,
 summary {
   transition:
     background 160ms ease,
@@ -1270,6 +1272,59 @@ summary {
   gap: 16px;
 }
 
+.month-filter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  border-radius: 8px;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--panel-strong) 78%, transparent),
+      color-mix(in srgb, var(--panel) 92%, transparent)
+    );
+}
+
+.month-filter > div,
+.month-filter label {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.month-filter > div span,
+.month-filter label span {
+  color: var(--muted-text);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.month-filter > div strong {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.month-filter select {
+  min-width: 220px;
+  min-height: 40px;
+  padding: 8px 34px 8px 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--panel-strong);
+  outline: none;
+}
+
+.month-filter select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
 .month-group {
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
@@ -1812,6 +1867,15 @@ tbody tr:hover .col-actions {
   .analytics-hero {
     display: grid;
     padding: 18px;
+  }
+
+  .month-filter {
+    display: grid;
+  }
+
+  .month-filter select {
+    width: 100%;
+    min-width: 0;
   }
 
   .summary-item,
