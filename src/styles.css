@@ -1265,6 +1265,69 @@ summary {
   scrollbar-width: thin;
 }
 
+.monthly-holdings-list {
+  display: grid;
+  gap: 16px;
+}
+
+.month-group {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  border-radius: 8px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 32%, var(--panel)),
+      color-mix(in srgb, var(--panel) 96%, transparent)
+    );
+}
+
+.month-group__header {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.4fr) repeat(3, minmax(130px, 1fr));
+  gap: 10px;
+  align-items: stretch;
+  padding: 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--accent) 11%, transparent),
+      color-mix(in srgb, var(--blue) 6%, transparent)
+    );
+}
+
+.month-group__header div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel-strong) 68%, transparent);
+}
+
+.month-group__header span {
+  color: var(--muted-text);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.month-group__header strong {
+  color: var(--text);
+  font-size: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.month-group .table-scroll {
+  margin: 0;
+  padding: 0 0 8px;
+}
+
 .table-scroll::-webkit-scrollbar {
   height: 10px;
 }
@@ -1740,7 +1803,8 @@ tbody tr:hover .col-actions {
   .ideas-category-grid,
   .analytics-grid,
   .analytics-risk-grid,
-  .analytics-hero__metrics {
+  .analytics-hero__metrics,
+  .month-group__header {
     grid-template-columns: 1fr;
   }
 

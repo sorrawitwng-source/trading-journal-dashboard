@@ -96,6 +96,7 @@ export function HoldingsTable({
   rows,
 }: HoldingsTableProps) {
   const text = labels[language];
+  const monthlyGroups = groupRowsByMonth(rows);
 
   return (
     <section className="panel holdings-panel" aria-labelledby="holdings-title">
@@ -131,37 +132,68 @@ export function HoldingsTable({
           <span>{text.emptyDescription}</span>
         </div>
       ) : (
-        <div className="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th className="col-symbol">{text.symbol}</th>
-                <th className="col-name">{text.name}</th>
-                <th className="col-date">{text.month}</th>
-                <th className="col-date">{text.buyDate}</th>
-                <th className="col-status">{text.status}</th>
-                <th className="col-market">{text.market}</th>
-                <th className="col-sector">{text.sector}</th>
-                <th className="col-money">{text.buyPrice}</th>
-                <th className="col-quantity">{text.quantity}</th>
-                <th className="col-money">{text.cost}</th>
-                <th className="col-money">{text.currentPrice}</th>
-                <th className="col-money">{text.sellPrice}</th>
-                <th className="col-date">{text.sellDate}</th>
-                <th className="col-money">{text.currentValue}</th>
-                <th className="col-profit">{text.estimatedProfitLoss}</th>
-                <th className="col-data">{text.data}</th>
-                <th className="col-score">{text.score}</th>
-                <th className="col-risk">{text.risk}</th>
-                <th className="col-actions">{text.actions}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => {
-                const isEditing = editDraft?.id === row.id;
+        <div className="monthly-holdings-list">
+          {monthlyGroups.map((group) => {
+            const groupTone =
+              group.profitLoss > 0
+                ? "positive"
+                : group.profitLoss < 0
+                  ? "negative"
+                  : "neutral";
 
-                return (
-                  <tr key={row.id}>
+            return (
+              <section className="month-group" key={group.key}>
+                <div className="month-group__header">
+                  <div>
+                    <span>{text.month}</span>
+                    <strong>{group.label}</strong>
+                  </div>
+                  <div>
+                    <span>{text.items}</span>
+                    <strong>{group.rows.length}</strong>
+                  </div>
+                  <div>
+                    <span>{text.currentValue}</span>
+                    <strong>{currencyFormatters[baseCurrency].format(group.value)}</strong>
+                  </div>
+                  <div>
+                    <span>{text.estimatedProfitLoss}</span>
+                    <strong className={`metric-value metric-value--${groupTone}`}>
+                      {currencyFormatters[baseCurrency].format(group.profitLoss)}
+                    </strong>
+                  </div>
+                </div>
+                <div className="table-scroll">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th className="col-symbol">{text.symbol}</th>
+                        <th className="col-name">{text.name}</th>
+                        <th className="col-date">{text.month}</th>
+                        <th className="col-date">{text.buyDate}</th>
+                        <th className="col-status">{text.status}</th>
+                        <th className="col-market">{text.market}</th>
+                        <th className="col-sector">{text.sector}</th>
+                        <th className="col-money">{text.buyPrice}</th>
+                        <th className="col-quantity">{text.quantity}</th>
+                        <th className="col-money">{text.cost}</th>
+                        <th className="col-money">{text.currentPrice}</th>
+                        <th className="col-money">{text.sellPrice}</th>
+                        <th className="col-date">{text.sellDate}</th>
+                        <th className="col-money">{text.currentValue}</th>
+                        <th className="col-profit">{text.estimatedProfitLoss}</th>
+                        <th className="col-data">{text.data}</th>
+                        <th className="col-score">{text.score}</th>
+                        <th className="col-risk">{text.risk}</th>
+                        <th className="col-actions">{text.actions}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {group.rows.map((row) => {
+                        const isEditing = editDraft?.id === row.id;
+
+                        return (
+                          <tr key={row.id}>
                     <td className="col-symbol">
                       {isEditing ? (
                         <EditableCell
@@ -400,11 +432,15 @@ export function HoldingsTable({
                         </div>
                       )}
                     </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            );
+          })}
         </div>
       )}
     </section>
@@ -466,6 +502,50 @@ function sectorSourceLabel(source: PortfolioPosition["sectorSource"]): string {
   return "Unknown";
 }
 
+function groupRowsByMonth(rows: HoldingRow[]) {
+  const groups = new Map<
+    string,
+    {
+      key: string;
+      label: string;
+      profitLoss: number;
+      rows: HoldingRow[];
+      value: number;
+    }
+  >();
+
+  for (const row of rows) {
+    const key = row.buyDate.slice(0, 7);
+    const group =
+      groups.get(key) ??
+      {
+        key,
+        label: formatMonth(row.buyDate),
+        profitLoss: 0,
+        rows: [],
+        value: 0,
+      };
+
+    group.rows.push(row);
+    group.profitLoss += row.baseProfitLossAmount;
+    group.value += row.baseCurrentValue;
+    groups.set(key, group);
+  }
+
+  return Array.from(groups.values())
+    .map((group) => ({
+      ...group,
+      profitLoss: roundCurrency(group.profitLoss),
+      rows: group.rows.sort((left, right) => right.buyDate.localeCompare(left.buyDate)),
+      value: roundCurrency(group.value),
+    }))
+    .sort((left, right) => right.key.localeCompare(left.key));
+}
+
+function roundCurrency(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
 const labels = {
   en: {
     actions: "Actions",
@@ -479,6 +559,7 @@ const labels = {
     emptyTitle: "No positions yet",
     eyebrow: "Portfolio",
     estimatedProfitLoss: "Est. P/L",
+    items: "Items",
     market: "Market",
     month: "Month",
     name: "Name",
@@ -509,6 +590,7 @@ const labels = {
     emptyTitle: "ยังไม่มีรายการหุ้น",
     eyebrow: "พอร์ต",
     estimatedProfitLoss: "กำไร/ขาดทุน",
+    items: "รายการ",
     market: "ตลาด",
     month: "เดือน",
     name: "ชื่อ",
