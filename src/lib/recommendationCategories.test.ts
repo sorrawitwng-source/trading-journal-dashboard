@@ -38,6 +38,27 @@ describe("buildRecommendationCategories", () => {
       ),
     ).toBe(true);
   });
+
+  it("keeps watchlist candidates when score data is incomplete", () => {
+    const categories = buildRecommendationCategories(
+      [
+        ...sampleStocks,
+        stock("ASML", "US", "Semiconductors", {
+          dividend: null,
+          momentum: null,
+          risk: null,
+          valuation: null,
+          volatility: null,
+        }),
+      ],
+      "US",
+    );
+    const techCategory = categories.find((category) => category.id === "tech");
+
+    expect(techCategory?.stocks.map((stock) => stock.symbol)).toContain("ASML");
+    expect(techCategory?.stocks.at(-1)?.symbol).toBe("ASML");
+    expect(techCategory?.stocks.at(-1)?.score).toBeNull();
+  });
 });
 
 const sampleStocks: StockProfile[] = [

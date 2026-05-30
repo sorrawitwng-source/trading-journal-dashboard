@@ -23,6 +23,10 @@ export function StockIdeasPage({ categories, language }: StockIdeasPageProps) {
   const featuredCategories = categories.slice(0, 4);
   const remainingCategories = categories.slice(4);
   const text = labels[language];
+  const ideaCount = categories.reduce(
+    (sum, category) => sum + category.stocks.length,
+    0,
+  );
 
   return (
     <section className="ideas-page" aria-labelledby="ideas-title">
@@ -33,9 +37,15 @@ export function StockIdeasPage({ categories, language }: StockIdeasPageProps) {
           <p>{text.description}</p>
         </div>
         <div className="ideas-hero__insight" aria-label={text.scoreModel}>
-          <div className="ideas-hero__stats">
-            <strong>{categories.length}</strong>
-            <span>{text.categories}</span>
+          <div className="ideas-hero__stat-stack">
+            <div className="ideas-hero__stats">
+              <strong>{ideaCount}</strong>
+              <span>{text.ideasShown}</span>
+            </div>
+            <div className="ideas-hero__stats ideas-hero__stats--quiet">
+              <strong>{categories.length}</strong>
+              <span>{text.categories}</span>
+            </div>
           </div>
           <div className="score-model-card">
             <span>{text.scoreModel}</span>
@@ -144,9 +154,15 @@ function IdeaCategoryCard({
                     )}
                   </p>
                   <div className="idea-factor-strip" aria-label={text.keyDrivers}>
-                    {keyFactors.map((item) => (
-                      <FactorChip item={item} key={item.label} language={language} />
-                    ))}
+                    {keyFactors.length === 0 ? (
+                      <span className="idea-factor-chip idea-factor-chip--empty">
+                        {noDataText(language)}
+                      </span>
+                    ) : (
+                      keyFactors.map((item) => (
+                        <FactorChip item={item} key={item.label} language={language} />
+                      ))
+                    )}
                   </div>
                 </div>
 
@@ -260,6 +276,7 @@ const labels = {
       "Browse Thai and US stocks by sector, income profile, growth signal, and risk quality.",
     empty: "No matching ideas for this market filter.",
     eyebrow: "Stock Ideas",
+    ideasShown: "ideas shown",
     keyDrivers: "Key score drivers",
     points: "pts",
     researchFocus: "Research focus: ",
@@ -277,6 +294,7 @@ const labels = {
       "ค้นหาไอเดียหุ้นไทยและหุ้นสหรัฐตามกลุ่มธุรกิจ สไตล์รายได้ โมเมนตัม และระดับความเสี่ยง",
     empty: "ไม่มีไอเดียที่ตรงกับตัวกรองตลาดนี้",
     eyebrow: "หุ้นน่าสนใจ",
+    ideasShown: "ไอเดียที่แสดง",
     keyDrivers: "ตัวขับเคลื่อนคะแนนหลัก",
     points: "คะแนน",
     researchFocus: "ควรวิจัยต่อ: ",

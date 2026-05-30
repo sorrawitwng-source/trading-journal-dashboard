@@ -1120,9 +1120,23 @@ summary {
 
 .ideas-hero__insight {
   display: grid;
-  grid-template-columns: 128px minmax(260px, 1fr);
+  grid-template-columns: 140px minmax(260px, 1fr);
   gap: 10px;
   min-width: min(520px, 100%);
+}
+
+.ideas-hero__stat-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.ideas-hero__stat-stack .ideas-hero__stats {
+  min-width: 0;
+}
+
+.ideas-hero__stats--quiet strong {
+  color: var(--blue);
+  font-size: 1.55rem;
 }
 
 .score-model-card {
@@ -1387,6 +1401,10 @@ summary {
 
 .idea-factor-chip b {
   color: var(--text);
+}
+
+.idea-factor-chip--empty {
+  color: var(--warning);
 }
 
 .idea-row__meta {

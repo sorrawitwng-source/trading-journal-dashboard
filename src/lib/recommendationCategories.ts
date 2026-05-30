@@ -25,8 +25,8 @@ const categoryDefinitions: CategoryDefinition[] = [
   {
     id: "dividend",
     label: "Dividend",
-    description: "Higher income names with stronger dividend metrics.",
-    matches: (stock) => stock.dividend !== null && stock.dividend >= 55,
+    description: "Income names with visible yield support or defensive cash-return traits.",
+    matches: (stock) => stock.dividend !== null && stock.dividend >= 45,
   },
   sectorCategory("real-estate", "Real Estate", "Property developers, REIT-like names, and land-linked businesses.", [
     "property",
@@ -70,30 +70,32 @@ const categoryDefinitions: CategoryDefinition[] = [
   {
     id: "growth",
     label: "Growth / Momentum",
-    description: "Stocks with strong momentum and above-average score potential.",
-    matches: (stock) => stock.momentum !== null && stock.momentum >= 68,
+    description: "Stocks with improving momentum, trend strength, or active research interest.",
+    matches: (stock) => stock.momentum !== null && stock.momentum >= 55,
   },
   {
     id: "low-risk",
     label: "Low Risk",
-    description: "Lower-risk names with steadier volatility profiles.",
+    description: "Lower-volatility candidates and steadier names for watchlist building.",
     matches: (stock) =>
-      (stock.risk !== null && stock.risk <= 35) ||
-      (stock.volatility !== null && stock.volatility <= 32),
+      (stock.risk !== null && stock.risk <= 45) ||
+      (stock.volatility !== null && stock.volatility <= 42),
   },
   {
     id: "thai",
     label: "Thai Stocks",
-    description: "SET100-focused Thai ideas for local-market tracking.",
+    description: "SET100-focused Thai watchlist for local-market tracking.",
     matches: (stock) => stock.market === "Thai",
   },
   {
     id: "us",
     label: "US Stocks",
-    description: "S&P 500 and Nasdaq 100 ideas for global exposure.",
+    description: "S&P 500 and Nasdaq 100 watchlist for global exposure.",
     matches: (stock) => stock.market === "US",
   },
 ];
+
+const ideasPerCategory = 10;
 
 export function buildRecommendationCategories(
   stocks: StockProfile[],
@@ -110,13 +112,45 @@ export function buildRecommendationCategories(
     stocks: filteredStocks
       .filter(category.matches)
       .map(buildRecommendation)
-      .filter(
-        (stock): stock is StockRecommendation & { score: number } =>
-          stock.score !== null,
-      )
-      .sort((left, right) => right.score - left.score)
-      .slice(0, 6),
+      .sort(compareRecommendations)
+      .slice(0, ideasPerCategory),
   }));
+}
+
+function compareRecommendations(
+  left: StockRecommendation,
+  right: StockRecommendation,
+): number {
+  const leftScore = left.score ?? -1;
+  const rightScore = right.score ?? -1;
+
+  if (rightScore !== leftScore) {
+    return rightScore - leftScore;
+  }
+
+  const qualityRank = dataQualityRank(right.dataQuality) - dataQualityRank(left.dataQuality);
+
+  if (qualityRank !== 0) {
+    return qualityRank;
+  }
+
+  return left.symbol.localeCompare(right.symbol);
+}
+
+function dataQualityRank(dataQuality: StockRecommendation["dataQuality"]): number {
+  if (dataQuality === "complete") {
+    return 3;
+  }
+
+  if (dataQuality === "partial") {
+    return 2;
+  }
+
+  if (dataQuality === "limited") {
+    return 1;
+  }
+
+  return 0;
 }
 
 function sectorCategory(
