@@ -674,7 +674,7 @@ function formatDate(value: string): string {
 }
 
 function formatMonth(value: string): string {
-  return new Intl.DateTimeFormat("th-TH", {
+  return new Intl.DateTimeFormat("th-TH-u-ca-gregory", {
     month: "short",
     year: "numeric",
   }).format(new Date(value));
