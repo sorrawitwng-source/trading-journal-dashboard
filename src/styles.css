@@ -682,24 +682,35 @@ summary {
 
 .analytics-page {
   display: grid;
-  gap: 16px;
+  gap: 18px;
 }
 
 .analytics-hero {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
-  gap: 18px;
+  gap: 20px;
   align-items: stretch;
-  padding: 22px;
-  border: 1px solid var(--border);
+  overflow: hidden;
+  padding: 24px;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
   border-radius: 8px;
   background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 18%, transparent), transparent 38%),
     linear-gradient(
       135deg,
-      color-mix(in srgb, var(--blue) 12%, var(--panel-strong)),
-      color-mix(in srgb, var(--accent) 8%, var(--panel))
+      color-mix(in srgb, var(--blue) 13%, var(--panel-strong)),
+      color-mix(in srgb, var(--accent) 10%, var(--panel))
     );
   box-shadow: var(--shadow);
+}
+
+.analytics-hero::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent), transparent 62%);
+  content: "";
 }
 
 .analytics-hero h2,
@@ -721,7 +732,7 @@ summary {
 .analytics-hero__metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .analytics-metric,
@@ -729,11 +740,17 @@ summary {
   display: grid;
   align-content: center;
   min-width: 0;
-  min-height: 96px;
-  padding: 14px;
-  border: 1px solid var(--border);
+  min-height: 104px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--border) 86%, transparent);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--panel-strong) 78%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 92%, transparent),
+      color-mix(in srgb, var(--panel) 82%, transparent)
+    );
+  box-shadow: 0 1px 0 color-mix(in srgb, white 7%, transparent) inset;
 }
 
 .analytics-metric span,
@@ -745,14 +762,15 @@ summary {
 .analytics-metric span,
 .risk-signal span {
   font-size: 0.76rem;
-  font-weight: 800;
+  font-weight: 900;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .analytics-metric strong,
 .risk-signal strong {
-  margin-top: 8px;
-  font-size: 1.18rem;
+  margin-top: 10px;
+  font-size: 1.22rem;
   line-height: 1.12;
   overflow-wrap: anywhere;
 }
@@ -767,6 +785,10 @@ summary {
   position: relative;
   overflow: hidden;
   box-shadow: var(--soft-shadow);
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease,
+    background 160ms ease;
 }
 
 .risk-signal::before {
@@ -775,6 +797,12 @@ summary {
   width: 4px;
   background: var(--muted-text);
   content: "";
+}
+
+.risk-signal:hover {
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
+  background: color-mix(in srgb, var(--accent) 7%, var(--panel-strong));
+  transform: translateY(-1px);
 }
 
 .risk-signal--positive::before {
@@ -795,27 +823,28 @@ summary {
 
 .monthly-report {
   display: grid;
-  gap: 14px;
+  gap: 16px;
   overflow: hidden;
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--border));
 }
 
 .monthly-report__list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+  gap: 14px;
 }
 
 .monthly-report-card {
   display: grid;
-  gap: 13px;
+  gap: 14px;
   min-width: 0;
-  padding: 14px;
-  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--border) 86%, transparent);
   border-radius: 8px;
   background:
     linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--panel-strong) 92%, transparent),
+      135deg,
+      color-mix(in srgb, var(--accent) 10%, var(--panel-strong)),
       color-mix(in srgb, var(--panel) 96%, transparent)
     );
   box-shadow: var(--soft-shadow);
@@ -855,18 +884,18 @@ summary {
 }
 
 .monthly-report-card__header strong {
-  font-size: 1.28rem;
+  font-size: clamp(1.18rem, 1.7vw, 1.52rem);
   line-height: 1.05;
   overflow-wrap: anywhere;
 }
 
 .monthly-report-card__header > b {
   flex: 0 0 auto;
-  padding: 5px 8px;
+  padding: 6px 10px;
   border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
   border-radius: 999px;
   color: var(--text);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   background: color-mix(in srgb, var(--panel-strong) 82%, transparent);
 }
 
@@ -878,9 +907,9 @@ summary {
 
 .monthly-report-pill {
   display: grid;
-  gap: 4px;
+  gap: 5px;
   min-width: 0;
-  padding: 8px;
+  padding: 10px;
   border: 1px solid color-mix(in srgb, var(--border) 68%, transparent);
   border-radius: 8px;
   background: color-mix(in srgb, var(--panel-strong) 70%, transparent);
@@ -901,9 +930,9 @@ summary {
 
 .monthly-report-trade {
   display: grid;
-  gap: 5px;
+  gap: 6px;
   min-width: 0;
-  padding: 9px;
+  padding: 11px;
   border-radius: 8px;
   background: color-mix(in srgb, var(--background) 52%, transparent);
 }
@@ -928,7 +957,7 @@ summary {
 .analytics-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
 }
 
 .analytics-grid--wide {
@@ -937,7 +966,7 @@ summary {
 
 .analytics-panel {
   display: grid;
-  gap: 2px;
+  gap: 10px;
   align-content: start;
 }
 
@@ -952,7 +981,7 @@ summary {
   grid-template-columns: minmax(0, 1fr) 84px;
   gap: 7px 10px;
   align-items: center;
-  padding: 9px;
+  padding: 11px;
   border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
   border-radius: 8px;
   background: color-mix(in srgb, var(--panel-strong) 70%, transparent);
@@ -992,7 +1021,7 @@ summary {
 
 .allocation-bar {
   grid-column: 1 / -1;
-  height: 7px;
+  height: 8px;
   overflow: hidden;
   border-radius: 999px;
   background: color-mix(in srgb, var(--border) 62%, transparent);
@@ -1058,20 +1087,31 @@ summary {
 }
 
 .ideas-hero {
+  position: relative;
   display: flex;
   align-items: stretch;
   justify-content: space-between;
   gap: 20px;
+  overflow: hidden;
   padding: 24px;
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border));
   border-radius: 8px;
   background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 16%, transparent), transparent 42%),
     linear-gradient(
       135deg,
       color-mix(in srgb, var(--blue) 10%, var(--panel-strong)),
       color-mix(in srgb, var(--accent) 8%, var(--panel))
     );
   box-shadow: var(--shadow);
+}
+
+.ideas-hero::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent), transparent 66%);
+  content: "";
 }
 
 .ideas-hero h2,
@@ -1098,15 +1138,21 @@ summary {
   min-width: 128px;
   align-content: center;
   justify-items: center;
-  padding: 16px;
-  border: 1px solid var(--border);
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
   border-radius: 8px;
-  background: var(--panel-strong);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 94%, transparent),
+      color-mix(in srgb, var(--panel) 72%, transparent)
+    );
+  box-shadow: 0 1px 0 color-mix(in srgb, white 7%, transparent) inset;
 }
 
 .ideas-hero__stats strong {
   color: var(--accent);
-  font-size: 2.15rem;
+  font-size: 2rem;
   line-height: 1;
 }
 
@@ -1128,6 +1174,8 @@ summary {
 .ideas-hero__stat-stack {
   display: grid;
   gap: 10px;
+  grid-template-columns: repeat(3, minmax(104px, 1fr));
+  min-width: min(500px, 100%);
 }
 
 .ideas-hero__stat-stack .ideas-hero__stats {
@@ -1199,11 +1247,16 @@ summary {
 
 .weekly-themes {
   display: grid;
-  gap: 14px;
+  gap: 16px;
   padding: 18px;
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border));
   border-radius: 8px;
-  background: color-mix(in srgb, var(--panel-strong) 68%, var(--panel));
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 82%, transparent),
+      color-mix(in srgb, var(--panel) 94%, transparent)
+    );
   box-shadow: var(--soft-shadow);
 }
 
@@ -1228,7 +1281,7 @@ summary {
 .weekly-theme-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
 }
 
 .weekly-theme-grid--full {
@@ -1236,26 +1289,51 @@ summary {
 }
 
 .weekly-theme {
+  position: relative;
   display: grid;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
-  padding: 14px;
-  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
-  border-left: 3px solid var(--muted-text);
+  overflow: hidden;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--border) 84%, transparent);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 60%, transparent),
+      color-mix(in srgb, var(--panel) 92%, transparent)
+    );
+  box-shadow: var(--soft-shadow);
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease,
+    background 160ms ease;
 }
 
-.weekly-theme--hot {
-  border-left-color: var(--positive);
+.weekly-theme::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--muted-text);
+  content: "";
 }
 
-.weekly-theme--mixed {
-  border-left-color: var(--accent);
+.weekly-theme:hover {
+  border-color: color-mix(in srgb, var(--accent) 36%, var(--border));
+  background: color-mix(in srgb, var(--accent) 6%, var(--panel-strong));
+  transform: translateY(-1px);
 }
 
-.weekly-theme--watch {
-  border-left-color: var(--warning);
+.weekly-theme--hot::before {
+  background: var(--positive);
+}
+
+.weekly-theme--mixed::before {
+  background: var(--accent);
+}
+
+.weekly-theme--watch::before {
+  background: var(--warning);
 }
 
 .weekly-theme__header {
@@ -1267,7 +1345,7 @@ summary {
 
 .weekly-theme__header span,
 .weekly-theme__header b {
-  padding: 4px 7px;
+  padding: 5px 8px;
   border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
   border-radius: 999px;
   color: var(--muted-text);
@@ -1283,7 +1361,7 @@ summary {
 .weekly-theme h3 {
   margin: 0;
   color: var(--text);
-  font-size: 0.98rem;
+  font-size: 1.05rem;
   line-height: 1.25;
 }
 
@@ -1296,7 +1374,7 @@ summary {
 
 .weekly-theme__section {
   display: grid;
-  gap: 7px;
+  gap: 8px;
 }
 
 .weekly-theme__section > strong {
@@ -1308,12 +1386,12 @@ summary {
 .weekly-theme__symbols {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 7px;
 }
 
 .weekly-theme__chips span,
 .weekly-theme__symbols b {
-  padding: 5px 7px;
+  padding: 6px 8px;
   border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
   border-radius: 999px;
   color: var(--muted-text);
@@ -1327,6 +1405,7 @@ summary {
 }
 
 .weekly-theme a {
+  align-self: end;
   color: var(--accent);
   font-size: 0.74rem;
   font-weight: 800;
@@ -2296,12 +2375,18 @@ tbody tr:hover .col-actions {
   }
 
   .analytics-hero,
+  .ideas-hero,
   .analytics-grid--wide {
     grid-template-columns: 1fr;
+    display: grid;
   }
 
   .ideas-hero__insight {
     grid-template-columns: 1fr;
+    min-width: 0;
+  }
+
+  .ideas-hero__stat-stack {
     min-width: 0;
   }
 }
@@ -2375,6 +2460,10 @@ tbody tr:hover .col-actions {
   .analytics-hero {
     display: grid;
     padding: 18px;
+  }
+
+  .ideas-hero__stat-stack {
+    grid-template-columns: 1fr;
   }
 
   .idea-row__title {
