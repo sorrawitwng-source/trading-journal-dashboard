@@ -108,6 +108,28 @@ describe("refreshUsdThbRate", () => {
       status: "live",
     });
   });
+
+  it("falls back to the Vercel quote endpoint when Netlify is unavailable", async () => {
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce({
+        json: async () => ({ error: "Not found" }),
+        ok: false,
+      })
+      .mockResolvedValueOnce({
+        json: async () => ({
+          price: 36.12,
+          providerSymbol: "THB=X",
+        }),
+        ok: true,
+      }) as unknown as typeof fetch;
+
+    await expect(refreshUsdThbRate(localStorage, fetcher)).resolves.toMatchObject({
+      rate: 36.12,
+      status: "live",
+    });
+    expect(vi.mocked(fetcher).mock.calls[1]?.[0]).toContain("/api/quote");
+  });
 });
 
 function basePosition(

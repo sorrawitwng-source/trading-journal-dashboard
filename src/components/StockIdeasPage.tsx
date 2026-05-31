@@ -1,70 +1,45 @@
-import type { RecommendationCategory } from "../lib/recommendationCategories";
-import { scoreComponentGuides } from "../lib/scoring";
-import {
-  dataQualityText,
-  metricLabel,
-  noDataText,
-  recommendationReasonText,
-  researchPromptText,
-  riskLevelText,
-  riskReasonText,
-  scoreMethodologyText,
-  strongestBreakdownItem,
-  type Language,
-} from "../lib/scoreText";
+import type { MarketFilter } from "../types";
 import { weeklyThemeUpdatedAt, weeklyThemes } from "../lib/weeklyThemes";
-import type { ScoreBreakdownItem } from "../types";
+import type { Language } from "../lib/scoreText";
 
 interface StockIdeasPageProps {
-  categories: RecommendationCategory[];
   language: Language;
+  marketFilter: MarketFilter;
 }
 
-export function StockIdeasPage({ categories, language }: StockIdeasPageProps) {
-  const featuredCategories = categories.slice(0, 4);
-  const remainingCategories = categories.slice(4);
+export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) {
   const text = labels[language];
-  const ideaCount = categories.reduce(
-    (sum, category) => sum + category.stocks.length,
-    0,
+  const visibleThemes = weeklyThemes.filter(
+    (theme) => marketFilter === "All" || theme.market === marketFilter,
   );
+  const symbolCount = new Set(visibleThemes.flatMap((theme) => theme.symbols)).size;
+  const sectorCount = new Set(visibleThemes.flatMap((theme) => theme.sectors)).size;
 
   return (
-    <section className="ideas-page" aria-labelledby="ideas-title">
+    <section className="ideas-page weekly-ideas-page" aria-labelledby="ideas-title">
       <div className="ideas-hero">
         <div>
           <p className="eyebrow">{text.eyebrow}</p>
           <h2 id="ideas-title">{text.title}</h2>
           <p>{text.description}</p>
         </div>
-        <div className="ideas-hero__insight" aria-label={text.scoreModel}>
-          <div className="ideas-hero__stat-stack">
-            <div className="ideas-hero__stats">
-              <strong>{ideaCount}</strong>
-              <span>{text.ideasShown}</span>
-            </div>
-            <div className="ideas-hero__stats ideas-hero__stats--quiet">
-              <strong>{categories.length}</strong>
-              <span>{text.categories}</span>
-            </div>
+        <div className="ideas-hero__stat-stack">
+          <div className="ideas-hero__stats">
+            <strong>{visibleThemes.length}</strong>
+            <span>{text.themeCount}</span>
           </div>
-          <div className="score-model-card">
-            <span>{text.scoreModel}</span>
-            <strong>100 {text.points}</strong>
-            <p>{text.scoreModelDescription}</p>
-            <div className="score-weight-list">
-              {scoreComponentGuides.map((component) => (
-                <span key={component.key}>
-                  {metricLabel(component.label, language)}
-                  <b>{formatWeight(component.weight)}</b>
-                </span>
-              ))}
-            </div>
+          <div className="ideas-hero__stats ideas-hero__stats--quiet">
+            <strong>{symbolCount}</strong>
+            <span>{text.stockCount}</span>
+          </div>
+          <div className="ideas-hero__stats ideas-hero__stats--quiet">
+            <strong>{sectorCount}</strong>
+            <span>{text.sectorCount}</span>
           </div>
         </div>
       </div>
 
-      <section className="weekly-themes" aria-labelledby="weekly-themes-title">
+      <section className="weekly-themes weekly-themes--full" aria-labelledby="weekly-themes-title">
         <div className="section-heading">
           <div>
             <p className="eyebrow">{text.weeklyEyebrow}</p>
@@ -73,8 +48,9 @@ export function StockIdeasPage({ categories, language }: StockIdeasPageProps) {
           </div>
           <span>{formatDate(weeklyThemeUpdatedAt, language)}</span>
         </div>
-        <div className="weekly-theme-grid">
-          {weeklyThemes.map((theme) => (
+
+        <div className="weekly-theme-grid weekly-theme-grid--full">
+          {visibleThemes.map((theme) => (
             <article className={`weekly-theme weekly-theme--${theme.signal}`} key={theme.id}>
               <div className="weekly-theme__header">
                 <span>{theme.market}</span>
@@ -82,16 +58,25 @@ export function StockIdeasPage({ categories, language }: StockIdeasPageProps) {
               </div>
               <h3>{theme.title[language]}</h3>
               <p>{theme.thesis[language]}</p>
-              <div className="weekly-theme__chips">
-                {theme.sectors.map((sector) => (
-                  <span key={sector}>{sector}</span>
-                ))}
+
+              <div className="weekly-theme__section">
+                <strong>{text.benefitingSectors}</strong>
+                <div className="weekly-theme__chips">
+                  {theme.sectors.map((sector) => (
+                    <span key={sector}>{sector}</span>
+                  ))}
+                </div>
               </div>
-              <div className="weekly-theme__symbols" aria-label={text.relatedStocks}>
-                {theme.symbols.map((symbol) => (
-                  <b key={symbol}>{symbol}</b>
-                ))}
+
+              <div className="weekly-theme__section">
+                <strong>{text.relatedStocks}</strong>
+                <div className="weekly-theme__symbols">
+                  {theme.symbols.map((symbol) => (
+                    <b key={symbol}>{symbol}</b>
+                  ))}
+                </div>
               </div>
+
               <a href={theme.sourceUrl} rel="noreferrer" target="_blank">
                 {text.source}: {theme.sourceLabel}
               </a>
@@ -99,211 +84,8 @@ export function StockIdeasPage({ categories, language }: StockIdeasPageProps) {
           ))}
         </div>
       </section>
-
-      <div className="ideas-feature-grid">
-        {featuredCategories.map((category) => (
-          <IdeaCategoryCard
-            category={category}
-            emptyText={text.empty}
-            isFeatured
-            key={category.id}
-            language={language}
-            researchNotesLabel={text.researchNotes}
-          />
-        ))}
-      </div>
-
-      <div className="ideas-category-grid">
-        {remainingCategories.map((category) => (
-          <IdeaCategoryCard
-            category={category}
-            emptyText={text.empty}
-            key={category.id}
-            language={language}
-            researchNotesLabel={text.researchNotes}
-          />
-        ))}
-      </div>
     </section>
   );
-}
-
-function IdeaCategoryCard({
-  category,
-  emptyText,
-  isFeatured = false,
-  language,
-  researchNotesLabel,
-}: {
-  category: RecommendationCategory;
-  emptyText: string;
-  isFeatured?: boolean;
-  language: Language;
-  researchNotesLabel: string;
-}) {
-  const text = labels[language];
-
-  return (
-    <article
-      className={`idea-category-card${
-        isFeatured ? " idea-category-card--featured" : ""
-      }`}
-    >
-      <div className="idea-category-card__heading">
-        <div>
-          <h3>{category.label}</h3>
-          <p>{category.description}</p>
-        </div>
-        <strong>{category.stocks.length}</strong>
-      </div>
-
-      {category.stocks.length === 0 ? (
-        <div className="idea-empty">{emptyText}</div>
-      ) : (
-        <div className="idea-list">
-          {category.stocks.map((stock) => {
-            const strongest = strongestBreakdownItem(stock.scoreBreakdown.items);
-            const keyFactors = stock.scoreBreakdown.items
-              .filter((item) => item.available)
-              .sort((left, right) => right.contribution - left.contribution)
-              .slice(0, 3);
-            const tone = scoreTone(stock.score);
-
-            return (
-              <div className={`idea-row idea-row--${tone}`} key={stock.symbol}>
-                <div className="idea-row__main">
-                  <div className="idea-row__title">
-                    <div>
-                      <strong>{stock.symbol}</strong>
-                      <span>{stock.name}</span>
-                    </div>
-                    <div className="idea-score-card">
-                      <span>{text.score}</span>
-                      <b>{stock.score ?? "N/A"}</b>
-                      <small>{scoreBandText(stock.score, language)}</small>
-                    </div>
-                  </div>
-                  <p className="idea-thesis">
-                    {recommendationReasonText(
-                      stock.score,
-                      strongest?.label,
-                      language,
-                    )}
-                  </p>
-                  <div className="idea-factor-strip" aria-label={text.keyDrivers}>
-                    {keyFactors.length === 0 ? (
-                      <span className="idea-factor-chip idea-factor-chip--empty">
-                        {noDataText(language)}
-                      </span>
-                    ) : (
-                      keyFactors.map((item) => (
-                        <FactorChip item={item} key={item.label} language={language} />
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                <div className="idea-row__meta">
-                  <span>{stock.market}</span>
-                  <span>{riskLevelText(stock.riskLevel, language)}</span>
-                  <span>{dataQualityText(stock.dataQuality, language)}</span>
-                </div>
-
-                <details className="idea-research">
-                  <summary>{researchNotesLabel}</summary>
-                  <div className="idea-research__brief">
-                    <p>
-                      <strong>{text.researchFocus}</strong>
-                      {researchPromptText(stock.score, strongest?.label, language)}
-                    </p>
-                    <p>
-                      <strong>{text.riskRead}</strong>
-                      {riskReasonText(stock.riskLevel, language)}
-                    </p>
-                  </div>
-                  <p className="idea-score-method">{scoreMethodologyText(language)}</p>
-                  <div className="idea-score-breakdown">
-                    {stock.scoreBreakdown.items.map((item) => (
-                      <ScoreFactorRow item={item} key={item.label} language={language} />
-                    ))}
-                  </div>
-                </details>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </article>
-  );
-}
-
-function FactorChip({
-  item,
-  language,
-}: {
-  item: ScoreBreakdownItem;
-  language: Language;
-}) {
-  return (
-    <span className="idea-factor-chip">
-      {metricLabel(item.label, language)}
-      <b>{item.contribution.toFixed(1)}</b>
-    </span>
-  );
-}
-
-function ScoreFactorRow({
-  item,
-  language,
-}: {
-  item: ScoreBreakdownItem;
-  language: Language;
-}) {
-  const contribution = item.available ? item.contribution : 0;
-
-  return (
-    <div className="idea-score-factor">
-      <div>
-        <span>{metricLabel(item.label, language)}</span>
-        <strong>
-          {item.available
-            ? `${item.value?.toFixed(0)} × ${formatWeight(item.weight)} = ${contribution.toFixed(1)}`
-            : noDataText(language)}
-        </strong>
-      </div>
-      <div className="idea-score-factor__bar" aria-hidden="true">
-        <span style={{ width: `${Math.min(contribution, 30) * (100 / 30)}%` }} />
-      </div>
-    </div>
-  );
-}
-
-function formatWeight(weight: number): string {
-  return `${Math.round(weight * 100)}%`;
-}
-
-function scoreTone(score: number | null): "balanced" | "strong" | "watch" {
-  if (score === null || score < 60) {
-    return "watch";
-  }
-
-  return score >= 75 ? "strong" : "balanced";
-}
-
-function scoreBandText(score: number | null, language: Language): string {
-  if (score === null) {
-    return language === "th" ? "ข้อมูลไม่พอ" : "Needs data";
-  }
-
-  if (score >= 75) {
-    return language === "th" ? "เด่น" : "Strong";
-  }
-
-  if (score >= 60) {
-    return language === "th" ? "น่าศึกษา" : "Research";
-  }
-
-  return language === "th" ? "เฝ้าดู" : "Watch";
 }
 
 function signalText(signal: "hot" | "mixed" | "watch", language: Language): string {
@@ -326,51 +108,35 @@ function formatDate(value: string, language: Language): string {
 
 const labels = {
   en: {
-    categories: "categories",
+    benefitingSectors: "Benefiting sectors",
     description:
-      "Browse Thai and US stocks by sector, income profile, growth signal, and risk quality.",
-    empty: "No matching ideas for this market filter.",
-    eyebrow: "Stock Ideas",
-    ideasShown: "ideas shown",
-    keyDrivers: "Key score drivers",
-    points: "pts",
-    researchFocus: "Research focus: ",
-    researchNotes: "Research notes",
-    riskRead: "Risk read: ",
-    score: "Score",
-    scoreModel: "Score model",
-    scoreModelDescription:
-      "The rank is a screen, not a buy signal. It blends factor strength with data confidence.",
+      "A weekly news-driven watchlist grouped by sectors that are getting fresh market support. Scores are removed from this page.",
+    eyebrow: "Weekly Stock Ideas",
     relatedStocks: "Related stocks",
+    sectorCount: "sectors",
     source: "Source",
-    title: "Ranked ideas by investment style",
+    stockCount: "stocks",
+    themeCount: "themes",
+    title: "This Week's Sector Ideas",
     weeklyDescription:
-      "A short weekly lens from market news, kept separate from the score model so headlines do not overwrite the ranking.",
-    weeklyEyebrow: "Weekly themes",
-    weeklyTitle: "What is moving this week",
+      "Use this as a research map for what is moving this week, then verify price action, earnings, and valuation before adding anything to your journal.",
+    weeklyEyebrow: "News lens",
+    weeklyTitle: "Themes and beneficiaries",
   },
   th: {
-    categories: "หมวดหมู่",
+    benefitingSectors: "Sector ที่ได้ประโยชน์",
     description:
-      "ค้นหาไอเดียหุ้นไทยและหุ้นสหรัฐตามกลุ่มธุรกิจ สไตล์รายได้ โมเมนตัม และระดับความเสี่ยง",
-    empty: "ไม่มีไอเดียที่ตรงกับตัวกรองตลาดนี้",
-    eyebrow: "หุ้นน่าสนใจ",
-    ideasShown: "ไอเดียที่แสดง",
-    keyDrivers: "ตัวขับเคลื่อนคะแนนหลัก",
-    points: "คะแนน",
-    researchFocus: "ควรวิจัยต่อ: ",
-    researchNotes: "บันทึกเพื่อวิจัยต่อ",
-    riskRead: "อ่านความเสี่ยง: ",
-    score: "คะแนน",
-    scoreModel: "โมเดลคะแนน",
-    scoreModelDescription:
-      "คะแนนเป็นตัวช่วยคัดกรอง ไม่ใช่สัญญาณซื้อ โดยรวมความแข็งแรงของปัจจัยกับความครบของข้อมูล",
+      "Watchlist จากข่าวรายสัปดาห์ แยกตาม sector ที่มีแรงหนุนใหม่ ตัดระบบคะแนนออกจากหน้านี้แล้ว",
+    eyebrow: "ไอเดียหุ้นรายสัปดาห์",
     relatedStocks: "หุ้นที่เกี่ยวข้อง",
+    sectorCount: "sector",
     source: "แหล่งข่าว",
-    title: "ไอเดียลงทุนแยกตามสไตล์",
+    stockCount: "หุ้น",
+    themeCount: "ธีม",
+    title: "ไอเดียตาม sector ประจำสัปดาห์",
     weeklyDescription:
-      "สรุปธีมจากข่าวตลาดรายสัปดาห์ แยกจากโมเดลคะแนน เพื่อให้เห็นว่ากลุ่มไหนกำลังมี narrative โดยไม่ปนกับ ranking",
-    weeklyEyebrow: "ธีมรายสัปดาห์",
-    weeklyTitle: "ช่วงนี้กลุ่มไหนกำลังถูกพูดถึง",
+      "ใช้เป็นแผนที่สำหรับ research ว่าช่วงนี้กลุ่มไหนกำลังขยับ แล้วค่อยตรวจราคา งบ และ valuation ก่อนบันทึกเข้าพอร์ต",
+    weeklyEyebrow: "มุมมองจากข่าว",
+    weeklyTitle: "ธีมและหุ้นที่ได้ประโยชน์",
   },
 };

@@ -242,6 +242,7 @@ async function fetchMarketQuote(
   const providerSymbol = toYahooSymbol(position.symbol, position.market);
   const endpoints = [
     `/.netlify/functions/quote?symbol=${encodeURIComponent(providerSymbol)}`,
+    `/api/quote?symbol=${encodeURIComponent(providerSymbol)}`,
     `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
       providerSymbol,
     )}?range=1d&interval=1m`,
@@ -273,6 +274,7 @@ async function fetchUsdThbQuote(fetcher: Fetcher): Promise<MarketQuote> {
   const providerSymbol = "THB=X";
   const endpoints = [
     `/.netlify/functions/quote?symbol=${encodeURIComponent(providerSymbol)}`,
+    `/api/quote?symbol=${encodeURIComponent(providerSymbol)}`,
     `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
       providerSymbol,
     )}?range=1d&interval=1m`,

@@ -26,7 +26,6 @@ import {
   refreshUsdThbRate,
 } from "./lib/marketData";
 import { loadStoredPositions, saveStoredPositions } from "./lib/positionsStorage";
-import { buildRecommendationCategories } from "./lib/recommendationCategories";
 import {
   displayDateString,
   todayDateString,
@@ -97,10 +96,6 @@ function App() {
   const portfolioSummary = useMemo(
     () => summarizePortfolio(positions, { baseCurrency, usdThbRate }),
     [baseCurrency, positions, usdThbRate],
-  );
-  const recommendationCategories = useMemo(
-    () => buildRecommendationCategories(stockUniverse, marketFilter),
-    [marketFilter],
   );
   const chartSeries = useMemo(
     () =>
@@ -439,7 +434,7 @@ function App() {
             usdThbRate={usdThbRate}
           />
         ) : (
-          <StockIdeasPage categories={recommendationCategories} language={language} />
+          <StockIdeasPage language={language} marketFilter={marketFilter} />
         )}
       </div>
     </main>
