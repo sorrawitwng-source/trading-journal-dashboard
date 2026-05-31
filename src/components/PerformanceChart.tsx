@@ -29,6 +29,14 @@ export function PerformanceChart({ series }: PerformanceChartProps) {
   const plotWidth = chartWidth - padding.left - padding.right;
   const plotHeight = chartHeight - padding.top - padding.bottom;
   const portfolioSeries = series.find((item) => item.symbol === "PORTFOLIO");
+  const portfolioFinalValue = portfolioSeries?.values.at(-1) ?? 0;
+  const spyFinalValue = series.find((item) => item.symbol === "SPY")?.values.at(-1) ?? null;
+  const bestBenchmark = series
+    .filter((item) => item.symbol !== "PORTFOLIO")
+    .map((item) => ({ ...item, finalValue: item.values.at(-1) ?? 0 }))
+    .sort((left, right) => right.finalValue - left.finalValue)[0];
+  const relativeToSpy =
+    spyFinalValue === null ? null : portfolioFinalValue - spyFinalValue;
   const isPortfolioBaseline =
     portfolioSeries?.values.every((value) => value === 0) ?? false;
   const yTicks = buildTicks(minValue, maxValue);
@@ -55,6 +63,32 @@ export function PerformanceChart({ series }: PerformanceChartProps) {
       </div>
 
       <div className="performance-chart-card">
+        <div className="performance-chart-summary" aria-label="Performance summary">
+          <ChartStat
+            label="12M portfolio"
+            tone={toneForValue(portfolioFinalValue)}
+            value={`${percentFormatter.format(portfolioFinalValue)}%`}
+          />
+          <ChartStat
+            label="Best benchmark"
+            tone={toneForValue(bestBenchmark?.finalValue ?? 0)}
+            value={
+              bestBenchmark
+                ? `${bestBenchmark.symbol} ${percentFormatter.format(bestBenchmark.finalValue)}%`
+                : "-"
+            }
+          />
+          <ChartStat
+            label="Lead vs SPY"
+            tone={relativeToSpy === null ? "neutral" : toneForValue(relativeToSpy)}
+            value={
+              relativeToSpy === null
+                ? "-"
+                : `${percentFormatter.format(relativeToSpy)} pts`
+            }
+          />
+        </div>
+
         <div
           className="performance-chart"
           role="img"
@@ -187,8 +221,7 @@ export function PerformanceChart({ series }: PerformanceChartProps) {
         <div className="performance-legend" aria-label="Chart legend">
           {series.map((item, index) => {
             const finalValue = item.values.at(-1) ?? 0;
-            const tone =
-              finalValue > 0 ? "positive" : finalValue < 0 ? "negative" : "neutral";
+            const tone = toneForValue(finalValue);
 
             return (
               <div
@@ -225,6 +258,35 @@ export function PerformanceChart({ series }: PerformanceChartProps) {
       ) : null}
     </section>
   );
+}
+
+function ChartStat({
+  label,
+  tone,
+  value,
+}: {
+  label: string;
+  tone: "negative" | "neutral" | "positive";
+  value: string;
+}) {
+  return (
+    <div className="performance-chart-stat">
+      <span>{label}</span>
+      <strong className={`metric-value metric-value--${tone}`}>{value}</strong>
+    </div>
+  );
+}
+
+function toneForValue(value: number): "negative" | "neutral" | "positive" {
+  if (value > 0) {
+    return "positive";
+  }
+
+  if (value < 0) {
+    return "negative";
+  }
+
+  return "neutral";
 }
 
 function buildTicks(minValue: number, maxValue: number): number[] {

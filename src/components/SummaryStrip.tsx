@@ -47,9 +47,18 @@ export function SummaryStrip({
         </span>
       </div>
       <section className="summary-strip" aria-label="Portfolio summary">
-        <SummaryItem label={text.totalCost} value={currencyFormatter.format(totalCost)} />
-        <SummaryItem label={text.estimatedValue} value={currencyFormatter.format(totalValue)} />
         <SummaryItem
+          accent="accent"
+          label={text.totalCost}
+          value={currencyFormatter.format(totalCost)}
+        />
+        <SummaryItem
+          accent="blue"
+          label={text.estimatedValue}
+          value={currencyFormatter.format(totalValue)}
+        />
+        <SummaryItem
+          accent={profitLossTone === "negative" ? "red" : "green"}
           label={text.totalProfitLoss}
           tone={profitLossTone}
           value={`${currencyFormatter.format(totalProfitLoss)} (${percentFormatter.format(
@@ -57,6 +66,7 @@ export function SummaryStrip({
           )}%)`}
         />
         <SummaryItem
+          accent="violet"
           label={text.averageScore}
           value={averageScore === null ? "N/A" : averageScore.toFixed(2)}
         />
@@ -83,18 +93,23 @@ const labels = {
 };
 
 function SummaryItem({
+  accent,
   label,
   tone = "neutral",
   value,
 }: {
+  accent: "accent" | "blue" | "green" | "red" | "violet";
   label: string;
   tone?: "negative" | "neutral" | "positive";
   value: string;
 }) {
   return (
-    <div className="summary-item">
-      <span>{label}</span>
-      <strong className={`metric-value metric-value--${tone}`}>{value}</strong>
+    <div className={`summary-item summary-item--${accent}`}>
+      <span className="summary-item__marker" aria-hidden="true" />
+      <div className="summary-item__body">
+        <span>{label}</span>
+        <strong className={`metric-value metric-value--${tone}`}>{value}</strong>
+      </div>
     </div>
   );
 }

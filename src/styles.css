@@ -239,18 +239,28 @@ summary {
 
 .summary-area {
   display: grid;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 18px;
 }
 
 .currency-note {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 8px 14px;
+  gap: 8px;
   color: var(--muted-text);
   font-size: 0.78rem;
   font-weight: 800;
+}
+
+.currency-note span {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  padding: 5px 10px;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--panel) 66%, transparent);
 }
 
 .currency-note strong {
@@ -260,7 +270,7 @@ summary {
 .summary-strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .summary-item,
@@ -278,35 +288,77 @@ summary {
 
 .summary-item {
   position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
   overflow: hidden;
-  min-height: 100px;
-  padding: 18px;
-}
-
-.summary-item::before {
-  position: absolute;
-  inset: 0 0 auto;
-  height: 3px;
-  background: var(--accent);
-  content: "";
-}
-
-.summary-item:nth-child(2)::before {
-  background: var(--blue);
-}
-
-.summary-item:nth-child(3)::before {
-  background: var(--amber);
-}
-
-.summary-item:nth-child(4)::before {
-  background: var(--violet);
+  min-height: 88px;
+  padding: 16px;
+  background:
+    radial-gradient(
+      circle at 88% 16%,
+      color-mix(in srgb, var(--summary-accent, var(--accent)) 13%, transparent),
+      transparent 42%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 20%, var(--panel)),
+      color-mix(in srgb, var(--panel) 94%, var(--background))
+    );
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 }
 
 .summary-item:hover,
 .panel:hover {
   border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
   box-shadow: var(--soft-shadow);
+}
+
+.summary-item:hover {
+  transform: translateY(-1px);
+}
+
+.summary-item--accent {
+  --summary-accent: var(--accent);
+}
+
+.summary-item--blue {
+  --summary-accent: var(--blue);
+}
+
+.summary-item--green {
+  --summary-accent: var(--green);
+}
+
+.summary-item--red {
+  --summary-accent: var(--red);
+}
+
+.summary-item--violet {
+  --summary-accent: var(--violet);
+}
+
+.summary-item__marker {
+  width: 12px;
+  height: 42px;
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--summary-accent, var(--accent)) 96%, white),
+      color-mix(in srgb, var(--summary-accent, var(--accent)) 78%, var(--panel))
+    );
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--summary-accent, var(--accent)) 12%, transparent);
+}
+
+.summary-item__body {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
 }
 
 .summary-item span,
@@ -318,15 +370,15 @@ summary {
 
 .summary-item span {
   display: block;
-  margin-bottom: 10px;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 0.82rem;
+  font-weight: 800;
 }
 
 .summary-item strong {
   display: block;
-  font-size: 1.45rem;
+  font-size: clamp(1.12rem, 1.4vw, 1.45rem);
   line-height: 1.15;
+  overflow-wrap: anywhere;
 }
 
 .metric-value--positive {
@@ -500,15 +552,21 @@ summary {
 
 .performance-chart-card {
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 
 .performance-chart {
-  min-height: 330px;
-  padding: 14px;
+  position: relative;
+  min-height: 320px;
+  padding: 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background:
+    radial-gradient(
+      circle at 82% 8%,
+      color-mix(in srgb, var(--accent) 16%, transparent),
+      transparent 32%
+    ),
     linear-gradient(
       180deg,
       color-mix(in srgb, var(--panel-strong) 82%, transparent),
@@ -522,7 +580,58 @@ summary {
   overflow: hidden;
 }
 
+.performance-chart::before {
+  position: absolute;
+  inset: 12px;
+  border-radius: 8px;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--muted-text) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--muted-text) 7%, transparent) 1px, transparent 1px);
+  background-size: 44px 44px;
+  content: "";
+  pointer-events: none;
+}
+
+.performance-chart-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.performance-chart-stat {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+  border-radius: 8px;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 7%, var(--panel-strong)),
+      color-mix(in srgb, var(--panel) 92%, transparent)
+    );
+}
+
+.performance-chart-stat span {
+  color: var(--muted-text);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.performance-chart-stat strong {
+  font-size: 1.02rem;
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .performance-chart__svg {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   min-width: 0;
@@ -530,8 +639,8 @@ summary {
 }
 
 .performance-chart__plot {
-  fill: color-mix(in srgb, var(--panel-strong) 62%, transparent);
-  stroke: var(--border);
+  fill: color-mix(in srgb, var(--panel-strong) 40%, transparent);
+  stroke: color-mix(in srgb, var(--border) 82%, transparent);
   stroke-width: 1;
 }
 
@@ -541,7 +650,7 @@ summary {
 }
 
 .performance-chart__grid {
-  stroke: color-mix(in srgb, var(--muted-text) 20%, transparent);
+  stroke: color-mix(in srgb, var(--muted-text) 16%, transparent);
   stroke-width: 1;
 }
 
@@ -553,7 +662,7 @@ summary {
 
 .performance-chart__axis-label {
   fill: var(--muted-text);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
 }
 
@@ -577,6 +686,7 @@ summary {
 .performance-chart__point {
   stroke: var(--panel);
   stroke-width: 2.2;
+  opacity: 0.94;
   transition:
     r 160ms ease,
     filter 160ms ease;
@@ -592,18 +702,18 @@ summary {
 
 .performance-legend {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
   gap: 8px;
 }
 
 .performance-legend__item {
   position: relative;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: auto auto;
-  gap: 5px 8px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 6px 9px;
+  align-items: center;
   min-width: 0;
-  padding: 10px;
+  padding: 11px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background:
@@ -625,10 +735,11 @@ summary {
 }
 
 .performance-legend__swatch {
-  width: 10px;
-  height: 10px;
-  margin-top: 5px;
+  width: 11px;
+  height: 28px;
+  margin-top: 0;
   border-radius: 999px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--legend-color, var(--accent)) 14%, transparent);
 }
 
 .performance-legend__item div {
@@ -654,8 +765,9 @@ summary {
 }
 
 .performance-legend__item b {
-  grid-column: 1 / -1;
   font-size: 0.95rem;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .chart-empty-note {
@@ -2560,6 +2672,7 @@ tbody tr:hover .col-actions {
   .portfolio-workspace,
   .recommendation-list,
   .performance-legend,
+  .performance-chart-summary,
   .ideas-feature-grid,
   .ideas-category-grid,
   .analytics-grid,
