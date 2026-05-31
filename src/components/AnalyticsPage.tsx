@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { Currency, PortfolioPosition } from "../types";
 import {
   type AnalyticsBucket,
@@ -28,6 +28,7 @@ export function AnalyticsPage({
 }: AnalyticsPageProps) {
   const text = labels[language];
   const monthText = monthlyLabels[language];
+  const allocationText = allocationLabels[language];
   const analytics = buildPortfolioAnalytics(positions, {
     baseCurrency,
     usdThbRate,
@@ -90,24 +91,28 @@ export function AnalyticsPage({
           <AllocationBars
             buckets={analytics.sectorExposure}
             formatter={(value) => moneyFormatter.format(value)}
+            text={allocationText}
           />
         </AnalyticsPanel>
         <AnalyticsPanel title={text.marketExposure}>
           <AllocationBars
             buckets={analytics.marketExposure}
             formatter={(value) => moneyFormatter.format(value)}
+            text={allocationText}
           />
         </AnalyticsPanel>
         <AnalyticsPanel title={text.currencyExposure}>
           <AllocationBars
             buckets={analytics.currencyExposure}
             formatter={(value) => moneyFormatter.format(value)}
+            text={allocationText}
           />
         </AnalyticsPanel>
         <AnalyticsPanel title={text.dataQuality}>
           <AllocationBars
             buckets={analytics.dataQuality}
             formatter={(value) => `${value.toFixed(0)} ${text.items}`}
+            text={allocationText}
           />
         </AnalyticsPanel>
       </section>
@@ -303,21 +308,63 @@ function AnalyticsPanel({
 function AllocationBars({
   buckets,
   formatter,
+  text,
 }: {
   buckets: AnalyticsBucket[];
   formatter: (value: number) => string;
+  text: (typeof allocationLabels)["en"];
 }) {
   if (buckets.length === 0) {
-    return <p className="analytics-muted">No data</p>;
+    return <p className="analytics-muted">{text.noData}</p>;
   }
+
+  const chartBuckets = compactAllocationBuckets(buckets, text.other);
+  const primaryBucket = chartBuckets[0];
+  const donutStyle = {
+    "--allocation-gradient": buildAllocationGradient(chartBuckets),
+  } as CSSProperties;
 
   return (
     <div className="allocation-list">
-      {buckets.slice(0, 6).map((bucket) => (
-        <div className="allocation-row" key={bucket.key}>
-          <div>
-            <strong>{bucket.key}</strong>
-            <span>{formatter(bucket.value)}</span>
+      <div className="allocation-donut-card">
+        <div
+          aria-label={`${primaryBucket.key} ${percentFormatter.format(primaryBucket.weight)}%`}
+          className="allocation-donut"
+          role="img"
+          style={donutStyle}
+        >
+          <div className="allocation-donut__center">
+            <span>{text.top}</span>
+            <strong>{percentFormatter.format(primaryBucket.weight)}%</strong>
+          </div>
+        </div>
+        <div className="allocation-donut__legend">
+          {chartBuckets.slice(0, 4).map((bucket, index) => (
+            <div
+              className="allocation-donut__legend-item"
+              key={bucket.key}
+              style={{ "--allocation-color": allocationColors[index] } as CSSProperties}
+            >
+              <span aria-hidden="true" />
+              <strong>{bucket.key}</strong>
+              <b>{percentFormatter.format(bucket.weight)}%</b>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {chartBuckets.map((bucket, index) => (
+        <div
+          className="allocation-row"
+          key={bucket.key}
+          style={{ "--allocation-color": allocationColors[index] } as CSSProperties}
+        >
+          <div className="allocation-row__label">
+            <span className="allocation-row__swatch" aria-hidden="true" />
+            <div>
+              <strong>{bucket.key}</strong>
+              <span>{formatter(bucket.value)}</span>
+            </div>
           </div>
           <div className="allocation-bar" aria-hidden="true">
             <span style={{ width: `${Math.min(bucket.weight, 100)}%` }} />
@@ -327,6 +374,70 @@ function AllocationBars({
       ))}
     </div>
   );
+}
+
+const allocationColors = [
+  "#22c7a7",
+  "#60a5fa",
+  "#f2b84b",
+  "#9b8cff",
+  "#e8799f",
+  "#2fce7a",
+];
+
+const allocationLabels = {
+  en: {
+    noData: "No data",
+    other: "Other",
+    top: "Top",
+  },
+  th: {
+    noData: "ไม่มีข้อมูล",
+    other: "อื่นๆ",
+    top: "สูงสุด",
+  },
+};
+
+function compactAllocationBuckets(
+  buckets: AnalyticsBucket[],
+  otherLabel: string,
+): AnalyticsBucket[] {
+  if (buckets.length <= 6) {
+    return buckets;
+  }
+
+  const visibleBuckets = buckets.slice(0, 5);
+  const remainingBuckets = buckets.slice(5);
+  return [
+    ...visibleBuckets,
+    {
+      key: otherLabel,
+      value: remainingBuckets.reduce((total, bucket) => total + bucket.value, 0),
+      weight: remainingBuckets.reduce((total, bucket) => total + bucket.weight, 0),
+    },
+  ];
+}
+
+function buildAllocationGradient(buckets: AnalyticsBucket[]): string {
+  const totalWeight = buckets.reduce(
+    (total, bucket) => total + Math.max(bucket.weight, 0),
+    0,
+  );
+
+  if (totalWeight <= 0) {
+    return "conic-gradient(color-mix(in srgb, var(--border) 72%, transparent) 0% 100%)";
+  }
+
+  let cursor = 0;
+  const segments = buckets.map((bucket, index) => {
+    const size = (Math.max(bucket.weight, 0) / totalWeight) * 100;
+    const start = cursor;
+    const end = Math.min(100, cursor + size);
+    cursor = end;
+    return `${allocationColors[index]} ${start}% ${end}%`;
+  });
+
+  return `conic-gradient(${segments.join(", ")})`;
 }
 
 function HoldingList({
