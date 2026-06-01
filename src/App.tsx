@@ -517,35 +517,36 @@ function App() {
                 tradeNote={tradeNote}
                 tradeReason={tradeReason}
               />
-              <PerformanceChart series={chartSeries} />
+              <div className="portfolio-main-column">
+                <PerformanceChart series={chartSeries} />
+                <HoldingsTable
+                  baseCurrency={baseCurrency}
+                  editDraft={editDraft}
+                  isRefreshingPrices={isRefreshingPrices}
+                  language={language}
+                  lastPriceUpdate={lastPriceUpdate}
+                  onEditBuyDateChange={handleEditBuyDateChange}
+                  onEditBuyPriceChange={handleEditBuyPriceChange}
+                  onEditCancel={handleEditCancel}
+                  onEditQuantityChange={handleEditQuantityChange}
+                  onEditSellDateChange={handleEditSellDateChange}
+                  onEditSellPriceChange={handleEditSellPriceChange}
+                  onEditSave={handleEditSave}
+                  onEditStart={handleEditStart}
+                  onEditStopLossChange={handleEditStopLossChange}
+                  onEditStrategyTagChange={handleEditStrategyTagChange}
+                  onEditSymbolChange={handleEditSymbolChange}
+                  onEditTargetPriceChange={handleEditTargetPriceChange}
+                  onEditTradeNoteChange={handleEditTradeNoteChange}
+                  onEditTradeReasonChange={handleEditTradeReasonChange}
+                  onEditEmotionChange={handleEditEmotionChange}
+                  onDelete={handleDeletePosition}
+                  onRefreshPrices={() => void handleRefreshPrices()}
+                  priceRefreshError={priceRefreshError}
+                  rows={holdingRows}
+                />
+              </div>
             </div>
-
-            <HoldingsTable
-              baseCurrency={baseCurrency}
-              editDraft={editDraft}
-              isRefreshingPrices={isRefreshingPrices}
-              language={language}
-              lastPriceUpdate={lastPriceUpdate}
-              onEditBuyDateChange={handleEditBuyDateChange}
-              onEditBuyPriceChange={handleEditBuyPriceChange}
-              onEditCancel={handleEditCancel}
-              onEditQuantityChange={handleEditQuantityChange}
-              onEditSellDateChange={handleEditSellDateChange}
-              onEditSellPriceChange={handleEditSellPriceChange}
-              onEditSave={handleEditSave}
-              onEditStart={handleEditStart}
-              onEditStopLossChange={handleEditStopLossChange}
-              onEditStrategyTagChange={handleEditStrategyTagChange}
-              onEditSymbolChange={handleEditSymbolChange}
-              onEditTargetPriceChange={handleEditTargetPriceChange}
-              onEditTradeNoteChange={handleEditTradeNoteChange}
-              onEditTradeReasonChange={handleEditTradeReasonChange}
-              onEditEmotionChange={handleEditEmotionChange}
-              onDelete={handleDeletePosition}
-              onRefreshPrices={() => void handleRefreshPrices()}
-              priceRefreshError={priceRefreshError}
-              rows={holdingRows}
-            />
           </>
         ) : activeView === "analytics" ? (
           <AnalyticsPage

@@ -401,6 +401,12 @@ summary {
   margin-bottom: 16px;
 }
 
+.portfolio-main-column {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
 .panel {
   min-width: 0;
   padding: 18px;
@@ -3049,7 +3055,7 @@ tbody tr:hover .col-actions {
   }
 
   .portfolio-workspace {
-    align-items: start;
+    grid-template-columns: 1fr;
   }
 
   .analytics-risk-grid {
