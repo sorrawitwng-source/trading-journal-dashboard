@@ -56,4 +56,28 @@ describe("positionsStorage", () => {
       quantity: 0,
     });
   });
+
+  it("keeps optional trade journal and risk plan fields", () => {
+    const position = createPosition("AAPL", 150, 2, stockUniverse, {
+      journal: {
+        emotion: "Patient",
+        stopLoss: 140,
+        strategyTag: "Pullback",
+        targetPrice: 180,
+        tradeNote: "Review after earnings",
+        tradeReason: "Trend continuation",
+      },
+    });
+
+    saveStoredPositions([position]);
+
+    expect(loadStoredPositions()[0]).toMatchObject({
+      emotion: "Patient",
+      stopLoss: 140,
+      strategyTag: "Pullback",
+      targetPrice: 180,
+      tradeNote: "Review after earnings",
+      tradeReason: "Trend continuation",
+    });
+  });
 });

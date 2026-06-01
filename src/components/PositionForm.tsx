@@ -9,31 +9,58 @@ interface PositionFormProps {
     symbol?: string;
     buyPrice?: string;
     quantity?: string;
+    stopLoss?: string;
+    targetPrice?: string;
   };
+  emotion: string;
   language: "en" | "th";
   onBuyDateChange: (buyDate: string) => void;
   onBuyPriceChange: (buyPrice: string) => void;
+  onEmotionChange: (emotion: string) => void;
   onQuantityChange: (quantity: string) => void;
+  onStopLossChange: (stopLoss: string) => void;
+  onStrategyTagChange: (strategyTag: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onSymbolChange: (symbol: string) => void;
+  onTargetPriceChange: (targetPrice: string) => void;
+  onTradeNoteChange: (tradeNote: string) => void;
+  onTradeReasonChange: (tradeReason: string) => void;
   quantity: string;
+  stopLoss: string;
+  strategyTag: string;
   symbol: string;
+  targetPrice: string;
+  tradeNote: string;
+  tradeReason: string;
 }
 
 export function PositionForm({
   buyDate,
   buyPrice,
+  emotion,
   errors,
   language,
   onBuyDateChange,
   onBuyPriceChange,
+  onEmotionChange,
   onQuantityChange,
+  onStopLossChange,
+  onStrategyTagChange,
   onSubmit,
   onSymbolChange,
+  onTargetPriceChange,
+  onTradeNoteChange,
+  onTradeReasonChange,
   quantity,
+  stopLoss,
+  strategyTag,
   symbol,
+  targetPrice,
+  tradeNote,
+  tradeReason,
 }: PositionFormProps) {
   const text = labels[language];
+  const journalText = journalLabels[language];
 
   return (
     <section className="panel position-form-panel" aria-labelledby="position-form-title">
@@ -117,6 +144,92 @@ export function PositionForm({
           ) : null}
         </label>
 
+        <div className="journal-fieldset">
+          <div>
+            <p className="eyebrow">{journalText.planEyebrow}</p>
+            <strong>{journalText.planTitle}</strong>
+          </div>
+          <div className="field-grid field-grid--two">
+            <label className="field">
+              <span>{journalText.stopLoss}</span>
+              <input
+                aria-describedby={errors.stopLoss ? "stop-loss-error" : undefined}
+                aria-invalid={errors.stopLoss ? "true" : "false"}
+                inputMode="decimal"
+                onChange={(event) => onStopLossChange(event.target.value)}
+                placeholder="140"
+                type="text"
+                value={stopLoss}
+              />
+              {errors.stopLoss ? (
+                <span className="field-error" id="stop-loss-error">
+                  {errors.stopLoss}
+                </span>
+              ) : null}
+            </label>
+
+            <label className="field">
+              <span>{journalText.targetPrice}</span>
+              <input
+                aria-describedby={errors.targetPrice ? "target-price-error" : undefined}
+                aria-invalid={errors.targetPrice ? "true" : "false"}
+                inputMode="decimal"
+                onChange={(event) => onTargetPriceChange(event.target.value)}
+                placeholder="220"
+                type="text"
+                value={targetPrice}
+              />
+              {errors.targetPrice ? (
+                <span className="field-error" id="target-price-error">
+                  {errors.targetPrice}
+                </span>
+              ) : null}
+            </label>
+          </div>
+
+          <label className="field">
+            <span>{journalText.strategyTag}</span>
+            <input
+              onChange={(event) => onStrategyTagChange(event.target.value)}
+              placeholder="Breakout, Dividend, Swing"
+              type="text"
+              value={strategyTag}
+            />
+          </label>
+
+          <label className="field">
+            <span>{journalText.tradeReason}</span>
+            <textarea
+              onChange={(event) => onTradeReasonChange(event.target.value)}
+              placeholder={journalText.tradeReasonPlaceholder}
+              rows={3}
+              value={tradeReason}
+            />
+          </label>
+
+          <div className="field-grid field-grid--two">
+            <label className="field">
+              <span>{journalText.emotion}</span>
+              <input
+                onChange={(event) => onEmotionChange(event.target.value)}
+                placeholder="Calm, FOMO, Patient"
+                type="text"
+                value={emotion}
+              />
+            </label>
+
+            <label className="field">
+              <span>{journalText.tradeNote}</span>
+              <input
+                onChange={(event) => onTradeNoteChange(event.target.value)}
+                placeholder={journalText.tradeNotePlaceholder}
+                type="text"
+                value={tradeNote}
+              />
+            </label>
+          </div>
+        </div>
+
         <button className="primary-button" type="submit">
           <Plus aria-hidden="true" size={18} />
           {text.add}
@@ -148,5 +261,32 @@ const labels = {
     monthHint: "ระบบจะใช้วันที่นี้จัดกลุ่มรายเดือน",
     symbol: "ชื่อหุ้น",
     title: "เพิ่มรายการหุ้น",
+  },
+};
+
+const journalLabels = {
+  en: {
+    emotion: "Emotion",
+    planEyebrow: "Trade plan",
+    planTitle: "Risk / reward and journal notes",
+    stopLoss: "Stop loss",
+    strategyTag: "Strategy tag",
+    targetPrice: "Target price",
+    tradeNote: "Note",
+    tradeNotePlaceholder: "Catalyst, review date, or lesson",
+    tradeReason: "Reason to buy",
+    tradeReasonPlaceholder: "Why this trade deserves capital",
+  },
+  th: {
+    emotion: "อารมณ์ตอนซื้อ",
+    planEyebrow: "แผนเทรด",
+    planTitle: "Risk / Reward และบันทึก",
+    stopLoss: "Stop loss",
+    strategyTag: "กลยุทธ์",
+    targetPrice: "ราคาเป้าหมาย",
+    tradeNote: "โน้ต",
+    tradeNotePlaceholder: "Catalyst, วันทบทวน, หรือบทเรียน",
+    tradeReason: "เหตุผลที่ซื้อ",
+    tradeReasonPlaceholder: "ทำไม trade นี้ถึงควรใช้เงิน",
   },
 };

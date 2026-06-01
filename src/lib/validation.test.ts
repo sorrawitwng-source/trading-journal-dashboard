@@ -74,6 +74,52 @@ describe('validatePositionInput', () => {
     });
   });
 
+  it('accepts optional risk plan and journal notes', () => {
+    expect(
+      validatePositionInput(
+        'AAPL',
+        '120',
+        '10',
+        '2026-05-01',
+        '',
+        '',
+        '110',
+        '150',
+        'Breakout',
+        'Volume expansion',
+        'Review after earnings',
+        'Calm',
+      ),
+    ).toEqual({
+      valid: true,
+      value: {
+        symbol: 'AAPL',
+        buyDate: '2026-05-01',
+        buyPrice: 120,
+        quantity: 10,
+        emotion: 'Calm',
+        stopLoss: 110,
+        strategyTag: 'Breakout',
+        targetPrice: 150,
+        tradeNote: 'Review after earnings',
+        tradeReason: 'Volume expansion',
+      },
+      errors: {},
+    });
+  });
+
+  it('rejects invalid long risk plan levels', () => {
+    expect(
+      validatePositionInput('AAPL', '120', '10', '2026-05-01', '', '', '125', '110'),
+    ).toEqual({
+      valid: false,
+      errors: {
+        stopLoss: 'Stop loss should be below buy price.',
+        targetPrice: 'Target price should be above buy price.',
+      },
+    });
+  });
+
   it('rejects a sell date before the buy date', () => {
     expect(
       validatePositionInput('AAPL', '120.5', '25', '2026-05-31', '140', '2026-05-01'),

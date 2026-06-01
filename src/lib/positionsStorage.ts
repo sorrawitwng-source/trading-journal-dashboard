@@ -62,6 +62,17 @@ function isPortfolioPosition(value: unknown): value is PortfolioPosition {
       (typeof position.sellPrice === "number" && position.sellPrice > 0)) &&
     (position.sellDate === undefined ||
       (typeof position.sellDate === "string" && isValidDateText(position.sellDate))) &&
+    (position.stopLoss === undefined ||
+      (typeof position.stopLoss === "number" && position.stopLoss > 0)) &&
+    (position.targetPrice === undefined ||
+      (typeof position.targetPrice === "number" && position.targetPrice > 0)) &&
+    (position.strategyTag === undefined ||
+      typeof position.strategyTag === "string") &&
+    (position.tradeReason === undefined ||
+      typeof position.tradeReason === "string") &&
+    (position.tradeNote === undefined ||
+      typeof position.tradeNote === "string") &&
+    (position.emotion === undefined || typeof position.emotion === "string") &&
     (position.priceStatus === undefined ||
       position.priceStatus === "live" ||
       position.priceStatus === "cached" ||

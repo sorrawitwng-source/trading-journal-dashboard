@@ -5,6 +5,8 @@ type PositionInputErrors = {
   quantity?: string;
   sellDate?: string;
   sellPrice?: string;
+  stopLoss?: string;
+  targetPrice?: string;
 };
 
 export type PositionInputResult =
@@ -17,6 +19,12 @@ export type PositionInputResult =
         quantity: number;
         sellDate?: string;
         sellPrice?: number;
+        stopLoss?: number;
+        targetPrice?: number;
+        strategyTag?: string;
+        tradeReason?: string;
+        tradeNote?: string;
+        emotion?: string;
       };
       errors: {};
     }
@@ -32,6 +40,12 @@ export function validatePositionInput(
   buyDateInput = todayDateString(),
   sellPriceInput = "",
   sellDateInput = "",
+  stopLossInput = "",
+  targetPriceInput = "",
+  strategyTagInput = "",
+  tradeReasonInput = "",
+  tradeNoteInput = "",
+  emotionInput = "",
 ): PositionInputResult {
   const symbol = symbolInput.trim();
   const buyPriceText = buyPriceInput.trim();
@@ -39,7 +53,14 @@ export function validatePositionInput(
   const buyDateText = normalizeDateInput(buyDateInput.trim());
   const sellPriceText = sellPriceInput.trim();
   const sellDateText = normalizeDateInput(sellDateInput.trim());
+  const stopLossText = stopLossInput.trim();
+  const targetPriceText = targetPriceInput.trim();
+  const strategyTag = strategyTagInput.trim();
+  const tradeReason = tradeReasonInput.trim();
+  const tradeNote = tradeNoteInput.trim();
+  const emotion = emotionInput.trim();
   const errors: PositionInputErrors = {};
+  const buyPrice = Number(buyPriceText);
 
   if (!symbol) {
     errors.symbol = 'Enter a stock symbol.';
@@ -54,12 +75,35 @@ export function validatePositionInput(
   if (!buyPriceText) {
     errors.buyPrice = 'Enter a buy price.';
   } else {
-    const buyPrice = Number(buyPriceText);
-
     if (Number.isNaN(buyPrice)) {
       errors.buyPrice = 'Buy price must be a number.';
     } else if (buyPrice <= 0) {
       errors.buyPrice = 'Buy price must be greater than 0.';
+    }
+  }
+
+  const parsedStopLoss = Number(stopLossText);
+  const parsedTargetPrice = Number(targetPriceText);
+  const stopLoss = stopLossText ? parsedStopLoss : undefined;
+  const targetPrice = targetPriceText ? parsedTargetPrice : undefined;
+
+  if (stopLossText) {
+    if (Number.isNaN(parsedStopLoss)) {
+      errors.stopLoss = 'Stop loss must be a number.';
+    } else if (parsedStopLoss <= 0) {
+      errors.stopLoss = 'Stop loss must be greater than 0.';
+    } else if (!Number.isNaN(buyPrice) && buyPrice > 0 && parsedStopLoss >= buyPrice) {
+      errors.stopLoss = 'Stop loss should be below buy price.';
+    }
+  }
+
+  if (targetPriceText) {
+    if (Number.isNaN(parsedTargetPrice)) {
+      errors.targetPrice = 'Target price must be a number.';
+    } else if (parsedTargetPrice <= 0) {
+      errors.targetPrice = 'Target price must be greater than 0.';
+    } else if (!Number.isNaN(buyPrice) && buyPrice > 0 && parsedTargetPrice <= buyPrice) {
+      errors.targetPrice = 'Target price should be above buy price.';
     }
   }
 
@@ -113,6 +157,12 @@ export function validatePositionInput(
       quantity: quantityText ? Number(quantityText) : 0,
       ...(sellDateText ? { sellDate: sellDateText } : {}),
       ...(sellPriceText ? { sellPrice: Number(sellPriceText) } : {}),
+      ...(stopLoss !== undefined ? { stopLoss } : {}),
+      ...(targetPrice !== undefined ? { targetPrice } : {}),
+      ...(strategyTag ? { strategyTag } : {}),
+      ...(tradeReason ? { tradeReason } : {}),
+      ...(tradeNote ? { tradeNote } : {}),
+      ...(emotion ? { emotion } : {}),
     },
     errors: {},
   };

@@ -52,6 +52,12 @@ export interface PortfolioPosition {
   currentPrice: number;
   sellDate?: string;
   sellPrice?: number;
+  stopLoss?: number;
+  targetPrice?: number;
+  strategyTag?: string;
+  tradeReason?: string;
+  tradeNote?: string;
+  emotion?: string;
   priceStatus?: PriceStatus;
   priceUpdatedAt?: string;
   dataQuality?: DataQuality;

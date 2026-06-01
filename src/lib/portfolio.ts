@@ -15,6 +15,22 @@ interface PortfolioSummaryOptions {
   usdThbRate: number;
 }
 
+interface TradeJournalInput {
+  emotion?: string;
+  stopLoss?: number;
+  strategyTag?: string;
+  targetPrice?: number;
+  tradeNote?: string;
+  tradeReason?: string;
+}
+
+interface PositionBuildOptions {
+  buyDate?: string;
+  journal?: TradeJournalInput;
+  sellDate?: string;
+  sellPrice?: number;
+}
+
 export const fallbackUsdThbRate = 36.5;
 
 export function createPosition(
@@ -22,11 +38,16 @@ export function createPosition(
   buyPrice: number,
   quantity: number,
   universe: StockProfile[],
-  buyDate = todayDateString(),
+  optionsOrBuyDate: PositionBuildOptions | string = todayDateString(),
   sellPrice?: number,
   sellDate?: string,
 ): PortfolioPosition {
   const normalizedSymbol = symbol.trim().toUpperCase();
+  const options = normalizePositionBuildOptions(
+    optionsOrBuyDate,
+    sellPrice,
+    sellDate,
+  );
   const stock = universe.find(
     (item) => item.symbol.toUpperCase() === normalizedSymbol,
   );
@@ -39,7 +60,7 @@ export function createPosition(
       market: "Custom",
       sector: "Unclassified",
       sectorSource: "unknown",
-      buyDate,
+      buyDate: options.buyDate,
       buyPrice,
       currency: "USD",
       quantity,
@@ -63,8 +84,9 @@ export function createPosition(
       riskLevel: "No data",
       riskReason: "Custom symbols need verified market data before risk can be assessed.",
       isCustom: true,
-      ...(sellPrice !== undefined ? { sellPrice } : {}),
-      ...(sellDate ? { sellDate } : {}),
+      ...journalFields(options.journal),
+      ...(options.sellPrice !== undefined ? { sellPrice: options.sellPrice } : {}),
+      ...(options.sellDate ? { sellDate: options.sellDate } : {}),
     };
   }
   const scoreBreakdown = buildScoreBreakdown(stock);
@@ -77,7 +99,7 @@ export function createPosition(
     market: stock.market,
     sector: stock.sector,
     sectorSource: stock.sectorSource,
-    buyDate,
+    buyDate: options.buyDate,
     buyPrice,
     currency: currencyForMarket(stock.market),
     quantity,
@@ -89,8 +111,9 @@ export function createPosition(
     riskLevel: risk.level,
     riskReason: risk.reason,
     isCustom: false,
-    ...(sellPrice !== undefined ? { sellPrice } : {}),
-    ...(sellDate ? { sellDate } : {}),
+    ...journalFields(options.journal),
+    ...(options.sellPrice !== undefined ? { sellPrice: options.sellPrice } : {}),
+    ...(options.sellDate ? { sellDate: options.sellDate } : {}),
   };
 }
 
@@ -100,14 +123,41 @@ export function updatePosition(
   buyPrice: number,
   quantity: number,
   universe: StockProfile[],
-  buyDate = todayDateString(),
+  optionsOrBuyDate: PositionBuildOptions | string = todayDateString(),
   sellPrice?: number,
   sellDate?: string,
 ): PortfolioPosition {
   return {
-    ...createPosition(symbol, buyPrice, quantity, universe, buyDate, sellPrice, sellDate),
+    ...createPosition(
+      symbol,
+      buyPrice,
+      quantity,
+      universe,
+      optionsOrBuyDate,
+      sellPrice,
+      sellDate,
+    ),
     id,
   };
+}
+
+export function riskRewardRatio({
+  buyPrice,
+  stopLoss,
+  targetPrice,
+}: Pick<PortfolioPosition, "buyPrice" | "stopLoss" | "targetPrice">): number | null {
+  if (stopLoss === undefined || targetPrice === undefined) {
+    return null;
+  }
+
+  const plannedRisk = buyPrice - stopLoss;
+  const plannedReward = targetPrice - buyPrice;
+
+  if (plannedRisk <= 0 || plannedReward <= 0) {
+    return null;
+  }
+
+  return roundTo(plannedReward / plannedRisk, 2);
 }
 
 export function unrealizedProfitLoss(
@@ -218,6 +268,36 @@ export function positionCurrency(position: PortfolioPosition): Currency {
 
 function createPositionId(symbol: string): string {
   return `${symbol}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function normalizePositionBuildOptions(
+  optionsOrBuyDate: PositionBuildOptions | string,
+  sellPrice?: number,
+  sellDate?: string,
+): Required<Pick<PositionBuildOptions, "buyDate">> & PositionBuildOptions {
+  if (typeof optionsOrBuyDate === "string") {
+    return {
+      buyDate: optionsOrBuyDate,
+      ...(sellPrice !== undefined ? { sellPrice } : {}),
+      ...(sellDate ? { sellDate } : {}),
+    };
+  }
+
+  return {
+    buyDate: optionsOrBuyDate.buyDate ?? todayDateString(),
+    ...optionsOrBuyDate,
+  };
+}
+
+function journalFields(journal: TradeJournalInput = {}): TradeJournalInput {
+  return {
+    ...(journal.stopLoss !== undefined ? { stopLoss: journal.stopLoss } : {}),
+    ...(journal.targetPrice !== undefined ? { targetPrice: journal.targetPrice } : {}),
+    ...(journal.strategyTag ? { strategyTag: journal.strategyTag.trim() } : {}),
+    ...(journal.tradeReason ? { tradeReason: journal.tradeReason.trim() } : {}),
+    ...(journal.tradeNote ? { tradeNote: journal.tradeNote.trim() } : {}),
+    ...(journal.emotion ? { emotion: journal.emotion.trim() } : {}),
+  };
 }
 
 function todayDateString(): string {

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   convertCurrency,
   createPosition,
+  riskRewardRatio,
   summarizePortfolio,
   unrealizedProfitLoss,
   updatePosition,
@@ -10,7 +11,15 @@ import { stockUniverse } from "../data/stocks";
 
 describe("createPosition", () => {
   it("creates an enriched position for a known stock", () => {
-    const position = createPosition("AAPL", 150, 12, stockUniverse);
+    const position = createPosition("AAPL", 150, 12, stockUniverse, {
+      journal: {
+        emotion: "Calm",
+        stopLoss: 140,
+        strategyTag: "Breakout",
+        targetPrice: 180,
+        tradeReason: "Earnings momentum",
+      },
+    });
 
     expect(position).toMatchObject({
       symbol: "AAPL",
@@ -18,7 +27,12 @@ describe("createPosition", () => {
       market: "US",
       currency: "USD",
       quantity: 12,
+      emotion: "Calm",
       isCustom: false,
+      stopLoss: 140,
+      strategyTag: "Breakout",
+      targetPrice: 180,
+      tradeReason: "Earnings momentum",
     });
     expect(position.score).not.toBeNull();
   });
@@ -54,7 +68,13 @@ describe("unrealizedProfitLoss", () => {
 describe("updatePosition", () => {
   it("preserves the row id while enriching the edited symbol", () => {
     const original = createPosition("PTT", 30, 5, stockUniverse);
-    const updated = updatePosition(original.id, "PTTGC", 36, 8, stockUniverse);
+    const updated = updatePosition(original.id, "PTTGC", 36, 8, stockUniverse, {
+      journal: {
+        stopLoss: 32,
+        targetPrice: 44,
+        tradeNote: "Keep for monthly review",
+      },
+    });
 
     expect(updated).toMatchObject({
       id: original.id,
@@ -65,8 +85,22 @@ describe("updatePosition", () => {
       sector: "Petrochemicals",
       buyPrice: 36,
       quantity: 8,
+      stopLoss: 32,
+      targetPrice: 44,
+      tradeNote: "Keep for monthly review",
       isCustom: false,
     });
+  });
+});
+
+describe("riskRewardRatio", () => {
+  it("calculates planned risk/reward from buy, stop loss, and target", () => {
+    expect(riskRewardRatio({ buyPrice: 100, stopLoss: 95, targetPrice: 120 })).toBe(4);
+  });
+
+  it("returns null when a valid long setup is incomplete", () => {
+    expect(riskRewardRatio({ buyPrice: 100, stopLoss: 105, targetPrice: 120 })).toBeNull();
+    expect(riskRewardRatio({ buyPrice: 100, stopLoss: 95 })).toBeNull();
   });
 });
 

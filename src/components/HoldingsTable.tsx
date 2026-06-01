@@ -8,6 +8,7 @@ import {
   scoreMethodologyText,
   type Language,
 } from "../lib/scoreText";
+import { riskRewardRatio } from "../lib/portfolio";
 
 export interface HoldingRow extends PortfolioPosition {
   baseCost: number;
@@ -31,12 +32,20 @@ interface HoldingsTableProps {
       quantity?: string;
       sellDate?: string;
       sellPrice?: string;
+      stopLoss?: string;
+      targetPrice?: string;
     };
+    emotion: string;
     id: string;
     quantity: string;
     sellDate: string;
     sellPrice: string;
+    stopLoss: string;
+    strategyTag: string;
     symbol: string;
+    targetPrice: string;
+    tradeNote: string;
+    tradeReason: string;
   } | null;
   isRefreshingPrices: boolean;
   baseCurrency: Currency;
@@ -50,7 +59,13 @@ interface HoldingsTableProps {
   onEditSellPriceChange: (sellPrice: string) => void;
   onEditSave: () => void;
   onEditStart: (row: HoldingRow) => void;
+  onEditStopLossChange: (stopLoss: string) => void;
+  onEditStrategyTagChange: (strategyTag: string) => void;
   onEditSymbolChange: (symbol: string) => void;
+  onEditTargetPriceChange: (targetPrice: string) => void;
+  onEditTradeNoteChange: (tradeNote: string) => void;
+  onEditTradeReasonChange: (tradeReason: string) => void;
+  onEditEmotionChange: (emotion: string) => void;
   onDelete: (id: string) => void;
   onRefreshPrices: () => void;
   priceRefreshError: string | null;
@@ -90,13 +105,20 @@ export function HoldingsTable({
   onEditSellPriceChange,
   onEditSave,
   onEditStart,
+  onEditStopLossChange,
+  onEditStrategyTagChange,
   onEditSymbolChange,
+  onEditTargetPriceChange,
+  onEditTradeNoteChange,
+  onEditTradeReasonChange,
+  onEditEmotionChange,
   onDelete,
   onRefreshPrices,
   priceRefreshError,
   rows,
 }: HoldingsTableProps) {
   const text = labels[language];
+  const journalText = journalLabels[language];
   const monthlyGroups = useMemo(() => groupRowsByMonth(rows), [rows]);
   const [selectedMonth, setSelectedMonth] = useState("all");
   const selectedMonthlyGroups =
@@ -215,6 +237,8 @@ export function HoldingsTable({
                         <th className="col-date">{text.sellDate}</th>
                         <th className="col-money">{text.currentValue}</th>
                         <th className="col-profit">{text.estimatedProfitLoss}</th>
+                        <th className="col-plan">{journalText.plan}</th>
+                        <th className="col-journal">{journalText.journal}</th>
                         <th className="col-data">{text.data}</th>
                         <th className="col-score">{text.score}</th>
                         <th className="col-risk">{text.risk}</th>
@@ -387,6 +411,56 @@ export function HoldingsTable({
                           row.currency,
                         )}
                       />
+                    </td>
+                    <td className="col-plan">
+                      {isEditing ? (
+                        <div className="table-edit-stack">
+                          <EditableCell
+                            error={editDraft.errors.stopLoss}
+                            inputMode="decimal"
+                            label={journalText.stopLoss}
+                            onChange={onEditStopLossChange}
+                            value={editDraft.stopLoss}
+                          />
+                          <EditableCell
+                            error={editDraft.errors.targetPrice}
+                            inputMode="decimal"
+                            label={journalText.targetPrice}
+                            onChange={onEditTargetPriceChange}
+                            value={editDraft.targetPrice}
+                          />
+                        </div>
+                      ) : (
+                        <TradePlanCell row={row} text={journalText} />
+                      )}
+                    </td>
+                    <td className="col-journal">
+                      {isEditing ? (
+                        <div className="table-edit-stack table-edit-stack--wide">
+                          <EditableCell
+                            label={journalText.strategy}
+                            onChange={onEditStrategyTagChange}
+                            value={editDraft.strategyTag}
+                          />
+                          <EditableCell
+                            label={journalText.reason}
+                            onChange={onEditTradeReasonChange}
+                            value={editDraft.tradeReason}
+                          />
+                          <EditableCell
+                            label={journalText.emotion}
+                            onChange={onEditEmotionChange}
+                            value={editDraft.emotion}
+                          />
+                          <EditableCell
+                            label={journalText.note}
+                            onChange={onEditTradeNoteChange}
+                            value={editDraft.tradeNote}
+                          />
+                        </div>
+                      ) : (
+                        <JournalCell row={row} text={journalText} />
+                      )}
                     </td>
                     <td className="col-data">
                       <span
@@ -648,6 +722,35 @@ const labels = {
   },
 };
 
+const journalLabels = {
+  en: {
+    emotion: "Emotion",
+    incomplete: "Incomplete",
+    journal: "Journal",
+    noJournal: "No note",
+    noPlan: "No plan",
+    note: "Note",
+    plan: "Plan",
+    reason: "Reason",
+    stopLoss: "Stop",
+    strategy: "Strategy",
+    targetPrice: "Target",
+  },
+  th: {
+    emotion: "อารมณ์",
+    incomplete: "ยังไม่ครบ",
+    journal: "บันทึก",
+    noJournal: "ยังไม่มีโน้ต",
+    noPlan: "ยังไม่มีแผน",
+    note: "โน้ต",
+    plan: "แผน",
+    reason: "เหตุผล",
+    stopLoss: "Stop",
+    strategy: "กลยุทธ์",
+    targetPrice: "Target",
+  },
+};
+
 function priceStatusLabel(status: PortfolioPosition["priceStatus"]): string {
   if (status === "live") {
     return "Live";
@@ -678,6 +781,78 @@ function formatMonth(value: string): string {
     month: "short",
     year: "numeric",
   }).format(new Date(value));
+}
+
+function TradePlanCell({
+  row,
+  text,
+}: {
+  row: HoldingRow;
+  text: (typeof journalLabels)["en"];
+}) {
+  const ratio = riskRewardRatio(row);
+
+  if (
+    row.stopLoss === undefined &&
+    row.targetPrice === undefined &&
+    ratio === null
+  ) {
+    return <span className="muted-cell">{text.noPlan}</span>;
+  }
+
+  return (
+    <div className="trade-plan-cell">
+      <strong>{ratio === null ? text.incomplete : `R:R ${ratio.toFixed(2)}`}</strong>
+      <span>
+        {text.stopLoss}:{" "}
+        {row.stopLoss === undefined ? "-" : formatPositionCurrency(row.stopLoss, row)}
+      </span>
+      <span>
+        {text.targetPrice}:{" "}
+        {row.targetPrice === undefined
+          ? "-"
+          : formatPositionCurrency(row.targetPrice, row)}
+      </span>
+    </div>
+  );
+}
+
+function JournalCell({
+  row,
+  text,
+}: {
+  row: HoldingRow;
+  text: (typeof journalLabels)["en"];
+}) {
+  const hasJournal =
+    row.strategyTag || row.tradeReason || row.tradeNote || row.emotion;
+
+  if (!hasJournal) {
+    return <span className="muted-cell">{text.noJournal}</span>;
+  }
+
+  return (
+    <details className="journal-details">
+      <summary>
+        {row.strategyTag ? <b>{row.strategyTag}</b> : text.journal}
+        {row.emotion ? <span>{row.emotion}</span> : null}
+      </summary>
+      <div>
+        {row.tradeReason ? (
+          <p>
+            <strong>{text.reason}</strong>
+            {row.tradeReason}
+          </p>
+        ) : null}
+        {row.tradeNote ? (
+          <p>
+            <strong>{text.note}</strong>
+            {row.tradeNote}
+          </p>
+        ) : null}
+      </div>
+    </details>
+  );
 }
 
 function MoneyCell({

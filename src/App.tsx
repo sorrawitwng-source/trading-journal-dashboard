@@ -45,12 +45,20 @@ type EditDraft = {
     quantity?: string;
     sellDate?: string;
     sellPrice?: string;
+    stopLoss?: string;
+    targetPrice?: string;
   };
+  emotion: string;
   id: string;
   quantity: string;
   sellDate: string;
   sellPrice: string;
+  stopLoss: string;
+  strategyTag: string;
   symbol: string;
+  targetPrice: string;
+  tradeNote: string;
+  tradeReason: string;
 };
 
 function App() {
@@ -69,11 +77,19 @@ function App() {
     quantity?: string;
     sellDate?: string;
     sellPrice?: string;
+    stopLoss?: string;
+    targetPrice?: string;
   }>({});
   const [symbol, setSymbol] = useState("");
   const [buyDate, setBuyDate] = useState(displayDateString(todayDateString()));
   const [buyPrice, setBuyPrice] = useState("");
   const [quantity, setQuantity] = useState("0");
+  const [stopLoss, setStopLoss] = useState("");
+  const [targetPrice, setTargetPrice] = useState("");
+  const [strategyTag, setStrategyTag] = useState("");
+  const [tradeReason, setTradeReason] = useState("");
+  const [tradeNote, setTradeNote] = useState("");
+  const [emotion, setEmotion] = useState("");
   const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
   const [isRefreshingPrices, setIsRefreshingPrices] = useState(false);
   const [lastPriceUpdate, setLastPriceUpdate] = useState<string | null>(null);
@@ -179,7 +195,20 @@ function App() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const result = validatePositionInput(symbol, buyPrice, quantity, buyDate);
+    const result = validatePositionInput(
+      symbol,
+      buyPrice,
+      quantity,
+      buyDate,
+      "",
+      "",
+      stopLoss,
+      targetPrice,
+      strategyTag,
+      tradeReason,
+      tradeNote,
+      emotion,
+    );
 
     if (!result.valid) {
       setFormErrors(result.errors);
@@ -191,7 +220,17 @@ function App() {
       result.value.buyPrice,
       result.value.quantity,
       stockUniverse,
-      result.value.buyDate,
+      {
+        buyDate: result.value.buyDate,
+        journal: {
+          emotion: result.value.emotion,
+          stopLoss: result.value.stopLoss,
+          strategyTag: result.value.strategyTag,
+          targetPrice: result.value.targetPrice,
+          tradeNote: result.value.tradeNote,
+          tradeReason: result.value.tradeReason,
+        },
+      },
     );
 
     setPositions((currentPositions) => [...currentPositions, position]);
@@ -200,18 +239,30 @@ function App() {
     setBuyDate(displayDateString(todayDateString()));
     setBuyPrice("");
     setQuantity("0");
+    setStopLoss("");
+    setTargetPrice("");
+    setStrategyTag("");
+    setTradeReason("");
+    setTradeNote("");
+    setEmotion("");
   }
 
   function handleEditStart(row: HoldingRow) {
     setEditDraft({
       buyDate: displayDateString(row.buyDate),
       buyPrice: String(row.buyPrice),
+      emotion: row.emotion ?? "",
       errors: {},
       id: row.id,
       quantity: String(row.quantity),
       sellDate: row.sellDate ? displayDateString(row.sellDate) : "",
       sellPrice: row.sellPrice === undefined ? "" : String(row.sellPrice),
+      stopLoss: row.stopLoss === undefined ? "" : String(row.stopLoss),
+      strategyTag: row.strategyTag ?? "",
       symbol: row.symbol,
+      targetPrice: row.targetPrice === undefined ? "" : String(row.targetPrice),
+      tradeNote: row.tradeNote ?? "",
+      tradeReason: row.tradeReason ?? "",
     });
   }
 
@@ -261,6 +312,42 @@ function App() {
     );
   }
 
+  function handleEditStopLossChange(stopLossValue: string) {
+    setEditDraft((currentDraft) =>
+      currentDraft ? { ...currentDraft, stopLoss: stopLossValue } : currentDraft,
+    );
+  }
+
+  function handleEditTargetPriceChange(targetPriceValue: string) {
+    setEditDraft((currentDraft) =>
+      currentDraft ? { ...currentDraft, targetPrice: targetPriceValue } : currentDraft,
+    );
+  }
+
+  function handleEditStrategyTagChange(strategyTagValue: string) {
+    setEditDraft((currentDraft) =>
+      currentDraft ? { ...currentDraft, strategyTag: strategyTagValue } : currentDraft,
+    );
+  }
+
+  function handleEditTradeReasonChange(tradeReasonValue: string) {
+    setEditDraft((currentDraft) =>
+      currentDraft ? { ...currentDraft, tradeReason: tradeReasonValue } : currentDraft,
+    );
+  }
+
+  function handleEditTradeNoteChange(tradeNoteValue: string) {
+    setEditDraft((currentDraft) =>
+      currentDraft ? { ...currentDraft, tradeNote: tradeNoteValue } : currentDraft,
+    );
+  }
+
+  function handleEditEmotionChange(emotionValue: string) {
+    setEditDraft((currentDraft) =>
+      currentDraft ? { ...currentDraft, emotion: emotionValue } : currentDraft,
+    );
+  }
+
   function handleEditSave() {
     if (!editDraft) {
       return;
@@ -273,6 +360,12 @@ function App() {
       editDraft.buyDate,
       editDraft.sellPrice,
       editDraft.sellDate,
+      editDraft.stopLoss,
+      editDraft.targetPrice,
+      editDraft.strategyTag,
+      editDraft.tradeReason,
+      editDraft.tradeNote,
+      editDraft.emotion,
     );
 
     if (!result.valid) {
@@ -289,9 +382,19 @@ function App() {
               result.value.buyPrice,
               result.value.quantity,
               stockUniverse,
-              result.value.buyDate,
-              result.value.sellPrice,
-              result.value.sellDate,
+              {
+                buyDate: result.value.buyDate,
+                journal: {
+                  emotion: result.value.emotion,
+                  stopLoss: result.value.stopLoss,
+                  strategyTag: result.value.strategyTag,
+                  targetPrice: result.value.targetPrice,
+                  tradeNote: result.value.tradeNote,
+                  tradeReason: result.value.tradeReason,
+                },
+                sellDate: result.value.sellDate,
+                sellPrice: result.value.sellPrice,
+              },
             )
           : position,
       ),
@@ -396,11 +499,23 @@ function App() {
                 language={language}
                 onBuyDateChange={setBuyDate}
                 onBuyPriceChange={setBuyPrice}
+                onEmotionChange={setEmotion}
                 onQuantityChange={setQuantity}
+                onStopLossChange={setStopLoss}
+                onStrategyTagChange={setStrategyTag}
                 onSubmit={handleSubmit}
                 onSymbolChange={setSymbol}
+                onTargetPriceChange={setTargetPrice}
+                onTradeNoteChange={setTradeNote}
+                onTradeReasonChange={setTradeReason}
                 quantity={quantity}
+                emotion={emotion}
+                stopLoss={stopLoss}
+                strategyTag={strategyTag}
                 symbol={symbol}
+                targetPrice={targetPrice}
+                tradeNote={tradeNote}
+                tradeReason={tradeReason}
               />
               <PerformanceChart series={chartSeries} />
             </div>
@@ -419,7 +534,13 @@ function App() {
               onEditSellPriceChange={handleEditSellPriceChange}
               onEditSave={handleEditSave}
               onEditStart={handleEditStart}
+              onEditStopLossChange={handleEditStopLossChange}
+              onEditStrategyTagChange={handleEditStrategyTagChange}
               onEditSymbolChange={handleEditSymbolChange}
+              onEditTargetPriceChange={handleEditTargetPriceChange}
+              onEditTradeNoteChange={handleEditTradeNoteChange}
+              onEditTradeReasonChange={handleEditTradeReasonChange}
+              onEditEmotionChange={handleEditEmotionChange}
               onDelete={handleDeletePosition}
               onRefreshPrices={() => void handleRefreshPrices()}
               priceRefreshError={priceRefreshError}

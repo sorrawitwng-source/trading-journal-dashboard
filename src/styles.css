@@ -447,7 +447,8 @@ summary {
   font-weight: 700;
 }
 
-.field input {
+.field input,
+.field textarea {
   width: 100%;
   min-height: 44px;
   padding: 10px 12px;
@@ -463,9 +464,50 @@ summary {
   outline: none;
 }
 
-.field input:focus {
+.field textarea {
+  min-height: 86px;
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.field input:focus,
+.field textarea:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.field-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.field-grid--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.journal-fieldset {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  border-radius: 8px;
+  background:
+    radial-gradient(
+      circle at 92% 0%,
+      color-mix(in srgb, var(--accent) 12%, transparent),
+      transparent 34%
+    ),
+    color-mix(in srgb, var(--panel-strong) 50%, transparent);
+}
+
+.journal-fieldset > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.journal-fieldset > div:first-child strong {
+  color: var(--text);
+  font-size: 0.96rem;
 }
 
 .field-error {
@@ -2623,6 +2665,14 @@ tbody tr:last-child td {
   text-align: right;
 }
 
+.col-plan {
+  width: 178px;
+}
+
+.col-journal {
+  width: 250px;
+}
+
 .col-data {
   width: 108px;
 }
@@ -2749,6 +2799,95 @@ tbody tr:hover .col-actions {
 
 .score-details {
   min-width: 0;
+}
+
+.trade-plan-cell {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.trade-plan-cell strong {
+  width: fit-content;
+  padding: 4px 8px;
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--border));
+  border-radius: 999px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.trade-plan-cell span {
+  color: var(--muted-text);
+  font-size: 0.74rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.journal-details {
+  min-width: 0;
+}
+
+.journal-details summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.journal-details summary b,
+.journal-details summary span {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.journal-details summary span {
+  padding: 3px 7px;
+  border: 1px solid color-mix(in srgb, var(--blue) 36%, var(--border));
+  border-radius: 999px;
+  color: var(--blue);
+  font-size: 0.68rem;
+}
+
+.journal-details div {
+  display: grid;
+  gap: 8px;
+  width: 260px;
+  margin-top: 8px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-strong);
+  box-shadow: var(--soft-shadow);
+}
+
+.journal-details p {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  color: var(--muted-text);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.journal-details p strong {
+  color: var(--text);
+}
+
+.table-edit-stack {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.table-edit-stack--wide {
+  min-width: 210px;
 }
 
 .score-details summary,
@@ -2941,6 +3080,7 @@ tbody tr:hover .col-actions {
   }
 
   .summary-strip,
+  .field-grid--two,
   .portfolio-workspace,
   .recommendation-list,
   .performance-legend,
