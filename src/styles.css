@@ -397,7 +397,7 @@ summary {
   display: grid;
   grid-template-columns: minmax(280px, 0.58fr) minmax(440px, 1.42fr);
   gap: 16px;
-  align-items: stretch;
+  align-items: start;
   margin-bottom: 16px;
 }
 
@@ -587,6 +587,10 @@ summary {
   grid-column: span 1;
 }
 
+.performance-panel {
+  align-self: start;
+}
+
 .holdings-panel {
   margin-top: 0;
   overflow: hidden;
@@ -594,13 +598,13 @@ summary {
 
 .performance-chart-card {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .performance-chart {
   position: relative;
-  min-height: 320px;
-  padding: 12px;
+  min-height: 285px;
+  padding: 10px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background:
@@ -624,7 +628,7 @@ summary {
 
 .performance-chart::before {
   position: absolute;
-  inset: 12px;
+  inset: 10px;
   border-radius: 8px;
   background-image:
     linear-gradient(color-mix(in srgb, var(--muted-text) 7%, transparent) 1px, transparent 1px),
@@ -642,9 +646,9 @@ summary {
 
 .performance-chart-stat {
   display: grid;
-  gap: 5px;
+  gap: 4px;
   min-width: 0;
-  padding: 11px 12px;
+  padding: 10px 12px;
   border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
   border-radius: 8px;
   background:
@@ -677,7 +681,7 @@ summary {
   display: block;
   width: 100%;
   min-width: 0;
-  height: 300px;
+  height: 265px;
 }
 
 .performance-chart__plot {
@@ -755,7 +759,7 @@ summary {
   gap: 6px 9px;
   align-items: center;
   min-width: 0;
-  padding: 11px;
+  padding: 10px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background:
@@ -778,7 +782,7 @@ summary {
 
 .performance-legend__swatch {
   width: 11px;
-  height: 28px;
+  height: 24px;
   margin-top: 0;
   border-radius: 999px;
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--legend-color, var(--accent)) 14%, transparent);
