@@ -11,7 +11,8 @@ const percentFormatter = new Intl.NumberFormat("en-US", {
   signDisplay: "exceptZero",
 });
 
-const chartColors = ["#22c7a7", "#60a5fa", "#f2b84b", "#8b9cff", "#e8799f"];
+const chartColors = ["#23d6bd", "#4ea2ff", "#f4bd4f", "#8d97ff", "#f071a7"];
+const timeRanges = ["1M", "3M", "6M", "YTD", "1Y"];
 const chartWidth = 760;
 const chartHeight = 300;
 const padding = {
@@ -89,6 +90,24 @@ export function PerformanceChart({ series }: PerformanceChartProps) {
           />
         </div>
 
+        <div className="performance-chart-toolbar" aria-label="Chart view controls">
+          <div className="performance-chart-toolbar__ranges">
+            {timeRanges.map((range) => (
+              <span
+                aria-current={range === "1Y" ? "true" : undefined}
+                key={range}
+              >
+                {range}
+              </span>
+            ))}
+          </div>
+          <div className="performance-chart-toolbar__modes">
+            <span>Line</span>
+            <span>Area</span>
+            <span>Compare</span>
+          </div>
+        </div>
+
         <div
           className="performance-chart"
           role="img"
@@ -117,6 +136,11 @@ export function PerformanceChart({ series }: PerformanceChartProps) {
                   />
                 </linearGradient>
               ))}
+              <linearGradient id="portfolio-area-gradient" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stopColor={chartColors[0]} stopOpacity="0.32" />
+                <stop offset="54%" stopColor={chartColors[0]} stopOpacity="0.14" />
+                <stop offset="100%" stopColor={chartColors[0]} stopOpacity="0" />
+              </linearGradient>
             </defs>
 
             <rect
@@ -164,15 +188,23 @@ export function PerformanceChart({ series }: PerformanceChartProps) {
               const x = xForIndex(pointIndex, 12);
 
               return (
-                <text
-                  className="performance-chart__axis-label"
-                  key={label}
-                  textAnchor="middle"
-                  x={x}
-                  y={chartHeight - 10}
-                >
-                  {label}
-                </text>
+                <g key={label}>
+                  <line
+                    className="performance-chart__grid performance-chart__grid--vertical"
+                    x1={x}
+                    x2={x}
+                    y1={padding.top}
+                    y2={chartHeight - padding.bottom}
+                  />
+                  <text
+                    className="performance-chart__axis-label"
+                    textAnchor="middle"
+                    x={x}
+                    y={chartHeight - 10}
+                  >
+                    {label}
+                  </text>
+                </g>
               );
             })}
 
@@ -207,11 +239,27 @@ export function PerformanceChart({ series }: PerformanceChartProps) {
                       cy={yForValue(value)}
                       fill={chartColors[seriesIndex % chartColors.length]}
                       key={`${item.symbol}-${index}`}
-                      r={item.symbol === "PORTFOLIO" ? 3.8 : 3}
+                      r={
+                        item.symbol === "PORTFOLIO" && index === item.values.length - 1
+                          ? 5.2
+                          : item.symbol === "PORTFOLIO"
+                            ? 3.8
+                            : 3
+                      }
                     >
                       <title>{`${item.label}: ${percentFormatter.format(value)}%`}</title>
                     </circle>
                   ))}
+                  {item.symbol === "PORTFOLIO" ? (
+                    <text
+                      className="performance-chart__end-label"
+                      textAnchor="end"
+                      x={chartWidth - padding.right - 4}
+                      y={Math.max(padding.top + 16, yForValue(item.values.at(-1) ?? 0) - 10)}
+                    >
+                      {percentFormatter.format(item.values.at(-1) ?? 0)}%
+                    </text>
+                  ) : null}
                 </g>
               );
             })}

@@ -53,25 +53,27 @@ summary {
 }
 
 .app-shell {
-  --background: #0b111c;
-  --panel: #131c2b;
-  --panel-strong: #192536;
-  --text: #eef3f8;
-  --muted-text: #a2adba;
-  --subtle-text: #748196;
-  --border: #2a3748;
-  --green: #2fce7a;
-  --red: #f05266;
-  --amber: #f2b84b;
-  --blue: #60a5fa;
-  --violet: #9b8cff;
-  --magenta: #e8799f;
-  --accent: #22c7a7;
-  --accent-strong: #16a388;
+  --background: #070b11;
+  --panel: #101821;
+  --panel-strong: #172231;
+  --panel-contrast: #0c121b;
+  --text: #f2f6fb;
+  --muted-text: #a7b4c5;
+  --subtle-text: #78879a;
+  --border: #263445;
+  --hairline: rgba(255, 255, 255, 0.075);
+  --green: #28d986;
+  --red: #ff5570;
+  --amber: #f5be4f;
+  --blue: #4ea2ff;
+  --violet: #8d97ff;
+  --magenta: #f071a7;
+  --accent: #23d6bd;
+  --accent-strong: #16aa96;
   --button-text: #031f1b;
   --row-hover: rgba(34, 199, 167, 0.08);
-  --shadow: 0 18px 42px rgba(3, 10, 21, 0.22);
-  --soft-shadow: 0 10px 24px rgba(3, 10, 21, 0.16);
+  --shadow: 0 22px 56px rgba(0, 0, 0, 0.28);
+  --soft-shadow: 0 14px 32px rgba(0, 0, 0, 0.2);
   --bg: var(--background);
   --muted: var(--muted-text);
   --subtle: var(--subtle-text);
@@ -83,27 +85,29 @@ summary {
   padding: 24px;
   color: var(--text);
   background:
-    linear-gradient(180deg, rgba(96, 165, 250, 0.08), transparent 260px),
-    linear-gradient(135deg, rgba(34, 199, 167, 0.06), transparent 360px),
+    linear-gradient(180deg, rgba(78, 162, 255, 0.09), transparent 300px),
+    linear-gradient(90deg, rgba(35, 214, 189, 0.055), transparent 38%, rgba(240, 113, 167, 0.035)),
     var(--background);
 }
 
 .app-shell[data-theme="light"] {
-  --background: #f3f6f9;
+  --background: #f5f7fb;
   --panel: #ffffff;
-  --panel-strong: #eef3f7;
-  --text: #17202b;
-  --muted-text: #5b6878;
-  --subtle-text: #7a8696;
-  --border: #d7e0ea;
-  --green: #118047;
-  --red: #c53247;
-  --amber: #a66905;
+  --panel-strong: #eef4f8;
+  --panel-contrast: #e8eef5;
+  --text: #141b24;
+  --muted-text: #556275;
+  --subtle-text: #79869a;
+  --border: #d6e0ea;
+  --hairline: rgba(10, 22, 36, 0.08);
+  --green: #0f995d;
+  --red: #cf334d;
+  --amber: #a66a05;
   --blue: #2563eb;
-  --violet: #6d5dfc;
-  --magenta: #c02667;
-  --accent: #0f8f7d;
-  --accent-strong: #0b7668;
+  --violet: #6757e8;
+  --magenta: #be2f6f;
+  --accent: #0f9b87;
+  --accent-strong: #0b7d6e;
   --button-text: #ffffff;
   --row-hover: rgba(15, 143, 125, 0.08);
   --shadow: 0 18px 38px rgba(32, 45, 62, 0.08);
@@ -3260,6 +3264,587 @@ tbody tr:hover .col-actions {
   line-height: 1.25;
 }
 
+/* Premium trading workspace polish inspired by dense broker dashboards. */
+.dashboard {
+  display: grid;
+  gap: 18px;
+}
+
+.top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  align-items: center;
+  margin: -10px -8px 8px;
+  padding: 12px 8px 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 68%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background) 94%, transparent),
+      color-mix(in srgb, var(--background) 78%, transparent)
+    );
+  backdrop-filter: blur(18px);
+}
+
+.top-bar h1 {
+  max-width: 720px;
+  font-size: clamp(2rem, 3.1vw, 3.45rem);
+  letter-spacing: 0;
+}
+
+.top-bar__controls {
+  padding: 5px;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel-contrast) 78%, transparent);
+  box-shadow:
+    inset 0 1px 0 var(--hairline),
+    0 16px 34px rgba(0, 0, 0, 0.14);
+}
+
+.segmented-control,
+.icon-button,
+.language-button,
+.secondary-button,
+.table-action {
+  box-shadow: inset 0 1px 0 var(--hairline);
+}
+
+.segmented-control {
+  border-color: color-mix(in srgb, var(--border) 72%, transparent);
+  background: color-mix(in srgb, var(--background) 28%, var(--panel));
+}
+
+.segmented-control__button[aria-pressed="true"] {
+  color: var(--button-text);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent) 92%, white),
+      var(--accent-strong)
+    );
+}
+
+.summary-area {
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.currency-note {
+  justify-content: space-between;
+}
+
+.currency-note span {
+  border-color: color-mix(in srgb, var(--border) 74%, transparent);
+  background: color-mix(in srgb, var(--panel) 58%, transparent);
+  box-shadow: inset 0 1px 0 var(--hairline);
+}
+
+.summary-strip {
+  gap: 12px;
+}
+
+.summary-item,
+.panel,
+.analytics-hero,
+.ideas-hero,
+.daily-stocks,
+.weekly-themes {
+  border-color: color-mix(in srgb, var(--border) 82%, transparent);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 54%, transparent), transparent),
+    color-mix(in srgb, var(--panel) 94%, var(--background));
+  box-shadow:
+    inset 0 1px 0 var(--hairline),
+    var(--shadow);
+}
+
+.panel {
+  padding: 20px;
+}
+
+.summary-item {
+  min-height: 96px;
+  padding: 17px;
+  border-color: color-mix(in srgb, var(--summary-accent, var(--accent)) 24%, var(--border));
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--summary-accent, var(--accent)) 16%, transparent),
+      transparent 42%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 74%, transparent),
+      color-mix(in srgb, var(--panel) 94%, transparent)
+    );
+}
+
+.summary-item__marker {
+  width: 8px;
+  height: 50px;
+}
+
+.summary-item__body {
+  gap: 7px;
+}
+
+.summary-item span,
+.performance-chart-stat span,
+.analytics-metric span,
+.risk-signal span {
+  color: color-mix(in srgb, var(--muted-text) 92%, var(--text));
+}
+
+.summary-item strong {
+  font-size: clamp(1.18rem, 1.45vw, 1.55rem);
+}
+
+.portfolio-workspace {
+  grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.portfolio-main-column {
+  gap: 18px;
+}
+
+.section-heading {
+  margin-bottom: 16px;
+}
+
+.section-heading h2 {
+  font-size: 1.18rem;
+}
+
+.position-form-panel {
+  position: sticky;
+  top: 104px;
+}
+
+.position-form {
+  gap: 13px;
+}
+
+.field span {
+  color: color-mix(in srgb, var(--muted-text) 86%, var(--text));
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.field input,
+.field textarea,
+.table-edit-field input,
+.month-filter select {
+  border-color: color-mix(in srgb, var(--border) 82%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 72%, transparent),
+      color-mix(in srgb, var(--panel-contrast) 86%, transparent)
+    );
+  box-shadow: inset 0 1px 0 var(--hairline);
+}
+
+.field input:hover,
+.field textarea:hover,
+.table-edit-field input:hover,
+.month-filter select:hover {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+}
+
+.journal-fieldset {
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 11%, transparent), transparent 58%),
+    color-mix(in srgb, var(--panel-contrast) 58%, transparent);
+}
+
+.primary-button {
+  min-height: 46px;
+  border-radius: 8px;
+  box-shadow:
+    0 16px 30px color-mix(in srgb, var(--accent) 18%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 26%, transparent);
+}
+
+.performance-panel {
+  overflow: hidden;
+}
+
+.performance-chart-card {
+  gap: 12px;
+}
+
+.performance-chart-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel-contrast) 64%, transparent);
+}
+
+.performance-chart-toolbar__ranges,
+.performance-chart-toolbar__modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.performance-chart-toolbar span {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  padding: 5px 9px;
+  border: 1px solid color-mix(in srgb, var(--border) 66%, transparent);
+  border-radius: 999px;
+  color: var(--muted-text);
+  background: color-mix(in srgb, var(--panel-strong) 52%, transparent);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.performance-chart-toolbar span[aria-current="true"] {
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--border));
+  color: var(--button-text);
+  background: var(--accent);
+}
+
+.performance-chart-toolbar__modes span {
+  color: color-mix(in srgb, var(--text) 82%, var(--blue));
+}
+
+.performance-chart {
+  min-height: 348px;
+  padding: 14px;
+  border-color: color-mix(in srgb, var(--blue) 24%, var(--border));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--blue) 7%, transparent), transparent 42%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 86%, transparent),
+      color-mix(in srgb, var(--panel-contrast) 86%, transparent)
+    );
+}
+
+.performance-chart::before {
+  inset: 14px;
+  opacity: 0.7;
+}
+
+.performance-chart__svg {
+  height: 318px;
+}
+
+.performance-chart__plot {
+  fill: color-mix(in srgb, var(--panel-contrast) 52%, transparent);
+  stroke: color-mix(in srgb, var(--blue) 20%, var(--border));
+}
+
+.performance-chart__area {
+  fill: url("#portfolio-area-gradient");
+}
+
+.performance-chart__grid {
+  stroke: color-mix(in srgb, var(--muted-text) 12%, transparent);
+}
+
+.performance-chart__grid--vertical {
+  stroke-dasharray: 3 9;
+}
+
+.performance-chart__axis-label {
+  fill: color-mix(in srgb, var(--muted-text) 88%, var(--text));
+  font-size: 0.72rem;
+}
+
+.performance-chart__line {
+  stroke-width: 3.2;
+  filter: drop-shadow(0 7px 10px rgba(0, 0, 0, 0.24));
+}
+
+.performance-chart__point {
+  stroke: var(--panel-contrast);
+  stroke-width: 2.4;
+}
+
+.performance-chart__end-label {
+  fill: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 900;
+  paint-order: stroke;
+  stroke: var(--panel-contrast);
+  stroke-linejoin: round;
+  stroke-width: 5px;
+}
+
+.performance-legend {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.performance-legend__item {
+  min-height: 64px;
+  border-color: color-mix(in srgb, var(--legend-color, var(--accent)) 26%, var(--border));
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--legend-color, var(--accent)) 16%, transparent),
+      transparent 58%
+    ),
+    color-mix(in srgb, var(--panel-strong) 74%, transparent);
+}
+
+.performance-legend__swatch {
+  width: 9px;
+  height: 34px;
+}
+
+.holdings-panel {
+  padding-bottom: 16px;
+}
+
+.monthly-holdings-list {
+  gap: 14px;
+}
+
+.month-filter,
+.month-group {
+  border-color: color-mix(in srgb, var(--border) 82%, transparent);
+  box-shadow: inset 0 1px 0 var(--hairline);
+}
+
+.month-filter {
+  padding: 13px;
+  background: color-mix(in srgb, var(--panel-contrast) 48%, transparent);
+}
+
+.month-group {
+  overflow: hidden;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel-contrast) 38%, transparent);
+}
+
+.month-group__header {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent),
+    color-mix(in srgb, var(--panel-strong) 68%, transparent);
+}
+
+.table-scroll {
+  border: 0;
+  border-radius: 0;
+  scrollbar-color: color-mix(in srgb, var(--accent) 72%, var(--border)) transparent;
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  background: transparent;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 13px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  color: color-mix(in srgb, var(--muted-text) 84%, var(--text));
+  background: color-mix(in srgb, var(--panel-contrast) 94%, var(--panel));
+  font-size: 0.68rem;
+}
+
+tbody td {
+  padding: 15px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 58%, transparent);
+  vertical-align: middle;
+}
+
+tbody tr:hover {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent 42%);
+}
+
+.symbol-cell {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 9px;
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, var(--border));
+  border-radius: 999px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.current-price-cell,
+.money-cell,
+.trade-plan-cell {
+  gap: 5px;
+}
+
+.data-badge,
+.price-status,
+.position-status {
+  border-radius: 999px;
+  font-size: 0.66rem;
+  letter-spacing: 0.02em;
+}
+
+.row-actions {
+  gap: 7px;
+}
+
+.table-action {
+  width: 36px;
+  height: 36px;
+}
+
+.analytics-page,
+.ideas-page {
+  gap: 18px;
+}
+
+.analytics-hero,
+.ideas-hero {
+  padding: 28px;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 14%, transparent), transparent 46%),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--panel-strong) 88%, var(--panel)),
+      color-mix(in srgb, var(--panel) 86%, var(--blue))
+    );
+}
+
+.analytics-hero h2,
+.ideas-hero h2 {
+  font-size: clamp(1.8rem, 2.8vw, 3rem);
+}
+
+.analytics-hero__metrics,
+.ideas-hero__stat-stack {
+  gap: 12px;
+}
+
+.analytics-metric,
+.risk-signal,
+.ideas-hero__stats,
+.ideas-hero__updated,
+.monthly-report-card,
+.allocation-donut-card,
+.allocation-row,
+.analytics-holding-row,
+.daily-method-card,
+.daily-zone,
+.daily-stock-card,
+.weekly-theme {
+  border-color: color-mix(in srgb, var(--border) 82%, transparent);
+  box-shadow: inset 0 1px 0 var(--hairline);
+}
+
+.risk-signal {
+  min-height: 92px;
+}
+
+.monthly-report,
+.analytics-panel {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 44%, transparent), transparent),
+    color-mix(in srgb, var(--panel) 92%, var(--background));
+}
+
+.allocation-donut-card {
+  grid-template-columns: 140px minmax(0, 1fr);
+}
+
+.allocation-donut {
+  width: 140px;
+}
+
+.allocation-donut::before {
+  inset: 22px;
+}
+
+.allocation-row,
+.analytics-holding-row {
+  background: color-mix(in srgb, var(--panel-contrast) 42%, transparent);
+}
+
+.ideas-hero {
+  grid-template-columns: minmax(0, 1.05fr) minmax(300px, 0.7fr);
+}
+
+.daily-stocks,
+.weekly-themes {
+  padding: 22px;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent 52%),
+    color-mix(in srgb, var(--panel) 94%, var(--background));
+}
+
+.daily-method-card {
+  min-height: 78px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent),
+    color-mix(in srgb, var(--panel-contrast) 48%, transparent);
+}
+
+.daily-zone {
+  align-content: start;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--zone-color) 10%, transparent), transparent 44%),
+    color-mix(in srgb, var(--panel-contrast) 44%, transparent);
+}
+
+.daily-stock-card {
+  border-color: color-mix(in srgb, var(--zone-color) 22%, var(--border));
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--zone-color) 9%, transparent), transparent 52%),
+    color-mix(in srgb, var(--panel) 82%, var(--background));
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease,
+    background 160ms ease;
+}
+
+.daily-stock-card:hover {
+  border-color: color-mix(in srgb, var(--zone-color) 46%, var(--border));
+  transform: translateY(-1px);
+}
+
+.daily-stock-card__ema span,
+.weekly-theme__chips span,
+.weekly-theme__symbols span {
+  border-color: color-mix(in srgb, var(--border) 74%, transparent);
+  background: color-mix(in srgb, var(--panel-contrast) 42%, transparent);
+}
+
+.weekly-theme-grid--full {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.weekly-theme {
+  min-height: 100%;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--theme-color) 9%, transparent), transparent 38%),
+    color-mix(in srgb, var(--panel) 86%, var(--background));
+}
+
+.weekly-theme__thesis {
+  background: color-mix(in srgb, var(--panel-contrast) 46%, transparent);
+}
+
+.weekly-theme__source {
+  border-radius: 8px;
+}
+
 @media (max-width: 1270px) {
   .portfolio-workspace {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3300,6 +3885,10 @@ tbody tr:hover .col-actions {
   .performance-panel,
   .position-form-panel {
     grid-column: 1 / -1;
+  }
+
+  .position-form-panel {
+    position: static;
   }
 
   .portfolio-workspace {
@@ -3405,6 +3994,20 @@ tbody tr:hover .col-actions {
   .performance-chart {
     min-height: 260px;
     padding: 10px;
+  }
+
+  .performance-chart-toolbar {
+    display: grid;
+  }
+
+  .performance-chart-toolbar__ranges,
+  .performance-chart-toolbar__modes {
+    justify-content: stretch;
+  }
+
+  .performance-chart-toolbar span {
+    flex: 1;
+    justify-content: center;
   }
 
   .performance-chart__svg {
