@@ -1,4 +1,4 @@
-import type { Market, MarketFilter, StockProfile } from "../types";
+import type { Market, MarketFilter, PriceStatus, StockProfile } from "../types";
 
 export type DailyStockZone = "zone-1" | "zone-2" | "zone-3";
 
@@ -10,6 +10,8 @@ export interface DailyStockIdea {
   ema200: number;
   market: Market;
   name: string;
+  priceStatus?: PriceStatus;
+  priceUpdatedAt?: string;
   sector: string;
   symbol: string;
   zone: DailyStockZone;
@@ -59,6 +61,8 @@ export function classifyEmaZone({
 }
 
 function buildDailyStockIdea(stock: StockProfile): DailyStockIdea | null {
+  const pricedStock = stockWithPriceStatus(stock);
+
   if (
     stock.currentPrice <= 0 ||
     stock.momentum === null ||
@@ -83,10 +87,22 @@ function buildDailyStockIdea(stock: StockProfile): DailyStockIdea | null {
     currentPrice: stock.currentPrice,
     market: stock.market,
     name: stock.name,
+    priceStatus: pricedStock.priceStatus,
+    priceUpdatedAt: pricedStock.priceUpdatedAt,
     sector: stock.sector,
     symbol: stock.symbol,
     zone,
     ...trend,
+  };
+}
+
+function stockWithPriceStatus(stock: StockProfile): StockProfile & {
+  priceStatus?: PriceStatus;
+  priceUpdatedAt?: string;
+} {
+  return stock as StockProfile & {
+    priceStatus?: PriceStatus;
+    priceUpdatedAt?: string;
   };
 }
 

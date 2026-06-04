@@ -3,6 +3,7 @@ import type {
   PortfolioPosition,
   PriceStatus,
   SectorSource,
+  StockProfile,
 } from "../types";
 import { fallbackUsdThbRate } from "./portfolio";
 
@@ -26,6 +27,11 @@ export interface ExchangeRateQuote {
   fetchedAt: string;
   rate: number;
   status: PriceStatus;
+}
+
+export interface PricedStockProfile extends StockProfile {
+  priceStatus: PriceStatus;
+  priceUpdatedAt?: string;
 }
 
 type QuoteCache = Record<string, CachedQuote>;
@@ -98,6 +104,24 @@ export function applyCachedQuotes(
   });
 }
 
+export function applyCachedStockQuotes(
+  stocks: StockProfile[],
+  storage: Storage = localStorage,
+): PricedStockProfile[] {
+  const quoteCache = loadQuoteCache(storage);
+
+  return stocks.map((stock) => {
+    const cachedQuote =
+      quoteCache[quoteCacheKey(stock.symbol, stock.market)] ?? quoteCache[stock.symbol];
+
+    if (!cachedQuote || stock.market === "Custom") {
+      return markStockPriceStatus(stock, "fallback");
+    }
+
+    return applyQuoteToStock(stock, cachedQuote, "cached");
+  });
+}
+
 export async function refreshPositionPrices(
   positions: PortfolioPosition[],
   storage: Storage = localStorage,
@@ -139,6 +163,49 @@ export async function refreshPositionPrices(
   saveQuoteCache(nextQuoteCache, storage);
 
   return updatedPositions;
+}
+
+export async function refreshStockProfilePrices(
+  stocks: StockProfile[],
+  storage: Storage = localStorage,
+  fetcher: Fetcher = fetch,
+): Promise<PricedStockProfile[]> {
+  const quoteCache = loadQuoteCache(storage);
+  const nextQuoteCache = { ...quoteCache };
+
+  const updatedStocks = await Promise.all(
+    stocks.map(async (stock) => {
+      if (stock.market === "Custom") {
+        return markStockPriceStatus(stock, "fallback");
+      }
+
+      const cacheKey = quoteCacheKey(stock.symbol, stock.market);
+
+      try {
+        const quote = await fetchMarketQuote(stock, fetcher);
+        const cachedQuote = {
+          ...quote,
+          fetchedAt: new Date().toISOString(),
+        };
+
+        nextQuoteCache[cacheKey] = cachedQuote;
+
+        return applyQuoteToStock(stock, cachedQuote, "live");
+      } catch {
+        const cachedQuote = quoteCache[cacheKey];
+
+        if (cachedQuote) {
+          return applyQuoteToStock(stock, cachedQuote, "cached");
+        }
+
+        return markStockPriceStatus(stock, "fallback");
+      }
+    }),
+  );
+
+  saveQuoteCache(nextQuoteCache, storage);
+
+  return updatedStocks;
 }
 
 export function loadQuoteCache(storage: Storage = localStorage): QuoteCache {
@@ -236,7 +303,7 @@ function quoteCacheKey(symbol: string, market: Market): string {
 }
 
 async function fetchMarketQuote(
-  position: PortfolioPosition,
+  position: Pick<PortfolioPosition | StockProfile, "market" | "symbol">,
   fetcher: Fetcher,
 ): Promise<MarketQuote> {
   const providerSymbol = toYahooSymbol(position.symbol, position.market);
@@ -332,6 +399,32 @@ function markPriceStatus(
 ): PortfolioPosition {
   return {
     ...position,
+    priceStatus,
+  };
+}
+
+function applyQuoteToStock(
+  stock: StockProfile,
+  quote: CachedQuote,
+  priceStatus: PriceStatus,
+): PricedStockProfile {
+  return {
+    ...stock,
+    currentPrice: roundTo(quote.price, 2),
+    name: quote.name ?? stock.name,
+    priceStatus,
+    priceUpdatedAt: quote.fetchedAt,
+    sector: quote.sector ?? stock.sector,
+    sectorSource: quote.sectorSource ?? stock.sectorSource,
+  };
+}
+
+function markStockPriceStatus(
+  stock: StockProfile,
+  priceStatus: PriceStatus,
+): PricedStockProfile {
+  return {
+    ...stock,
     priceStatus,
   };
 }

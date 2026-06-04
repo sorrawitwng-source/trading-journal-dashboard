@@ -1677,7 +1677,8 @@ summary {
   line-height: 1.45;
 }
 
-.daily-stocks .section-heading > span {
+.daily-stocks .section-heading > span,
+.daily-price-actions > span {
   padding: 7px 10px;
   border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
   border-radius: 999px;
@@ -1686,6 +1687,25 @@ summary {
   font-size: 0.78rem;
   font-weight: 800;
   white-space: nowrap;
+}
+
+.daily-price-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.daily-price-actions .secondary-button {
+  min-height: 34px;
+  padding: 7px 10px;
+}
+
+.daily-price-error {
+  margin: -4px 0 0;
+  color: var(--warning);
+  font-size: 0.82rem;
+  font-weight: 800;
 }
 
 .daily-method-grid {
@@ -1858,6 +1878,23 @@ summary {
   margin: 0;
   font-size: 0.74rem;
   font-weight: 800;
+}
+
+.daily-stock-card__price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--zone-color) 24%, var(--border));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--zone-color) 7%, transparent);
+}
+
+.daily-stock-card__price strong {
+  color: var(--text);
+  font-size: 0.9rem;
 }
 
 .daily-stock-card__ema {

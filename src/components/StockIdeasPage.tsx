@@ -1,5 +1,6 @@
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { ArrowUpRight, Flame, Newspaper, Radar } from "lucide-react";
+import { ArrowUpRight, Flame, Newspaper, Radar, RefreshCw } from "lucide-react";
 import type { MarketFilter } from "../types";
 import { stockUniverse } from "../data/stocks";
 import {
@@ -7,6 +8,11 @@ import {
   type DailyStockZone,
   scanDailyStocks,
 } from "../lib/dailyStockScanner";
+import {
+  applyCachedStockQuotes,
+  type PricedStockProfile,
+  refreshStockProfilePrices,
+} from "../lib/marketData";
 import { weeklyThemeUpdatedAt, weeklyThemes } from "../lib/weeklyThemes";
 import type { Language } from "../lib/scoreText";
 
@@ -19,10 +25,30 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
   const text = labels[language];
   const uiText = ideaUiLabels[language];
   const dailyText = dailyStockLabels[language];
+  const [pricedStockUniverse, setPricedStockUniverse] = useState<PricedStockProfile[]>(
+    () => applyCachedStockQuotes(stockUniverse),
+  );
+  const [dailyPriceError, setDailyPriceError] = useState<string | null>(null);
+  const [isRefreshingDailyPrices, setIsRefreshingDailyPrices] = useState(false);
+  const [lastDailyPriceUpdate, setLastDailyPriceUpdate] = useState<string | null>(null);
   const visibleThemes = weeklyThemes.filter(
     (theme) => marketFilter === "All" || theme.market === marketFilter,
   );
-  const dailyIdeas = scanDailyStocks(stockUniverse, marketFilter);
+  const dailyRefreshTargets = useMemo(
+    () =>
+      scanDailyStocks(stockUniverse, marketFilter)
+        .map((idea) =>
+          stockUniverse.find(
+            (stock) => stock.symbol === idea.symbol && stock.market === idea.market,
+          ),
+        )
+        .filter((stock): stock is (typeof stockUniverse)[number] => stock !== undefined),
+    [marketFilter],
+  );
+  const dailyIdeas = useMemo(
+    () => scanDailyStocks(pricedStockUniverse, marketFilter),
+    [marketFilter, pricedStockUniverse],
+  );
   const symbolCount = new Set(visibleThemes.flatMap((theme) => theme.symbols)).size;
   const sectorCount = new Set(visibleThemes.flatMap((theme) => theme.sectors)).size;
   const signalCounts = {
@@ -30,6 +56,69 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
     mixed: visibleThemes.filter((theme) => theme.signal === "mixed").length,
     watch: visibleThemes.filter((theme) => theme.signal === "watch").length,
   };
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    async function refreshDailyPrices() {
+      if (dailyRefreshTargets.length === 0) {
+        return;
+      }
+
+      setIsRefreshingDailyPrices(true);
+      setDailyPriceError(null);
+
+      try {
+        const refreshedStocks = await refreshStockProfilePrices(dailyRefreshTargets);
+
+        if (!isCurrent) {
+          return;
+        }
+
+        setPricedStockUniverse((currentStocks) =>
+          mergePricedStocks(currentStocks, refreshedStocks),
+        );
+        setLastDailyPriceUpdate(new Date().toISOString());
+      } catch {
+        if (isCurrent) {
+          setDailyPriceError(dailyText.priceError);
+        }
+      } finally {
+        if (isCurrent) {
+          setIsRefreshingDailyPrices(false);
+        }
+      }
+    }
+
+    setPricedStockUniverse(applyCachedStockQuotes(stockUniverse));
+    void refreshDailyPrices();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [dailyRefreshTargets, dailyText.priceError]);
+
+  async function handleRefreshDailyPrices() {
+    if (dailyRefreshTargets.length === 0 || isRefreshingDailyPrices) {
+      return;
+    }
+
+    setIsRefreshingDailyPrices(true);
+    setDailyPriceError(null);
+
+    try {
+      const refreshedStocks = await refreshStockProfilePrices(dailyRefreshTargets);
+
+      setPricedStockUniverse((currentStocks) =>
+        mergePricedStocks(currentStocks, refreshedStocks),
+      );
+      setLastDailyPriceUpdate(new Date().toISOString());
+    } catch {
+      setDailyPriceError(dailyText.priceError);
+    } finally {
+      setIsRefreshingDailyPrices(false);
+    }
+  }
 
   return (
     <section className="ideas-page weekly-ideas-page" aria-labelledby="ideas-title">
@@ -86,8 +175,25 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
             <h2 id="daily-stocks-title">{dailyText.title}</h2>
             <p>{dailyText.description}</p>
           </div>
-          <span>{dailyText.updated}: {formatDate(todayIsoDate(), language)}</span>
+          <div className="daily-price-actions">
+            <span>
+              {dailyText.updated}:{" "}
+              {lastDailyPriceUpdate
+                ? formatUpdatedTime(lastDailyPriceUpdate)
+                : formatDate(todayIsoDate(), language)}
+            </span>
+            <button
+              className="secondary-button"
+              disabled={isRefreshingDailyPrices || dailyRefreshTargets.length === 0}
+              onClick={() => void handleRefreshDailyPrices()}
+              type="button"
+            >
+              <RefreshCw aria-hidden="true" size={15} />
+              {isRefreshingDailyPrices ? dailyText.refreshing : dailyText.refreshPrices}
+            </button>
+          </div>
         </div>
+        {dailyPriceError ? <p className="daily-price-error">{dailyPriceError}</p> : null}
 
         <div className="daily-method-grid" aria-label={dailyText.method}>
           <MethodCard label="Zone 1" value={dailyText.zone1Method} />
@@ -211,8 +317,16 @@ function DailyStockCard({
         <b>{idea.market}</b>
       </div>
       <p>{idea.sector}</p>
+      <div className="daily-stock-card__price">
+        <strong>{text.price}: {formatNumber(idea.currentPrice)}</strong>
+        <span
+          className={`price-status price-status--${idea.priceStatus ?? "fallback"}`}
+          title={idea.priceUpdatedAt ?? undefined}
+        >
+          {priceStatusLabel(idea.priceStatus, language)}
+        </span>
+      </div>
       <div className="daily-stock-card__ema">
-        <span>{text.price}: {formatNumber(idea.currentPrice)}</span>
         <span>EMA5 {formatNumber(idea.ema5)}</span>
         <span>EMA10 {formatNumber(idea.ema10)}</span>
         <span>EMA75 {formatNumber(idea.ema75)}</span>
@@ -221,6 +335,23 @@ function DailyStockCard({
       <small>{dailyReason(idea.zone, language)}</small>
     </div>
   );
+}
+
+function mergePricedStocks(
+  currentStocks: PricedStockProfile[],
+  refreshedStocks: PricedStockProfile[],
+): PricedStockProfile[] {
+  const refreshedByKey = new Map(
+    refreshedStocks.map((stock) => [stockKey(stock.symbol, stock.market), stock]),
+  );
+
+  return currentStocks.map(
+    (stock) => refreshedByKey.get(stockKey(stock.symbol, stock.market)) ?? stock,
+  );
+}
+
+function stockKey(symbol: string, market: string): string {
+  return `${market}:${symbol.trim().toUpperCase()}`;
 }
 
 function PulsePill({
@@ -293,6 +424,28 @@ function todayIsoDate(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function formatUpdatedTime(value: string): string {
+  return new Intl.DateTimeFormat("th-TH", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+function priceStatusLabel(
+  status: DailyStockIdea["priceStatus"],
+  language: Language,
+): string {
+  if (status === "live") {
+    return language === "th" ? "สด" : "Live";
+  }
+
+  if (status === "cached") {
+    return language === "th" ? "แคช" : "Cached";
+  }
+
+  return language === "th" ? "สำรอง" : "Fallback";
+}
+
 function signalText(signal: "hot" | "mixed" | "watch", language: Language): string {
   const labels = {
     hot: { en: "Hot", th: "เด่น" },
@@ -322,6 +475,9 @@ const dailyStockLabels = {
     method: "Daily stock method",
     noIdeas: "No daily candidates match this market filter.",
     price: "Price",
+    priceError: "Could not refresh Stock Ideas prices right now.",
+    refreshPrices: "Refresh prices",
+    refreshing: "Refreshing",
     title: "Fast movers by EMA zones",
     updated: "Updated",
     zone1Method: "Price > EMA5 > EMA10 > EMA75 > EMA200",
@@ -335,6 +491,9 @@ const dailyStockLabels = {
     method: "วิธีคัดหุ้นซิ่ง",
     noIdeas: "ยังไม่มีตัวที่เข้าเงื่อนไขในตลาดนี้",
     price: "ราคา",
+    priceError: "ยังอัปเดตราคาหน้า Stock Ideas ไม่ได้ตอนนี้",
+    refreshPrices: "อัปเดตราคา",
+    refreshing: "กำลังอัปเดต",
     title: "หุ้นซิ่งตาม EMA Zone",
     updated: "อัปเดต",
     zone1Method: "ราคา > EMA5 > EMA10 > EMA75 > EMA200",
