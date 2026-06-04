@@ -55,9 +55,9 @@ describe("scanDailyStocks", () => {
     expect(scanDailyStocks(stockUniverse, "US").every((idea) => idea.market === "US")).toBe(true);
   });
 
-  it("keeps the strongest six ideas inside each zone", () => {
-    const stocks = Array.from({ length: 7 }, (_, index): StockProfile => {
-      const momentum = 66 + index;
+  it("limits each zone to eighteen ideas", () => {
+    const stocks = Array.from({ length: 19 }, (_, index): StockProfile => {
+      const momentum = 70 + index;
 
       return {
         currentPrice: 100,
@@ -65,19 +65,21 @@ describe("scanDailyStocks", () => {
         market: "US",
         momentum,
         name: `Fast ${index}`,
-        risk: 30,
+        risk: 20,
         sector: "Technology",
         sectorSource: "curated",
         symbol: `FAST${index}`,
         valuation: 50,
-        volatility: 20,
+        volatility: 18,
       };
     });
 
     const ideas = scanDailyStocks(stocks, "US");
+    const symbols = ideas.map((idea) => idea.symbol);
 
-    expect(ideas).toHaveLength(6);
+    expect(ideas).toHaveLength(18);
     expect(ideas.every((idea) => idea.zone === "zone-1")).toBe(true);
-    expect(ideas[0].symbol).toBe("FAST6");
+    expect(symbols).toContain("FAST18");
+    expect(symbols).not.toContain("FAST0");
   });
 });

@@ -27,7 +27,7 @@ export interface DailyStockIdea {
   zone: DailyStockZone;
 }
 
-const ideasPerZone = 6;
+const ideasPerZone = 18;
 
 export function scanDailyStocks(
   stocks: StockProfile[],

@@ -21,6 +21,10 @@ interface StockIdeasPageProps {
   marketFilter: MarketFilter;
 }
 
+type DailyZoneTab = "all" | DailyStockZone;
+
+const dailyZoneOrder: DailyStockZone[] = ["zone-1", "zone-2", "zone-3"];
+
 export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) {
   const text = labels[language];
   const uiText = ideaUiLabels[language];
@@ -31,6 +35,12 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
   const [dailyPriceError, setDailyPriceError] = useState<string | null>(null);
   const [isRefreshingDailyPrices, setIsRefreshingDailyPrices] = useState(false);
   const [lastDailyPriceUpdate, setLastDailyPriceUpdate] = useState<string | null>(null);
+  const [activeDailyTab, setActiveDailyTab] = useState<DailyZoneTab>("all");
+  const [collapsedDailyZones, setCollapsedDailyZones] = useState<Record<DailyStockZone, boolean>>({
+    "zone-1": false,
+    "zone-2": false,
+    "zone-3": false,
+  });
   const visibleThemes = weeklyThemes.filter(
     (theme) => marketFilter === "All" || theme.market === marketFilter,
   );
@@ -48,6 +58,9 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
   const dailyIdeas = useMemo(
     () => scanDailyStocks(pricedStockUniverse, marketFilter),
     [marketFilter, pricedStockUniverse],
+  );
+  const visibleDailyZones = dailyZoneOrder.filter(
+    (zone) => activeDailyTab === "all" || activeDailyTab === zone,
   );
   const symbolCount = new Set(visibleThemes.flatMap((theme) => theme.symbols)).size;
   const sectorCount = new Set(visibleThemes.flatMap((theme) => theme.sectors)).size;
@@ -118,6 +131,13 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
     } finally {
       setIsRefreshingDailyPrices(false);
     }
+  }
+
+  function toggleDailyZone(zone: DailyStockZone) {
+    setCollapsedDailyZones((current) => ({
+      ...current,
+      [zone]: !current[zone],
+    }));
   }
 
   return (
@@ -201,9 +221,32 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
           <MethodCard label="Zone 3" value={dailyText.zone3Method} />
         </div>
 
+        <div className="daily-zone-tabs" aria-label={dailyText.tabsLabel} role="tablist">
+          {(["all", ...dailyZoneOrder] as DailyZoneTab[]).map((tab) => {
+            const count =
+              tab === "all"
+                ? dailyIdeas.length
+                : dailyIdeas.filter((idea) => idea.zone === tab).length;
+
+            return (
+              <button
+                aria-selected={activeDailyTab === tab}
+                key={tab}
+                onClick={() => setActiveDailyTab(tab)}
+                role="tab"
+                type="button"
+              >
+                <span>{dailyTabLabel(tab, language)}</span>
+                <b>{count}</b>
+              </button>
+            );
+          })}
+        </div>
+
         <div className="daily-zone-grid">
-          {(["zone-1", "zone-2", "zone-3"] as DailyStockZone[]).map((zone) => {
-            const ideas = dailyIdeas.filter((idea) => idea.zone === zone).slice(0, 6);
+          {visibleDailyZones.map((zone) => {
+            const ideas = dailyIdeas.filter((idea) => idea.zone === zone);
+            const isCollapsed = collapsedDailyZones[zone];
 
             return (
               <article className={`daily-zone daily-zone--${zone}`} key={zone}>
@@ -212,17 +255,29 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
                     <span>{zoneLabel(zone, language)}</span>
                     <strong>{zoneTitle(zone, language)}</strong>
                   </div>
-                  <b>{ideas.length}</b>
+                  <div className="daily-zone__actions">
+                    <b>{ideas.length}</b>
+                    <button
+                      aria-expanded={!isCollapsed}
+                      className="daily-zone__toggle"
+                      onClick={() => toggleDailyZone(zone)}
+                      type="button"
+                    >
+                      {isCollapsed ? dailyText.expand : dailyText.collapse}
+                    </button>
+                  </div>
                 </div>
-                <div className="daily-stock-list">
-                  {ideas.length > 0 ? (
-                    ideas.map((idea) => (
-                      <DailyStockCard idea={idea} key={idea.symbol} language={language} />
-                    ))
-                  ) : (
-                    <p className="daily-stock-empty">{dailyText.noIdeas}</p>
-                  )}
-                </div>
+                {!isCollapsed ? (
+                  <div className="daily-stock-list">
+                    {ideas.length > 0 ? (
+                      ideas.map((idea) => (
+                        <DailyStockCard idea={idea} key={idea.symbol} language={language} />
+                      ))
+                    ) : (
+                      <p className="daily-stock-empty">{dailyText.noIdeas}</p>
+                    )}
+                  </div>
+                ) : null}
               </article>
             );
           })}
@@ -524,6 +579,14 @@ function PulsePill({
   );
 }
 
+function dailyTabLabel(tab: DailyZoneTab, language: Language): string {
+  if (tab === "all") {
+    return language === "th" ? "ทั้งหมด" : "All";
+  }
+
+  return zoneLabel(tab, language);
+}
+
 function zoneLabel(zone: DailyStockZone, language: Language): string {
   const labels = {
     "zone-1": { en: "Zone 1", th: "Zone 1" },
@@ -619,15 +682,18 @@ const ideaUiLabels = {
 
 const dailyStockLabels = {
   en: {
+    collapse: "Collapse",
     description:
       "Small-cap and high-beta momentum candidates from an EMA-zone model. These names can move fast, so confirm live chart, volume, news, and liquidity before trading.",
     eyebrow: "Daily Small Caps",
+    expand: "Expand",
     method: "Daily stock method",
     noIdeas: "No daily candidates match this market filter.",
     price: "Price",
     priceError: "Could not refresh Stock Ideas prices right now.",
     refreshPrices: "Refresh prices",
     refreshing: "Refreshing",
+    tabsLabel: "Daily stock zone tabs",
     title: "Small-cap fast movers by EMA zones",
     updated: "Updated",
     zone1Method: "Price > EMA5 > EMA10 > EMA75 > EMA200",
@@ -635,15 +701,18 @@ const dailyStockLabels = {
     zone3Method: "Price > EMA75 > EMA200",
   },
   th: {
+    collapse: "พับ",
     description:
       "หุ้นเล็กและหุ้น high-beta ที่มี momentum จากโมเดล EMA Zone ตัวกลุ่มนี้วิ่งแรงได้ แต่ต้องเช็กกราฟจริง volume ข่าว และสภาพคล่องก่อนเทรด",
     eyebrow: "Daily Small Caps",
+    expand: "เปิด",
     method: "วิธีคัดหุ้นซิ่ง",
     noIdeas: "ยังไม่มีตัวที่เข้าเงื่อนไขในตลาดนี้",
     price: "ราคา",
     priceError: "ยังอัปเดตราคาหน้า Stock Ideas ไม่ได้ตอนนี้",
     refreshPrices: "อัปเดตราคา",
     refreshing: "กำลังอัปเดต",
+    tabsLabel: "แท็บโซนหุ้นซิ่ง",
     title: "หุ้นเล็กสายซิ่งตาม EMA Zone",
     updated: "อัปเดต",
     zone1Method: "ราคา > EMA5 > EMA10 > EMA75 > EMA200",

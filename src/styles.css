@@ -1738,6 +1738,62 @@ summary {
   line-height: 1.35;
 }
 
+.daily-zone-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-contrast) 42%, transparent), transparent),
+    color-mix(in srgb, var(--panel-strong) 48%, transparent);
+}
+
+.daily-zone-tabs button {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--muted-text);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.daily-zone-tabs button:hover {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.daily-zone-tabs button[aria-selected="true"] {
+  border-color: color-mix(in srgb, var(--accent) 48%, transparent);
+  color: var(--button-text);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, white 18%, transparent), transparent),
+    var(--accent);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.daily-zone-tabs b {
+  display: inline-flex;
+  min-width: 25px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 7px;
+  border-radius: 999px;
+  color: inherit;
+  background: color-mix(in srgb, var(--panel) 32%, transparent);
+  font-size: 0.72rem;
+}
+
 .daily-zone-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1810,6 +1866,34 @@ summary {
   color: var(--zone-color);
   background: color-mix(in srgb, var(--zone-color) 10%, transparent);
   font-size: 0.82rem;
+}
+
+.daily-zone__actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.daily-zone__toggle {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 9px;
+  border: 1px solid color-mix(in srgb, var(--zone-color) 36%, var(--border));
+  border-radius: 999px;
+  color: var(--zone-color);
+  background: color-mix(in srgb, var(--zone-color) 8%, transparent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.daily-zone__toggle:hover {
+  border-color: color-mix(in srgb, var(--zone-color) 58%, var(--border));
+  background: color-mix(in srgb, var(--zone-color) 14%, transparent);
 }
 
 .daily-stock-list {
@@ -4061,6 +4145,19 @@ tbody tr:hover {
   .monthly-report-card__metrics,
   .monthly-report-card__extremes {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .daily-zone-tabs button {
+    flex: 1 1 44%;
+    justify-content: center;
+  }
+
+  .daily-zone__header {
+    align-items: stretch;
+  }
+
+  .daily-zone__actions {
+    justify-content: space-between;
   }
 
   .allocation-donut-card {
