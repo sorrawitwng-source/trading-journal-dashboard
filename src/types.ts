@@ -6,6 +6,8 @@ export type PriceStatus = "cached" | "fallback" | "live";
 export type PositionStatus = "open" | "sold";
 export type RiskLevel = "Low" | "Medium" | "High" | "No data";
 export type SectorSource = "curated" | "provider" | "unknown";
+export type StockSizeProfile = "large" | "mega" | "micro" | "mid" | "small";
+export type LiquidityRisk = "elevated" | "high" | "normal";
 
 export interface StockMetrics {
   momentum: number | null;
@@ -36,6 +38,9 @@ export interface StockProfile extends StockMetrics {
   sector: string;
   sectorSource: SectorSource;
   currentPrice: number;
+  dailyTheme?: string;
+  liquidityRisk?: LiquidityRisk;
+  sizeProfile?: StockSizeProfile;
 }
 
 export interface PortfolioPosition {

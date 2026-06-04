@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { ArrowUpRight, Flame, Newspaper, Radar, RefreshCw } from "lucide-react";
 import type { MarketFilter } from "../types";
-import { stockUniverse } from "../data/stocks";
+import { dailySmallCapUniverse } from "../data/dailySmallCaps";
 import {
   type DailyStockIdea,
   type DailyStockZone,
@@ -26,7 +26,7 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
   const uiText = ideaUiLabels[language];
   const dailyText = dailyStockLabels[language];
   const [pricedStockUniverse, setPricedStockUniverse] = useState<PricedStockProfile[]>(
-    () => applyCachedStockQuotes(stockUniverse),
+    () => applyCachedStockQuotes(dailySmallCapUniverse),
   );
   const [dailyPriceError, setDailyPriceError] = useState<string | null>(null);
   const [isRefreshingDailyPrices, setIsRefreshingDailyPrices] = useState(false);
@@ -36,13 +36,13 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
   );
   const dailyRefreshTargets = useMemo(
     () =>
-      scanDailyStocks(stockUniverse, marketFilter)
+      scanDailyStocks(dailySmallCapUniverse, marketFilter)
         .map((idea) =>
-          stockUniverse.find(
+          dailySmallCapUniverse.find(
             (stock) => stock.symbol === idea.symbol && stock.market === idea.market,
           ),
         )
-        .filter((stock): stock is (typeof stockUniverse)[number] => stock !== undefined),
+        .filter((stock): stock is (typeof dailySmallCapUniverse)[number] => stock !== undefined),
     [marketFilter],
   );
   const dailyIdeas = useMemo(
@@ -90,7 +90,7 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
       }
     }
 
-    setPricedStockUniverse(applyCachedStockQuotes(stockUniverse));
+    setPricedStockUniverse(applyCachedStockQuotes(dailySmallCapUniverse));
     void refreshDailyPrices();
 
     return () => {
@@ -319,7 +319,14 @@ function DailyStockCard({
           <b>{idea.market}</b>
         </div>
       </div>
-      <p>{idea.sector}</p>
+      <p>{idea.dailyTheme ?? idea.sector}</p>
+      <div className="daily-stock-card__tags">
+        <span>{sizeProfileLabel(idea.sizeProfile, language)}</span>
+        <span className={`daily-liquidity daily-liquidity--${idea.liquidityRisk ?? "normal"}`}>
+          {liquidityRiskLabel(idea.liquidityRisk, language)}
+        </span>
+        <span>{idea.sector}</span>
+      </div>
       <div className="daily-stock-card__price">
         <strong>{text.price}: {formatNumber(idea.currentPrice)}</strong>
         <span
@@ -450,6 +457,34 @@ function sparklineColor(zone: DailyStockZone): string {
   }
 
   return "#f5be4f";
+}
+
+function sizeProfileLabel(
+  sizeProfile: DailyStockIdea["sizeProfile"],
+  language: Language,
+): string {
+  const labels = {
+    large: { en: "Large cap", th: "หุ้นใหญ่" },
+    mega: { en: "Mega cap", th: "หุ้นยักษ์" },
+    micro: { en: "Micro cap", th: "หุ้นจิ๋ว" },
+    mid: { en: "Mid cap", th: "หุ้นกลาง" },
+    small: { en: "Small cap", th: "หุ้นเล็ก" },
+  };
+
+  return labels[sizeProfile ?? "small"][language];
+}
+
+function liquidityRiskLabel(
+  liquidityRisk: DailyStockIdea["liquidityRisk"],
+  language: Language,
+): string {
+  const labels = {
+    elevated: { en: "Thin volume", th: "Volume บาง" },
+    high: { en: "High liquidity risk", th: "สภาพคล่องเสี่ยงสูง" },
+    normal: { en: "Liquid enough", th: "สภาพคล่องพอใช้" },
+  };
+
+  return labels[liquidityRisk ?? "normal"][language];
 }
 
 function mergePricedStocks(
@@ -585,15 +620,15 @@ const ideaUiLabels = {
 const dailyStockLabels = {
   en: {
     description:
-      "Daily momentum candidates from an EMA-zone model using available market data. Use this as a research shortlist, then confirm live chart, volume, and news before trading.",
-    eyebrow: "Daily Stock",
+      "Small-cap and high-beta momentum candidates from an EMA-zone model. These names can move fast, so confirm live chart, volume, news, and liquidity before trading.",
+    eyebrow: "Daily Small Caps",
     method: "Daily stock method",
     noIdeas: "No daily candidates match this market filter.",
     price: "Price",
     priceError: "Could not refresh Stock Ideas prices right now.",
     refreshPrices: "Refresh prices",
     refreshing: "Refreshing",
-    title: "Fast movers by EMA zones",
+    title: "Small-cap fast movers by EMA zones",
     updated: "Updated",
     zone1Method: "Price > EMA5 > EMA10 > EMA75 > EMA200",
     zone2Method: "Price > EMA10 > EMA75 > EMA200",
@@ -601,15 +636,15 @@ const dailyStockLabels = {
   },
   th: {
     description:
-      "หุ้นซิ่งรายวันจากโมเดล EMA Zone ตามข้อมูลที่มี ใช้เป็น shortlist สำหรับ research แล้วค่อยยืนยันกราฟจริง volume และข่าวก่อนเทรด",
-    eyebrow: "Daily Stock",
+      "หุ้นเล็กและหุ้น high-beta ที่มี momentum จากโมเดล EMA Zone ตัวกลุ่มนี้วิ่งแรงได้ แต่ต้องเช็กกราฟจริง volume ข่าว และสภาพคล่องก่อนเทรด",
+    eyebrow: "Daily Small Caps",
     method: "วิธีคัดหุ้นซิ่ง",
     noIdeas: "ยังไม่มีตัวที่เข้าเงื่อนไขในตลาดนี้",
     price: "ราคา",
     priceError: "ยังอัปเดตราคาหน้า Stock Ideas ไม่ได้ตอนนี้",
     refreshPrices: "อัปเดตราคา",
     refreshing: "กำลังอัปเดต",
-    title: "หุ้นซิ่งตาม EMA Zone",
+    title: "หุ้นเล็กสายซิ่งตาม EMA Zone",
     updated: "อัปเดต",
     zone1Method: "ราคา > EMA5 > EMA10 > EMA75 > EMA200",
     zone2Method: "ราคา > EMA10 > EMA75 > EMA200",

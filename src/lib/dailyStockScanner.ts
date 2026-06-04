@@ -1,4 +1,11 @@
-import type { Market, MarketFilter, PriceStatus, StockProfile } from "../types";
+import type {
+  LiquidityRisk,
+  Market,
+  MarketFilter,
+  PriceStatus,
+  StockProfile,
+  StockSizeProfile,
+} from "../types";
 
 export type DailyStockZone = "zone-1" | "zone-2" | "zone-3";
 
@@ -8,11 +15,14 @@ export interface DailyStockIdea {
   ema10: number;
   ema75: number;
   ema200: number;
+  dailyTheme?: string;
+  liquidityRisk?: LiquidityRisk;
   market: Market;
   name: string;
   priceStatus?: PriceStatus;
   priceUpdatedAt?: string;
   sector: string;
+  sizeProfile?: StockSizeProfile;
   symbol: string;
   zone: DailyStockZone;
 }
@@ -85,11 +95,14 @@ function buildDailyStockIdea(stock: StockProfile): DailyStockIdea | null {
 
   return {
     currentPrice: stock.currentPrice,
+    dailyTheme: stock.dailyTheme,
+    liquidityRisk: stock.liquidityRisk,
     market: stock.market,
     name: stock.name,
     priceStatus: pricedStock.priceStatus,
     priceUpdatedAt: pricedStock.priceUpdatedAt,
     sector: stock.sector,
+    sizeProfile: stock.sizeProfile,
     symbol: stock.symbol,
     zone,
     ...trend,

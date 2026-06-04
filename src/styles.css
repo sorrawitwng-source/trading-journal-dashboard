@@ -1922,6 +1922,38 @@ summary {
   margin: 0;
   font-size: 0.74rem;
   font-weight: 800;
+  line-height: 1.35;
+}
+
+.daily-stock-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.daily-stock-card__tags span {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  padding: 4px 7px;
+  border: 1px solid color-mix(in srgb, var(--zone-color) 22%, var(--border));
+  border-radius: 999px;
+  color: var(--muted-text);
+  background: color-mix(in srgb, var(--panel-contrast) 38%, transparent);
+  font-size: 0.66rem;
+  font-weight: 850;
+}
+
+.daily-stock-card__tags .daily-liquidity--high {
+  border-color: color-mix(in srgb, var(--red) 34%, var(--border));
+  color: var(--red);
+  background: color-mix(in srgb, var(--red) 8%, transparent);
+}
+
+.daily-stock-card__tags .daily-liquidity--elevated {
+  border-color: color-mix(in srgb, var(--amber) 34%, var(--border));
+  color: var(--amber);
+  background: color-mix(in srgb, var(--amber) 8%, transparent);
 }
 
 .daily-stock-card__price {
