@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { ArrowUpRight, Flame, Newspaper, Radar, RefreshCw } from "lucide-react";
 import type { MarketFilter } from "../types";
 import { stockUniverse } from "../data/stocks";
@@ -314,7 +314,10 @@ function DailyStockCard({
           <strong>{idea.symbol}</strong>
           <span>{idea.name}</span>
         </div>
-        <b>{idea.market}</b>
+        <div className="daily-stock-card__visual">
+          <MiniSparkline idea={idea} />
+          <b>{idea.market}</b>
+        </div>
       </div>
       <p>{idea.sector}</p>
       <div className="daily-stock-card__price">
@@ -335,6 +338,118 @@ function DailyStockCard({
       <small>{dailyReason(idea.zone, language)}</small>
     </div>
   );
+}
+
+function MiniSparkline({ idea }: { idea: DailyStockIdea }) {
+  const values = buildSparklineValues(idea);
+  const width = 112;
+  const height = 48;
+  const padding = 4;
+  const minValue = Math.min(...values);
+  const maxValue = Math.max(...values);
+  const range = Math.max(maxValue - minValue, 1);
+  const xForIndex = (index: number) =>
+    padding + (index / (values.length - 1)) * (width - padding * 2);
+  const yForValue = (value: number) =>
+    height - padding - ((value - minValue) / range) * (height - padding * 2);
+  const linePoints = values
+    .map((value, index) => `${xForIndex(index).toFixed(2)},${yForValue(value).toFixed(2)}`)
+    .join(" ");
+  const areaPoints = `${padding},${height - padding} ${linePoints} ${
+    width - padding
+  },${height - padding}`;
+  const color = sparklineColor(idea.zone);
+  const gradientId = `daily-sparkline-fill-${idea.symbol.replace(/[^a-z0-9]/gi, "-")}`;
+
+  return (
+    <svg
+      aria-label={`${idea.symbol} trend preview`}
+      className="daily-sparkline"
+      role="img"
+      style={{ "--sparkline-color": color } as CSSProperties}
+      viewBox={`0 0 ${width} ${height}`}
+    >
+      <defs>
+        <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.34" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path className="daily-sparkline__grid" d="M4 16 H108 M4 32 H108" />
+      <polygon fill={`url(#${gradientId})`} points={areaPoints} />
+      <polyline className="daily-sparkline__line" points={linePoints} />
+      <circle
+        className="daily-sparkline__end"
+        cx={xForIndex(values.length - 1)}
+        cy={yForValue(values.at(-1) ?? idea.currentPrice)}
+        r="2.4"
+      />
+    </svg>
+  );
+}
+
+function buildSparklineValues(idea: DailyStockIdea): number[] {
+  const anchors = [
+    idea.ema200,
+    blend(idea.ema200, idea.ema75, 0.62),
+    idea.ema75,
+    blend(idea.ema75, idea.ema10, 0.58),
+    idea.ema10,
+    blend(idea.ema10, idea.ema5, 0.7),
+    idea.ema5,
+    blend(idea.ema5, idea.currentPrice, 0.72),
+    idea.currentPrice,
+  ];
+  const symbolSeed = hashSymbol(idea.symbol);
+  const intensity = idea.zone === "zone-1" ? 0.018 : idea.zone === "zone-2" ? 0.012 : 0.02;
+  const direction = idea.currentPrice >= idea.ema75 ? 1 : -1;
+  const values = anchors.flatMap((anchor, index) => {
+    if (index === anchors.length - 1) {
+      return [idea.currentPrice];
+    }
+
+    const next = anchors[index + 1];
+    const first = anchor + waveOffset(symbolSeed, index * 2, anchor, intensity, direction);
+    const middle =
+      blend(anchor, next, 0.54) +
+      waveOffset(symbolSeed, index * 2 + 1, anchor, intensity, direction);
+
+    return [first, middle];
+  });
+
+  return values.slice(0, -1).concat(idea.currentPrice);
+}
+
+function blend(left: number, right: number, ratio: number): number {
+  return left + (right - left) * ratio;
+}
+
+function waveOffset(
+  seed: number,
+  index: number,
+  baseValue: number,
+  intensity: number,
+  direction: number,
+): number {
+  const raw = Math.sin(seed * 0.37 + index * 1.7) * Math.cos(seed * 0.13 + index * 0.9);
+
+  return raw * baseValue * intensity * direction;
+}
+
+function hashSymbol(symbol: string): number {
+  return symbol.split("").reduce((total, character) => total + character.charCodeAt(0), 0);
+}
+
+function sparklineColor(zone: DailyStockZone): string {
+  if (zone === "zone-1") {
+    return "#23d6bd";
+  }
+
+  if (zone === "zone-2") {
+    return "#4ea2ff";
+  }
+
+  return "#f5be4f";
 }
 
 function mergePricedStocks(

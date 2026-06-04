@@ -1821,7 +1821,7 @@ summary {
   display: grid;
   gap: 8px;
   min-width: 0;
-  padding: 11px;
+  padding: 12px;
   border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
   border-radius: 8px;
   background:
@@ -1834,9 +1834,9 @@ summary {
 
 .daily-stock-card__head {
   display: flex;
-  align-items: start;
+  align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -1848,7 +1848,7 @@ summary {
 
 .daily-stock-card__head strong {
   color: var(--text);
-  font-size: 0.98rem;
+  font-size: 1.02rem;
 }
 
 .daily-stock-card__head span,
@@ -1865,13 +1865,57 @@ summary {
   white-space: nowrap;
 }
 
-.daily-stock-card__head b {
+.daily-stock-card__visual {
+  display: grid;
+  flex: 0 0 auto;
+  justify-items: end;
+  gap: 5px;
+}
+
+.daily-stock-card__visual b {
   flex: 0 0 auto;
   padding: 4px 7px;
   border: 1px solid color-mix(in srgb, var(--zone-color) 36%, var(--border));
   border-radius: 999px;
   color: var(--zone-color);
   font-size: 0.68rem;
+}
+
+.daily-sparkline {
+  display: block;
+  width: 112px;
+  height: 48px;
+  overflow: visible;
+  border: 1px solid color-mix(in srgb, var(--sparkline-color) 20%, var(--border));
+  border-radius: 8px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--sparkline-color) 9%, transparent),
+      color-mix(in srgb, var(--panel-contrast) 36%, transparent)
+    );
+  box-shadow: inset 0 1px 0 var(--hairline);
+}
+
+.daily-sparkline__grid {
+  fill: none;
+  stroke: color-mix(in srgb, var(--muted-text) 11%, transparent);
+  stroke-width: 1;
+}
+
+.daily-sparkline__line {
+  fill: none;
+  stroke: var(--sparkline-color);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.2;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--sparkline-color) 42%, transparent));
+}
+
+.daily-sparkline__end {
+  fill: var(--sparkline-color);
+  stroke: color-mix(in srgb, var(--panel-contrast) 92%, black);
+  stroke-width: 1.5;
 }
 
 .daily-stock-card p {
