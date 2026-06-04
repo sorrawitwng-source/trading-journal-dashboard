@@ -1638,6 +1638,252 @@ summary {
   gap: 12px;
 }
 
+.daily-stocks {
+  position: relative;
+  display: grid;
+  gap: 16px;
+  overflow: hidden;
+  padding: 20px;
+  border: 1px solid color-mix(in srgb, var(--blue) 22%, var(--border));
+  border-radius: 8px;
+  background:
+    radial-gradient(
+      circle at 12% 0%,
+      color-mix(in srgb, var(--blue) 12%, transparent),
+      transparent 34%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 74%, transparent),
+      color-mix(in srgb, var(--panel) 94%, transparent)
+    );
+  box-shadow: var(--soft-shadow);
+}
+
+.daily-stocks .section-heading {
+  position: relative;
+  z-index: 1;
+  align-items: end;
+}
+
+.daily-stocks .section-heading p {
+  max-width: 780px;
+  margin: 6px 0 0;
+  color: var(--muted-text);
+  line-height: 1.45;
+}
+
+.daily-stocks .section-heading > span {
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+  border-radius: 999px;
+  color: var(--muted-text);
+  background: color-mix(in srgb, var(--panel-strong) 64%, transparent);
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.daily-method-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.daily-method-card {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel-strong) 58%, transparent);
+}
+
+.daily-method-card span {
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.daily-method-card strong {
+  color: var(--text);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.daily-zone-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.daily-zone {
+  --zone-color: var(--accent);
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--zone-color) 28%, var(--border));
+  border-radius: 8px;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      color-mix(in srgb, var(--zone-color) 14%, transparent),
+      transparent 34%
+    ),
+    color-mix(in srgb, var(--panel-strong) 52%, transparent);
+}
+
+.daily-zone--zone-1 {
+  --zone-color: var(--green);
+}
+
+.daily-zone--zone-2 {
+  --zone-color: var(--blue);
+}
+
+.daily-zone--zone-3 {
+  --zone-color: var(--amber);
+}
+
+.daily-zone__header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.daily-zone__header > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.daily-zone__header span {
+  color: var(--zone-color);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.daily-zone__header strong {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.daily-zone__header b {
+  display: inline-flex;
+  min-width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--zone-color) 40%, var(--border));
+  border-radius: 999px;
+  color: var(--zone-color);
+  background: color-mix(in srgb, var(--zone-color) 10%, transparent);
+  font-size: 0.82rem;
+}
+
+.daily-stock-list {
+  display: grid;
+  gap: 9px;
+}
+
+.daily-stock-card {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 8px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel) 74%, var(--panel-strong)),
+      color-mix(in srgb, var(--background) 18%, var(--panel))
+    );
+}
+
+.daily-stock-card__head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.daily-stock-card__head > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.daily-stock-card__head strong {
+  color: var(--text);
+  font-size: 0.98rem;
+}
+
+.daily-stock-card__head span,
+.daily-stock-card p,
+.daily-stock-card small {
+  color: var(--muted-text);
+}
+
+.daily-stock-card__head span {
+  overflow: hidden;
+  font-size: 0.73rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.daily-stock-card__head b {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  border: 1px solid color-mix(in srgb, var(--zone-color) 36%, var(--border));
+  border-radius: 999px;
+  color: var(--zone-color);
+  font-size: 0.68rem;
+}
+
+.daily-stock-card p {
+  margin: 0;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.daily-stock-card__ema {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.daily-stock-card__ema span {
+  padding: 4px 6px;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 999px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--panel-strong) 46%, transparent);
+  font-size: 0.66rem;
+  font-weight: 850;
+}
+
+.daily-stock-card small {
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.daily-stock-empty {
+  margin: 0;
+  color: var(--muted-text);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
 .weekly-themes {
   position: relative;
   display: grid;
@@ -3021,6 +3267,8 @@ tbody tr:hover .col-actions {
 
   .ideas-feature-grid,
   .ideas-category-grid,
+  .daily-method-grid,
+  .daily-zone-grid,
   .analytics-grid,
   .monthly-report__list,
   .weekly-theme-grid {
@@ -3097,6 +3345,8 @@ tbody tr:hover .col-actions {
   .performance-chart-summary,
   .ideas-feature-grid,
   .ideas-category-grid,
+  .daily-method-grid,
+  .daily-zone-grid,
   .analytics-grid,
   .analytics-risk-grid,
   .analytics-hero__metrics,

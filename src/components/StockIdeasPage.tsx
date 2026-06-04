@@ -1,6 +1,12 @@
 import type { ReactNode } from "react";
 import { ArrowUpRight, Flame, Newspaper, Radar } from "lucide-react";
 import type { MarketFilter } from "../types";
+import { stockUniverse } from "../data/stocks";
+import {
+  type DailyStockIdea,
+  type DailyStockZone,
+  scanDailyStocks,
+} from "../lib/dailyStockScanner";
 import { weeklyThemeUpdatedAt, weeklyThemes } from "../lib/weeklyThemes";
 import type { Language } from "../lib/scoreText";
 
@@ -12,9 +18,11 @@ interface StockIdeasPageProps {
 export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) {
   const text = labels[language];
   const uiText = ideaUiLabels[language];
+  const dailyText = dailyStockLabels[language];
   const visibleThemes = weeklyThemes.filter(
     (theme) => marketFilter === "All" || theme.market === marketFilter,
   );
+  const dailyIdeas = scanDailyStocks(stockUniverse, marketFilter);
   const symbolCount = new Set(visibleThemes.flatMap((theme) => theme.symbols)).size;
   const sectorCount = new Set(visibleThemes.flatMap((theme) => theme.sectors)).size;
   const signalCounts = {
@@ -70,6 +78,50 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
           </div>
         </div>
       </div>
+
+      <section className="daily-stocks" aria-labelledby="daily-stocks-title">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">{dailyText.eyebrow}</p>
+            <h2 id="daily-stocks-title">{dailyText.title}</h2>
+            <p>{dailyText.description}</p>
+          </div>
+          <span>{dailyText.updated}: {formatDate(todayIsoDate(), language)}</span>
+        </div>
+
+        <div className="daily-method-grid" aria-label={dailyText.method}>
+          <MethodCard label="Zone 1" value={dailyText.zone1Method} />
+          <MethodCard label="Zone 2" value={dailyText.zone2Method} />
+          <MethodCard label="Zone 3" value={dailyText.zone3Method} />
+        </div>
+
+        <div className="daily-zone-grid">
+          {(["zone-1", "zone-2", "zone-3"] as DailyStockZone[]).map((zone) => {
+            const ideas = dailyIdeas.filter((idea) => idea.zone === zone).slice(0, 6);
+
+            return (
+              <article className={`daily-zone daily-zone--${zone}`} key={zone}>
+                <div className="daily-zone__header">
+                  <div>
+                    <span>{zoneLabel(zone, language)}</span>
+                    <strong>{zoneTitle(zone, language)}</strong>
+                  </div>
+                  <b>{ideas.length}</b>
+                </div>
+                <div className="daily-stock-list">
+                  {ideas.length > 0 ? (
+                    ideas.map((idea) => (
+                      <DailyStockCard idea={idea} key={idea.symbol} language={language} />
+                    ))
+                  ) : (
+                    <p className="daily-stock-empty">{dailyText.noIdeas}</p>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
 
       <section className="weekly-themes weekly-themes--full" aria-labelledby="weekly-themes-title">
         <div className="section-heading">
@@ -131,6 +183,46 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
   );
 }
 
+function MethodCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="daily-method-card">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function DailyStockCard({
+  idea,
+  language,
+}: {
+  idea: DailyStockIdea;
+  language: Language;
+}) {
+  const text = dailyStockLabels[language];
+
+  return (
+    <div className="daily-stock-card">
+      <div className="daily-stock-card__head">
+        <div>
+          <strong>{idea.symbol}</strong>
+          <span>{idea.name}</span>
+        </div>
+        <b>{idea.market}</b>
+      </div>
+      <p>{idea.sector}</p>
+      <div className="daily-stock-card__ema">
+        <span>{text.price}: {formatNumber(idea.currentPrice)}</span>
+        <span>EMA5 {formatNumber(idea.ema5)}</span>
+        <span>EMA10 {formatNumber(idea.ema10)}</span>
+        <span>EMA75 {formatNumber(idea.ema75)}</span>
+        <span>EMA200 {formatNumber(idea.ema200)}</span>
+      </div>
+      <small>{dailyReason(idea.zone, language)}</small>
+    </div>
+  );
+}
+
 function PulsePill({
   icon,
   label,
@@ -151,6 +243,56 @@ function PulsePill({
   );
 }
 
+function zoneLabel(zone: DailyStockZone, language: Language): string {
+  const labels = {
+    "zone-1": { en: "Zone 1", th: "Zone 1" },
+    "zone-2": { en: "Zone 2", th: "Zone 2" },
+    "zone-3": { en: "Zone 3", th: "Zone 3" },
+  };
+
+  return labels[zone][language];
+}
+
+function zoneTitle(zone: DailyStockZone, language: Language): string {
+  const labels = {
+    "zone-1": { en: "Fast movers", th: "หุ้นซิ่งแรง" },
+    "zone-2": { en: "Trend follow", th: "ตามเทรนด์" },
+    "zone-3": { en: "Watch base", th: "เฝ้าดูฐาน" },
+  };
+
+  return labels[zone][language];
+}
+
+function dailyReason(zone: DailyStockZone, language: Language): string {
+  const labels = {
+    "zone-1": {
+      en: "Price is above a full bullish EMA stack. Best for research when volume and news confirm.",
+      th: "ราคาอยู่เหนือ EMA ครบชุด เหมาะสำหรับ research ต่อเมื่อ volume และข่าวยืนยัน",
+    },
+    "zone-2": {
+      en: "Trend still holds above the main EMA stack, but short-term speed is less aggressive.",
+      th: "เทรนด์ยังอยู่เหนือ EMA หลัก แต่แรงระยะสั้นยังไม่จัดเท่า Zone 1",
+    },
+    "zone-3": {
+      en: "Main trend base is still positive, but momentum needs confirmation before chasing.",
+      th: "ฐานเทรนด์หลักยังบวก แต่ momentum ต้องรอยืนยันก่อนตามราคา",
+    },
+  };
+
+  return labels[zone][language];
+}
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+  }).format(value);
+}
+
+function todayIsoDate(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
 function signalText(signal: "hot" | "mixed" | "watch", language: Language): string {
   const labels = {
     hot: { en: "Hot", th: "เด่น" },
@@ -169,6 +311,35 @@ const ideaUiLabels = {
   th: {
     marketPulse: "ภาพรวมตลาด",
     updated: "อัปเดต",
+  },
+};
+
+const dailyStockLabels = {
+  en: {
+    description:
+      "Daily momentum candidates from an EMA-zone model using available market data. Use this as a research shortlist, then confirm live chart, volume, and news before trading.",
+    eyebrow: "Daily Stock",
+    method: "Daily stock method",
+    noIdeas: "No daily candidates match this market filter.",
+    price: "Price",
+    title: "Fast movers by EMA zones",
+    updated: "Updated",
+    zone1Method: "Price > EMA5 > EMA10 > EMA75 > EMA200",
+    zone2Method: "Price > EMA10 > EMA75 > EMA200",
+    zone3Method: "Price > EMA75 > EMA200",
+  },
+  th: {
+    description:
+      "หุ้นซิ่งรายวันจากโมเดล EMA Zone ตามข้อมูลที่มี ใช้เป็น shortlist สำหรับ research แล้วค่อยยืนยันกราฟจริง volume และข่าวก่อนเทรด",
+    eyebrow: "Daily Stock",
+    method: "วิธีคัดหุ้นซิ่ง",
+    noIdeas: "ยังไม่มีตัวที่เข้าเงื่อนไขในตลาดนี้",
+    price: "ราคา",
+    title: "หุ้นซิ่งตาม EMA Zone",
+    updated: "อัปเดต",
+    zone1Method: "ราคา > EMA5 > EMA10 > EMA75 > EMA200",
+    zone2Method: "ราคา > EMA10 > EMA75 > EMA200",
+    zone3Method: "ราคา > EMA75 > EMA200",
   },
 };
 
