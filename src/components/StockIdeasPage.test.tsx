@@ -15,6 +15,30 @@ describe("StockIdeasPage daily ideas", () => {
     vi.unstubAllGlobals();
   });
 
+  it("renders filtered weekly news and sector momentum", () => {
+    render(<StockIdeasPage language="en" marketFilter="All" />);
+
+    expect(
+      screen.getByRole("heading", { name: "Filtered stock news and strongest sectors" }),
+    ).toBeTruthy();
+    expect(
+      screen.getAllByText("Quality tech and energy lead this week's US filter").length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByText("Sector momentum")).toBeTruthy();
+    expect(screen.getAllByText("Enterprise software").length).toBeGreaterThan(0);
+  });
+
+  it("respects the market filter in the weekly news board", () => {
+    render(<StockIdeasPage language="en" marketFilter="Thai" />);
+
+    expect(
+      screen.getAllByText(
+        "Thai rotation favors laggards, healthcare, tourism, and dividends",
+      ).length,
+    ).toBeGreaterThan(0);
+    expect(screen.queryByText("Quality tech and energy lead this week's US filter")).toBeNull();
+  });
+
   it("renders daily zone tabs and filters to a selected zone", () => {
     render(<StockIdeasPage language="en" marketFilter="All" />);
 

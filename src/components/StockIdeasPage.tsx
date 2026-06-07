@@ -15,6 +15,7 @@ import {
 } from "../lib/marketData";
 import { weeklyThemeUpdatedAt, weeklyThemes } from "../lib/weeklyThemes";
 import type { Language } from "../lib/scoreText";
+import type { WeeklyTheme } from "../lib/weeklyThemes";
 
 interface StockIdeasPageProps {
   language: Language;
@@ -25,10 +26,18 @@ type DailyZoneTab = "all" | DailyStockZone;
 
 const dailyZoneOrder: DailyStockZone[] = ["zone-1", "zone-2", "zone-3"];
 
+interface SectorMomentum {
+  markets: string[];
+  score: number;
+  sector: string;
+  themeCount: number;
+}
+
 export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) {
   const text = labels[language];
   const uiText = ideaUiLabels[language];
   const dailyText = dailyStockLabels[language];
+  const newsText = marketNewsLabels[language];
   const [pricedStockUniverse, setPricedStockUniverse] = useState<PricedStockProfile[]>(
     () => applyCachedStockQuotes(dailySmallCapUniverse),
   );
@@ -44,6 +53,15 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
   const visibleThemes = weeklyThemes.filter(
     (theme) => marketFilter === "All" || theme.market === marketFilter,
   );
+  const filteredNewsThemes = useMemo(
+    () => [...visibleThemes].sort((left, right) => themeSignalRank(left) - themeSignalRank(right)),
+    [visibleThemes],
+  );
+  const sectorMomentum = useMemo(
+    () => buildSectorMomentum(visibleThemes),
+    [visibleThemes],
+  );
+  const leadTheme = filteredNewsThemes[0];
   const dailyRefreshTargets = useMemo(
     () =>
       scanDailyStocks(dailySmallCapUniverse, marketFilter)
@@ -187,6 +205,89 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
           </div>
         </div>
       </div>
+
+      <section className="market-news-board" aria-labelledby="market-news-title">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">{newsText.eyebrow}</p>
+            <h2 id="market-news-title">{newsText.title}</h2>
+            <p>{newsText.description}</p>
+          </div>
+          <span>{formatDate(weeklyThemeUpdatedAt, language)}</span>
+        </div>
+
+        <div className="market-news-layout">
+          <article className={`market-news-lead market-news-lead--${leadTheme?.signal ?? "watch"}`}>
+            {leadTheme ? (
+              <>
+                <div className="market-news-lead__header">
+                  <span>{newsText.strongest}</span>
+                  <b>{signalText(leadTheme.signal, language)}</b>
+                </div>
+                <h3>{leadTheme.title[language]}</h3>
+                <p>{leadTheme.thesis[language]}</p>
+                <div className="market-news-lead__meta">
+                  <span>{leadTheme.market}</span>
+                  <span>{leadTheme.symbols.length} {text.stockCount}</span>
+                  <span>{leadTheme.sectors.length} {text.sectorCount}</span>
+                </div>
+                <div className="market-news-symbols">
+                  {leadTheme.symbols.slice(0, 12).map((symbol) => (
+                    <span key={symbol}>{symbol}</span>
+                  ))}
+                </div>
+                <a className="market-news-source" href={leadTheme.sourceUrl} rel="noreferrer" target="_blank">
+                  <span>{text.source}: {leadTheme.sourceLabel}</span>
+                  <ArrowUpRight size={15} />
+                </a>
+              </>
+            ) : (
+              <p className="market-news-empty">{newsText.empty}</p>
+            )}
+          </article>
+
+          <div className="sector-momentum-card">
+            <div className="sector-momentum-card__header">
+              <span>{newsText.sectorRank}</span>
+              <strong>{newsText.thisWeek}</strong>
+            </div>
+            <div className="sector-momentum-list">
+              {sectorMomentum.slice(0, 7).map((item) => {
+                const strength = sectorMomentum[0]
+                  ? Math.max((item.score / sectorMomentum[0].score) * 100, 16)
+                  : 0;
+
+                return (
+                  <div
+                    className="sector-momentum-row"
+                    key={item.sector}
+                    style={{ "--sector-strength": `${strength}%` } as CSSProperties}
+                  >
+                    <div>
+                      <strong>{item.sector}</strong>
+                      <span>{item.markets.join(" / ")} · {item.themeCount} {newsText.newsItems}</span>
+                    </div>
+                    <b>{Math.round(strength)}%</b>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div className="filtered-news-strip" aria-label={newsText.filteredList}>
+          {filteredNewsThemes.slice(0, 5).map((theme) => (
+            <article className={`filtered-news-card filtered-news-card--${theme.signal}`} key={theme.id}>
+              <div>
+                <span>{theme.market}</span>
+                <b>{signalText(theme.signal, language)}</b>
+              </div>
+              <h3>{theme.title[language]}</h3>
+              <p>{theme.sectors.slice(0, 4).join(" · ")}</p>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <section className="daily-stocks" aria-labelledby="daily-stocks-title">
         <div className="section-heading">
@@ -559,6 +660,63 @@ function stockKey(symbol: string, market: string): string {
   return `${market}:${symbol.trim().toUpperCase()}`;
 }
 
+function buildSectorMomentum(themes: WeeklyTheme[]): SectorMomentum[] {
+  const sectorsByName = new Map<string, { markets: Set<string>; score: number; themeCount: number }>();
+
+  themes.forEach((theme) => {
+    theme.sectors.forEach((sector) => {
+      const current = sectorsByName.get(sector) ?? {
+        markets: new Set<string>(),
+        score: 0,
+        themeCount: 0,
+      };
+
+      current.markets.add(theme.market);
+      current.score += themeSignalScore(theme);
+      current.themeCount += 1;
+      sectorsByName.set(sector, current);
+    });
+  });
+
+  return [...sectorsByName.entries()]
+    .map(([sector, value]) => ({
+      markets: [...value.markets],
+      score: value.score,
+      sector,
+      themeCount: value.themeCount,
+    }))
+    .sort(
+      (left, right) =>
+        right.score - left.score ||
+        right.themeCount - left.themeCount ||
+        left.sector.localeCompare(right.sector),
+    );
+}
+
+function themeSignalRank(theme: WeeklyTheme): number {
+  if (theme.signal === "hot") {
+    return 1;
+  }
+
+  if (theme.signal === "mixed") {
+    return 2;
+  }
+
+  return 3;
+}
+
+function themeSignalScore(theme: WeeklyTheme): number {
+  if (theme.signal === "hot") {
+    return 3;
+  }
+
+  if (theme.signal === "mixed") {
+    return 2;
+  }
+
+  return 1;
+}
+
 function PulsePill({
   icon,
   label,
@@ -677,6 +835,33 @@ const ideaUiLabels = {
   th: {
     marketPulse: "ภาพรวมตลาด",
     updated: "อัปเดต",
+  },
+};
+
+const marketNewsLabels = {
+  en: {
+    description:
+      "A filtered weekly news board that turns market headlines into sector themes, stock lists, and research priorities.",
+    empty: "No filtered weekly news matches this market filter.",
+    eyebrow: "Filtered Market News",
+    filteredList: "Filtered weekly stock news",
+    newsItems: "news items",
+    sectorRank: "Sector momentum",
+    strongest: "Strongest filtered theme",
+    thisWeek: "This week",
+    title: "Filtered stock news and strongest sectors",
+  },
+  th: {
+    description:
+      "บอร์ดข่าวรายสัปดาห์ที่คัดแล้ว แปลงข่าวตลาดให้เป็นธีม sector รายชื่อหุ้น และลำดับความน่าสนใจสำหรับ research ต่อ",
+    empty: "ยังไม่มีข่าวที่คัดแล้วตรงกับตัวกรองตลาดนี้",
+    eyebrow: "ข่าวหุ้นที่คัดแล้ว",
+    filteredList: "ข่าวหุ้นรายสัปดาห์ที่คัดแล้ว",
+    newsItems: "ข่าว",
+    sectorRank: "Sector ที่มาแรง",
+    strongest: "ธีมเด่นที่คัดแล้ว",
+    thisWeek: "สัปดาห์นี้",
+    title: "ข่าวหุ้นทั้งหมดที่กรองแล้วและ sector ที่มาแรง",
   },
 };
 

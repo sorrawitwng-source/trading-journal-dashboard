@@ -13,9 +13,94 @@ export interface WeeklyTheme {
   title: Record<Language, string>;
 }
 
-export const weeklyThemeUpdatedAt = "2026-05-31";
+export const weeklyThemeUpdatedAt = "2026-06-08";
 
 export const weeklyThemes: WeeklyTheme[] = [
+  {
+    id: "us-quality-tech-energy",
+    market: "US",
+    signal: "hot",
+    sourceLabel: "CI Markets Weekly Outlook, Jun 8 2026",
+    sourceUrl: "https://completeintel.com/weekly-outlook-june-8-2026/",
+    symbols: ["MSFT", "IBM", "CRM", "ORCL", "NOW", "NVDA", "AVGO", "VRT", "CEG", "XOM", "CVX"],
+    sectors: ["Enterprise software", "AI infrastructure", "Data center power", "Energy", "Quality tech"],
+    title: {
+      en: "Quality tech and energy lead this week's US filter",
+      th: "สหรัฐฯ สัปดาห์นี้เด่นที่ quality tech และพลังงาน",
+    },
+    thesis: {
+      en: "The US tape is rotating away from speculative AI into proven software, AI infrastructure, data-center power, and energy names with clearer earnings support.",
+      th: "ภาพตลาดสหรัฐฯ เริ่มหมุนจาก AI เชิงเก็งกำไรไปหาซอฟต์แวร์ที่พิสูจน์รายได้แล้ว โครงสร้างพื้นฐาน AI ไฟฟ้าดาต้าเซ็นเตอร์ และกลุ่มพลังงานที่มีแรงหนุนกำไรชัดกว่า",
+    },
+  },
+  {
+    id: "us-ai-dispersion",
+    market: "US",
+    signal: "mixed",
+    sourceLabel: "INN Tech Weekly, Jun 5 2026",
+    sourceUrl: "https://investingnews.com/top-tech-news/",
+    symbols: ["NVDA", "AVGO", "AMD", "MRVL", "HPE", "GOOGL", "MSFT", "CRM", "CRWD", "PANW"],
+    sectors: ["Semiconductors", "AI software", "Servers", "Cybersecurity"],
+    title: {
+      en: "AI remains active, but chip leadership is more selective",
+      th: "AI ยังมีแรง แต่กลุ่มชิปเริ่มต้องเลือกตัวมากขึ้น",
+    },
+    thesis: {
+      en: "AI software and server-linked names still attract flow, while semiconductor reactions are more divided after demanding expectations and sharp single-stock moves.",
+      th: "หุ้นซอฟต์แวร์ AI และเซิร์ฟเวอร์ยังมีแรงเงินไหลเข้า แต่กลุ่ม semiconductor เริ่มแยกตัวชัดขึ้นเพราะความคาดหวังสูงและแรงเหวี่ยงรายตัว",
+    },
+  },
+  {
+    id: "thai-rotation-laggards",
+    market: "Thai",
+    signal: "hot",
+    sourceLabel: "Pattaya Mail, Jun 4 2026",
+    sourceUrl: "https://www.pattayamail.com/news/set-rally-builds-momentum-as-investors-eye-laggards-and-1620-breakout-target-552085",
+    symbols: ["CPALL", "CRC", "BDMS", "BH", "BCH", "AOT", "CENTEL", "MINT", "KTB", "KBANK", "SCB", "RATCH", "EGCO"],
+    sectors: ["Retail", "Health Care", "Utilities", "Tourism", "Bank dividends"],
+    title: {
+      en: "Thai rotation favors laggards, healthcare, tourism, and dividends",
+      th: "ไทยเด่นที่ rotation เข้าหุ้น laggard สุขภาพ ท่องเที่ยว และปันผล",
+    },
+    thesis: {
+      en: "Local strategy notes point to rotation into undervalued laggards across retail, healthcare, utilities, tourism, and high-dividend banks as the SET tests an upside breakout.",
+      th: "กลยุทธ์ตลาดไทยชี้ว่ามีแรงหมุนเข้าหุ้น laggard ที่มูลค่ายังไม่แพงในกลุ่มค้าปลีก โรงพยาบาล สาธารณูปโภค ท่องเที่ยว และธนาคารปันผลสูง ขณะ SET ลุ้นผ่านแนวต้าน",
+    },
+  },
+  {
+    id: "thai-industry-expansion",
+    market: "Thai",
+    signal: "hot",
+    sourceLabel: "Nation Thailand, Jun 6 2026",
+    sourceUrl: "https://www.nationthailand.com/business/economy/40067057",
+    symbols: ["DELTA", "HANA", "KCE", "SAPPE", "XO", "SNNP", "KISS", "EA", "NEX"],
+    sectors: ["Electronics", "Food exports", "Cosmetics", "Electric vehicles", "Domestic demand"],
+    title: {
+      en: "Thai industry screen highlights electronics, food, beauty, and EVs",
+      th: "อุตสาหกรรมไทยที่คัดแล้วเด่นใน electronics อาหาร beauty และ EV",
+    },
+    thesis: {
+      en: "Industry outlook highlights expansion prospects in electronics, food, cosmetics, and electric vehicles, backed by exports, domestic demand, and policy support.",
+      th: "ภาพอุตสาหกรรมไทยชี้ว่ากลุ่ม electronics อาหาร เครื่องสำอาง และ EV ยังมีแนวโน้มขยายตัวจากส่งออก อุปสงค์ในประเทศ และนโยบายรัฐ",
+    },
+  },
+  {
+    id: "thai-electronics-caution",
+    market: "Thai",
+    signal: "mixed",
+    sourceLabel: "Money & Banking, Jun 5 2026",
+    sourceUrl: "https://en.moneyandbanking.co.th/2026/248611/",
+    symbols: ["DELTA", "HANA", "KCE", "CCET"],
+    sectors: ["Electronics", "AI supply chain"],
+    title: {
+      en: "Thai electronics is still thematic, but short-term flow is choppy",
+      th: "electronics ไทยยังเป็นธีมใหญ่ แต่ระยะสั้นผันผวน",
+    },
+    thesis: {
+      en: "Electronics remains tied to the AI narrative, but the latest market action shows profit-taking pressure in large-cap leaders after a strong rebound.",
+      th: "กลุ่ม electronics ยังโยงกับธีม AI แต่แรงซื้อระยะสั้นเริ่มผันผวนหลังมีแรงขายทำกำไรในหุ้นใหญ่ที่ขึ้นแรงมาก่อน",
+    },
+  },
   {
     id: "us-ai-software",
     market: "US",
