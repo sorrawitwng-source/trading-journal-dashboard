@@ -344,7 +344,11 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
           })}
         </div>
 
-        <div className="daily-zone-grid">
+        <div
+          className={`daily-zone-grid${
+            activeDailyTab === "all" ? "" : " daily-zone-grid--single"
+          }`}
+        >
           {visibleDailyZones.map((zone) => {
             const ideas = dailyIdeas.filter((idea) => idea.zone === zone);
             const isCollapsed = collapsedDailyZones[zone];

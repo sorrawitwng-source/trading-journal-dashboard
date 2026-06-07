@@ -2104,8 +2104,18 @@ summary {
 
 .daily-zone-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr));
   gap: 14px;
+  align-items: start;
+}
+
+.daily-zone-grid--single {
+  grid-template-columns: 1fr;
+}
+
+.daily-zone-grid--single .daily-stock-list {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 275px), 1fr));
+  align-items: stretch;
 }
 
 .daily-zone {
@@ -2212,6 +2222,8 @@ summary {
 .daily-stock-card {
   display: grid;
   gap: 8px;
+  grid-template-rows: auto auto auto auto auto 1fr;
+  height: 100%;
   min-width: 0;
   padding: 12px;
   border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);

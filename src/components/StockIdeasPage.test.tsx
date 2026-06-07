@@ -53,6 +53,7 @@ describe("StockIdeasPage daily ideas", () => {
     expect(screen.getByText("Fast movers")).toBeTruthy();
     expect(screen.queryByText("Trend follow")).toBeNull();
     expect(screen.queryByText("Watch base")).toBeNull();
+    expect(document.querySelector(".daily-zone-grid--single")).not.toBeNull();
   });
 
   it("collapses and expands a daily zone", () => {
