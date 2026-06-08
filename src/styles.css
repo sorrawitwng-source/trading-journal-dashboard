@@ -2133,16 +2133,16 @@ summary {
 
 .daily-zone-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr));
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
   align-items: start;
-  grid-auto-flow: dense;
 }
 
 .daily-zone-grid--single {
   grid-template-columns: 1fr;
 }
 
+.daily-stock-list,
 .daily-zone-grid--single .daily-stock-list {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 255px), 1fr));
   align-items: start;
@@ -2152,6 +2152,7 @@ summary {
   --zone-color: var(--accent);
   display: grid;
   gap: 12px;
+  align-content: start;
   min-width: 0;
   padding: 14px;
   border: 1px solid color-mix(in srgb, var(--zone-color) 28%, var(--border));
@@ -4409,7 +4410,6 @@ tbody tr:hover {
   .ideas-category-grid,
   .filtered-news-strip,
   .daily-method-grid,
-  .daily-zone-grid,
   .analytics-grid,
   .monthly-report__list,
   .weekly-theme-grid {
