@@ -58,4 +58,14 @@ describe("NewsScannerPage", () => {
     ).toBeTruthy();
     expect(screen.queryByText("Quality tech and energy lead this week's US filter")).toBeNull();
   });
+
+  it("translates sector filters and sector chips in Thai", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false })));
+
+    render(<NewsScannerPage language="th" marketFilter="All" />);
+
+    expect(await screen.findByRole("button", { name: "ซอฟต์แวร์องค์กร" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "โครงสร้างพื้นฐาน AI" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Enterprise software" })).toBeNull();
+  });
 });

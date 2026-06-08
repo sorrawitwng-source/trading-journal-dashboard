@@ -81,6 +81,7 @@ export function NewsScannerPage({ language, marketFilter }: NewsScannerPageProps
             item.summary[language],
             item.source,
             ...item.sectors,
+            ...item.sectors.map((sector) => sectorLabel(sector, language)),
             ...item.symbols,
           ]
             .join(" ")
@@ -168,7 +169,7 @@ export function NewsScannerPage({ language, marketFilter }: NewsScannerPageProps
             onClick={() => setSelectedSector(sector)}
             type="button"
           >
-            {sector}
+            {sectorLabel(sector, language)}
           </button>
         ))}
       </div>
@@ -206,7 +207,7 @@ export function NewsScannerPage({ language, marketFilter }: NewsScannerPageProps
           <div className="news-radar-list">
             {radar.topSectors.map((sector) => (
               <div className="news-radar-row" key={sector.name}>
-                <span>{sector.name}</span>
+                <span>{sectorLabel(sector.name, language)}</span>
                 <strong>{sector.count}</strong>
               </div>
             ))}
@@ -250,7 +251,7 @@ function NewsCard({
       <div className="news-card__chips">
         <span>{item.impact[language]}</span>
         {item.sectors.slice(0, 4).map((sector) => (
-          <span key={sector}>{sector}</span>
+          <span key={sector}>{sectorLabel(sector, language)}</span>
         ))}
       </div>
 
@@ -329,6 +330,14 @@ function signalLabel(signal: SignalFilter, language: Language) {
   return text[signal];
 }
 
+function sectorLabel(sector: string, language: Language) {
+  if (language === "en") {
+    return sector;
+  }
+
+  return sectorTranslationsTh[sector] ?? sector;
+}
+
 function formatDate(value: string | undefined, language: Language) {
   if (!value) {
     return "-";
@@ -362,6 +371,44 @@ const signalLabels = {
     mixed: "หมุนกลุ่ม",
     watch: "เฝ้าระวัง",
   },
+};
+
+const sectorTranslationsTh: Record<string, string> = {
+  "AI Infrastructure": "โครงสร้างพื้นฐาน AI",
+  "AI infrastructure": "โครงสร้างพื้นฐาน AI",
+  "AI software": "ซอฟต์แวร์ AI",
+  "AI supply chain": "ซัพพลายเชน AI",
+  "Bank dividends": "ธนาคารปันผล",
+  Banking: "ธนาคาร",
+  "Consumer Discretionary": "สินค้าฟุ่มเฟือย",
+  Consumer: "ผู้บริโภค",
+  Cosmetics: "ความงาม",
+  Cybersecurity: "ไซเบอร์ซีเคียวริตี้",
+  "Data center": "ดาต้าเซ็นเตอร์",
+  "Data center infrastructure": "โครงสร้างพื้นฐานดาต้าเซ็นเตอร์",
+  "Data center power": "พลังงานดาต้าเซ็นเตอร์",
+  "Digital infrastructure": "โครงสร้างพื้นฐานดิจิทัล",
+  "Domestic demand": "อุปสงค์ในประเทศ",
+  "Electric vehicles": "ยานยนต์ไฟฟ้า",
+  Electronics: "อิเล็กทรอนิกส์",
+  Energy: "พลังงาน",
+  "Enterprise software": "ซอฟต์แวร์องค์กร",
+  Finance: "การเงิน",
+  Financials: "การเงิน",
+  "Food exports": "อาหารส่งออก",
+  "Health Care": "สุขภาพ",
+  "Industrial Estate": "นิคมอุตสาหกรรม",
+  Industrials: "อุตสาหกรรม",
+  "Market breadth": "ภาพรวมตลาด",
+  Memory: "หน่วยความจำ",
+  "Quality tech": "เทคคุณภาพ",
+  "Real Estate": "อสังหา",
+  Retail: "ค้าปลีก",
+  Semiconductors: "เซมิคอนดักเตอร์",
+  Servers: "เซิร์ฟเวอร์",
+  Technology: "เทคโนโลยี",
+  Tourism: "ท่องเที่ยว",
+  Utilities: "สาธารณูปโภค",
 };
 
 const labels = {
