@@ -50,6 +50,19 @@ describe("StockIdeasPage daily ideas", () => {
     expect(screen.getAllByText("Thai electronics get an AI and data-center narrative").length).toBeGreaterThan(0);
   });
 
+  it("adds SET and broker source stack for Thai stock ideas", () => {
+    const { rerender } = render(<StockIdeasPage language="en" marketFilter="Thai" />);
+
+    expect(screen.getByText("Thai research sources")).toBeTruthy();
+    expect(screen.getAllByText("SET News & Market Alerts").length).toBeGreaterThan(0);
+    expect(screen.getByText("KS Research")).toBeTruthy();
+
+    rerender(<StockIdeasPage language="en" marketFilter="US" />);
+
+    expect(screen.queryByText("Thai research sources")).toBeNull();
+    expect(screen.queryByText("KS Research")).toBeNull();
+  });
+
   it("renders daily zone tabs and filters to a selected zone", () => {
     render(<StockIdeasPage language="en" marketFilter="All" />);
 

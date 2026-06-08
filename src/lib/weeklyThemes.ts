@@ -58,8 +58,8 @@ export const weeklyThemes: WeeklyTheme[] = [
     market: "Thai",
     publishedAt: "2026-06-04",
     signal: "hot",
-    sourceLabel: "Pattaya Mail, Jun 4 2026",
-    sourceUrl: "https://www.pattayamail.com/news/set-rally-builds-momentum-as-investors-eye-laggards-and-1620-breakout-target-552085",
+    sourceLabel: "Bualuang Research / Thai Market Strategy",
+    sourceUrl: "https://www.bualuang.co.th/en/tools-lists/tools/bls-research",
     symbols: ["CPALL", "CRC", "BDMS", "BH", "BCH", "AOT", "CENTEL", "MINT", "KTB", "KBANK", "SCB", "RATCH", "EGCO"],
     sectors: ["Retail", "Health Care", "Utilities", "Tourism", "Bank dividends"],
     title: {
@@ -76,8 +76,8 @@ export const weeklyThemes: WeeklyTheme[] = [
     market: "Thai",
     publishedAt: "2026-06-06",
     signal: "hot",
-    sourceLabel: "Nation Thailand, Jun 6 2026",
-    sourceUrl: "https://www.nationthailand.com/business/economy/40067057",
+    sourceLabel: "InnovestX Daily Strategy",
+    sourceUrl: "https://www.innovestx.co.th/cafeinvest/strategy-insight",
     symbols: ["DELTA", "HANA", "KCE", "SAPPE", "XO", "SNNP", "KISS", "EA", "NEX"],
     sectors: ["Electronics", "Food exports", "Cosmetics", "Electric vehicles", "Domestic demand"],
     title: {
@@ -94,8 +94,8 @@ export const weeklyThemes: WeeklyTheme[] = [
     market: "Thai",
     publishedAt: "2026-06-05",
     signal: "mixed",
-    sourceLabel: "Money & Banking, Jun 5 2026",
-    sourceUrl: "https://en.moneyandbanking.co.th/2026/248611/",
+    sourceLabel: "SET News & Market Alerts",
+    sourceUrl: "https://www.set.or.th/en/market/news-and-alert/",
     symbols: ["DELTA", "HANA", "KCE", "CCET"],
     sectors: ["Electronics", "AI supply chain"],
     title: {
@@ -223,9 +223,8 @@ export const weeklyThemes: WeeklyTheme[] = [
     market: "Thai",
     publishedAt: "2026-05-25",
     signal: "hot",
-    sourceLabel: "KResearch, May 25 2026",
-    sourceUrl:
-      "https://www.kasikornresearch.com/en/analysis/k-econ/financial/Pages/MSMR25052026.aspx",
+    sourceLabel: "KS Research / Thai Stocks",
+    sourceUrl: "https://www.kasikornsecurities.com/en/research/read_research",
     symbols: ["DELTA", "CCET", "HANA", "KCE", "DITTO", "FORTH"],
     sectors: ["Electronics", "AI supply chain", "Data center", "Digital infrastructure"],
     title: {
@@ -242,9 +241,8 @@ export const weeklyThemes: WeeklyTheme[] = [
     market: "Thai",
     publishedAt: "2026-05-25",
     signal: "mixed",
-    sourceLabel: "KResearch, May 25 2026",
-    sourceUrl:
-      "https://www.kasikornresearch.com/en/analysis/k-econ/financial/Pages/MSMR25052026.aspx",
+    sourceLabel: "Yuanta Research",
+    sourceUrl: "https://www.yuanta.co.th/en/page/research/",
     symbols: ["KBANK", "BBL", "KTB", "SCB", "KKP", "TISCO", "TTB", "AMATA", "WHA"],
     sectors: ["Banking", "Finance", "Industrial Estate"],
     title: {
@@ -261,9 +259,8 @@ export const weeklyThemes: WeeklyTheme[] = [
     market: "Thai",
     publishedAt: "2026-05-25",
     signal: "watch",
-    sourceLabel: "KResearch, May 25 2026",
-    sourceUrl:
-      "https://www.kasikornresearch.com/en/analysis/k-econ/financial/Pages/MSMR25052026.aspx",
+    sourceLabel: "SET News & Market Alerts",
+    sourceUrl: "https://www.set.or.th/en/market/news-and-alert/",
     symbols: [
       "PTT",
       "PTTEP",
@@ -298,8 +295,8 @@ export const weeklyThemes: WeeklyTheme[] = [
     market: "Thai",
     publishedAt: "2026-05-27",
     signal: "watch",
-    sourceLabel: "Nation Thailand, May 27 2026",
-    sourceUrl: "https://www.nationthailand.com/news/tourism/40066676",
+    sourceLabel: "Pi Research / Daily Strategy",
+    sourceUrl: "https://www.pi.financial/en/research",
     symbols: ["AOT", "AAV", "BA", "CENTEL", "MINT", "ERW", "AWC"],
     sectors: ["Tourism", "Transportation", "Airports", "Hotels"],
     title: {

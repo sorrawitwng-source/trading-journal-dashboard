@@ -22,6 +22,7 @@ import {
 } from "../lib/newsScanner";
 import { weeklyThemeUpdatedAt, weeklyThemes } from "../lib/weeklyThemes";
 import type { Language } from "../lib/scoreText";
+import { thaiNewsSources } from "../lib/thaiNewsSources";
 import type { WeeklyTheme } from "../lib/weeklyThemes";
 
 interface StockIdeasPageProps {
@@ -96,6 +97,7 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
   );
   const symbolCount = new Set(visibleThemes.flatMap((theme) => theme.symbols)).size;
   const sectorCount = new Set(visibleThemes.flatMap((theme) => theme.sectors)).size;
+  const showThaiSourceStack = marketFilter !== "US";
   const signalCounts = {
     hot: visibleThemes.filter((theme) => theme.signal === "hot").length,
     mixed: visibleThemes.filter((theme) => theme.signal === "mixed").length,
@@ -318,6 +320,8 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
             </article>
           ))}
         </div>
+
+        {showThaiSourceStack ? <ThaiBrokerSourceStrip language={language} /> : null}
       </section>
 
       <section className="daily-stocks" aria-labelledby="daily-stocks-title">
@@ -478,6 +482,38 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
         </div>
       </section>
     </section>
+  );
+}
+
+function ThaiBrokerSourceStrip({ language }: { language: Language }) {
+  const labels = {
+    en: {
+      description: "Thai themes now point to SET disclosures and broker research desks for follow-up reading.",
+      title: "Thai research sources",
+    },
+    th: {
+      description: "ธีมหุ้นไทยจะอิงประกาศ SET และบทวิเคราะห์จากโบรกเกอร์ เพื่อให้ไปอ่านต่อได้ตรงแหล่งมากขึ้น",
+      title: "แหล่งข้อมูลหุ้นไทย",
+    },
+  };
+  const text = labels[language];
+
+  return (
+    <div className="thai-broker-strip" aria-label={text.title}>
+      <div>
+        <strong>{text.title}</strong>
+        <span>{text.description}</span>
+      </div>
+      <div>
+        {thaiNewsSources.map((source) => (
+          <a href={source.url} key={source.id} rel="noreferrer" target="_blank">
+            <span>{source.type[language]}</span>
+            <b>{source.label}</b>
+            <ArrowUpRight size={13} />
+          </a>
+        ))}
+      </div>
+    </div>
   );
 }
 

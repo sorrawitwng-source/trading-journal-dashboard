@@ -81,4 +81,18 @@ describe("NewsScannerPage", () => {
     expect(screen.getByRole("button", { name: "โครงสร้างพื้นฐาน AI" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Enterprise software" })).toBeNull();
   });
+
+  it("shows Thai SET and broker sources only for Thai-capable scans", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false })));
+
+    const { rerender } = render(<NewsScannerPage language="en" marketFilter="Thai" />);
+
+    expect(await screen.findByText("SET News & Market Alerts")).toBeTruthy();
+    expect(screen.getByText("Bualuang Research")).toBeTruthy();
+
+    rerender(<NewsScannerPage language="en" marketFilter="US" />);
+
+    expect(screen.queryByText("SET News & Market Alerts")).toBeNull();
+    expect(screen.queryByText("Bualuang Research")).toBeNull();
+  });
 });

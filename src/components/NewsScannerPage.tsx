@@ -11,6 +11,7 @@ import {
   type NewsTimeframe,
 } from "../lib/newsScanner";
 import type { Language } from "../lib/scoreText";
+import { thaiNewsSources, type ThaiNewsSource } from "../lib/thaiNewsSources";
 
 interface NewsScannerPageProps {
   language: Language;
@@ -98,6 +99,7 @@ export function NewsScannerPage({ language, marketFilter }: NewsScannerPageProps
   const radar = useMemo(() => buildRadar(marketItems), [marketItems]);
   const liveCount = marketItems.filter((item) => item.provider === "finnhub").length;
   const hotCount = marketItems.filter((item) => item.signal === "hot").length;
+  const showThaiSources = marketFilter !== "US";
 
   return (
     <section className="news-scanner-page" aria-labelledby="news-scanner-title">
@@ -191,6 +193,8 @@ export function NewsScannerPage({ language, marketFilter }: NewsScannerPageProps
         ))}
       </div>
 
+      {showThaiSources ? <ThaiSourceRail language={language} /> : null}
+
       <div className="news-scanner-layout">
         <section className="news-feed-panel" aria-labelledby="news-feed-title">
           <div className="section-heading section-heading--with-action">
@@ -243,6 +247,42 @@ export function NewsScannerPage({ language, marketFilter }: NewsScannerPageProps
         </aside>
       </div>
     </section>
+  );
+}
+
+function ThaiSourceRail({ language }: { language: Language }) {
+  const text = labels[language];
+
+  return (
+    <section className="thai-source-rail" aria-labelledby="thai-source-title">
+      <div>
+        <p className="eyebrow">{text.thaiSourcesEyebrow}</p>
+        <h2 id="thai-source-title">{text.thaiSourcesTitle}</h2>
+        <p>{text.thaiSourcesDescription}</p>
+      </div>
+
+      <div className="thai-source-grid">
+        {thaiNewsSources.map((source) => (
+          <ThaiSourceCard key={source.id} language={language} source={source} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ThaiSourceCard({
+  language,
+  source,
+}: {
+  language: Language;
+  source: ThaiNewsSource;
+}) {
+  return (
+    <a className="thai-source-card" href={source.url} rel="noreferrer" target="_blank">
+      <span>{source.type[language]}</span>
+      <strong>{source.label}</strong>
+      <ArrowUpRight aria-hidden="true" size={14} />
+    </a>
   );
 }
 
@@ -468,6 +508,10 @@ const labels = {
     status: "News data status",
     subtitle: "A filtered market tape that maps headlines into sectors and related stocks.",
     timeframeFilter: "News timeframe",
+    thaiSourcesDescription:
+      "Thai ideas are anchored to SET company disclosures and broker research hubs before they become a research queue.",
+    thaiSourcesEyebrow: "Thai source stack",
+    thaiSourcesTitle: "SET and broker research sources",
     title: "News Scanner",
     updated: "Updated",
   },
@@ -499,6 +543,10 @@ const labels = {
     status: "สถานะข้อมูลข่าว",
     subtitle: "เทปข่าวที่กรองแล้ว พร้อมจับคู่ข่าวเข้ากลุ่มธุรกิจและหุ้นที่เกี่ยวข้อง",
     timeframeFilter: "ช่วงเวลาข่าว",
+    thaiSourcesDescription:
+      "ข่าวหุ้นไทยจะยึดจากประกาศ SET และแหล่งบทวิเคราะห์โบรกเกอร์เป็นหลัก ก่อนนำไปต่อยอดเป็นไอเดียสำหรับ research",
+    thaiSourcesEyebrow: "แหล่งข่าวหุ้นไทย",
+    thaiSourcesTitle: "SET และบทวิเคราะห์โบรกเกอร์",
     title: "News Scanner",
     updated: "อัปเดต",
   },

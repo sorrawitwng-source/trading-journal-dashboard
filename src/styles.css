@@ -1696,6 +1696,90 @@ summary {
   margin-left: auto;
 }
 
+.thai-source-rail {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1fr);
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border));
+  border-radius: 8px;
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--accent) 9%, transparent), transparent 50%),
+    color-mix(in srgb, var(--panel) 94%, var(--background));
+  box-shadow: inset 0 1px 0 var(--hairline);
+}
+
+.thai-source-rail h2,
+.thai-source-rail p {
+  margin: 0;
+}
+
+.thai-source-rail h2 {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.thai-source-rail p:not(.eyebrow) {
+  margin-top: 6px;
+  color: var(--muted-text);
+  font-size: 0.8rem;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.thai-source-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px;
+}
+
+.thai-source-card {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+  padding: 11px 32px 11px 12px;
+  border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+  border-radius: 8px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--panel-contrast) 40%, transparent);
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.thai-source-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--border));
+  background: color-mix(in srgb, var(--accent) 8%, var(--panel-contrast));
+  transform: translateY(-1px);
+}
+
+.thai-source-card span {
+  overflow: hidden;
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.thai-source-card strong {
+  overflow: hidden;
+  font-size: 0.82rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.thai-source-card svg {
+  position: absolute;
+  right: 11px;
+  top: 12px;
+  color: var(--muted-text);
+}
+
 .news-scanner-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 0.36fr);
@@ -2480,6 +2564,81 @@ summary {
   font-size: 0.74rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.thai-broker-strip {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(220px, 0.5fr) minmax(0, 1fr);
+  gap: 12px;
+  padding: 13px;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent 56%),
+    color-mix(in srgb, var(--panel-strong) 46%, transparent);
+}
+
+.thai-broker-strip > div:first-child {
+  display: grid;
+  align-content: center;
+  gap: 4px;
+}
+
+.thai-broker-strip strong {
+  color: var(--text);
+  font-size: 0.92rem;
+}
+
+.thai-broker-strip > div:first-child span {
+  color: var(--muted-text);
+  font-size: 0.76rem;
+  font-weight: 750;
+  line-height: 1.42;
+}
+
+.thai-broker-strip > div:last-child {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(152px, 1fr));
+  gap: 8px;
+}
+
+.thai-broker-strip a {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 8px;
+  align-items: center;
+  padding: 9px 10px;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 8px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--panel-contrast) 38%, transparent);
+  text-decoration: none;
+}
+
+.thai-broker-strip a span,
+.thai-broker-strip a b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.thai-broker-strip a span {
+  grid-column: 1 / -1;
+  color: var(--accent);
+  font-size: 0.66rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.thai-broker-strip a b {
+  font-size: 0.78rem;
+}
+
+.thai-broker-strip a svg {
+  color: var(--muted-text);
 }
 
 .daily-stocks {
@@ -4909,6 +5068,9 @@ tbody tr:hover {
 .news-feed-panel,
 .news-metric,
 .news-radar-panel,
+.thai-broker-strip,
+.thai-source-rail,
+.thai-source-card,
 .weekly-theme {
   border-color: color-mix(in srgb, var(--border) 82%, transparent);
   box-shadow: inset 0 1px 0 var(--hairline);
@@ -4954,6 +5116,7 @@ tbody tr:hover {
 .market-news-board,
 .news-feed-panel,
 .news-radar-panel,
+.thai-source-rail,
 .weekly-themes {
   padding: 22px;
   background:
@@ -5075,6 +5238,8 @@ tbody tr:hover {
   .market-news-layout,
   .news-scanner-hero,
   .news-scanner-layout,
+  .thai-broker-strip,
+  .thai-source-rail,
   .analytics-grid--wide {
     grid-template-columns: 1fr;
     display: grid;
