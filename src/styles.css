@@ -1534,6 +1534,7 @@ summary {
 .news-filter-panel,
 .news-sector-strip,
 .news-signal-tabs,
+.news-timeframe-tabs,
 .news-card__topline,
 .news-card__chips,
 .news-card__symbols,
@@ -1655,11 +1656,13 @@ summary {
   color: var(--subtle-text);
 }
 
-.news-signal-tabs {
+.news-signal-tabs,
+.news-timeframe-tabs {
   gap: 6px;
 }
 
 .news-signal-tabs button,
+.news-timeframe-tabs button,
 .news-sector-strip button {
   min-height: 36px;
   padding: 7px 11px;
@@ -1673,6 +1676,7 @@ summary {
 }
 
 .news-signal-tabs button:hover,
+.news-timeframe-tabs button:hover,
 .news-sector-strip button:hover {
   border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
   color: var(--text);
@@ -1680,6 +1684,7 @@ summary {
 }
 
 .news-signal-tabs button[aria-selected="true"],
+.news-timeframe-tabs button[aria-selected="true"],
 .news-sector-strip button[aria-pressed="true"] {
   border-color: color-mix(in srgb, var(--accent) 50%, transparent);
   color: var(--button-text);
@@ -2180,6 +2185,43 @@ summary {
   background: color-mix(in srgb, var(--panel-strong) 54%, transparent);
   font-size: 0.8rem;
   font-weight: 850;
+}
+
+.news-board-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 520px;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.news-board-actions > span {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+  border-radius: 999px;
+  color: var(--muted-text);
+  background: color-mix(in srgb, var(--panel-strong) 54%, transparent);
+  font-size: 0.8rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.news-board-actions .news-timeframe-tabs {
+  padding: 4px;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--background) 28%, transparent);
+}
+
+.news-board-actions .news-timeframe-tabs button {
+  min-height: 28px;
+  padding: 5px 9px;
+  font-size: 0.72rem;
 }
 
 .market-news-layout {

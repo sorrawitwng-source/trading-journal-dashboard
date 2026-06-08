@@ -4,9 +4,11 @@ import type { MarketFilter } from "../types";
 import {
   loadNewsScan,
   marketMatches,
+  newsTimeframeOptions,
   type NewsScanItem,
   type NewsScanResult,
   type NewsSignal,
+  type NewsTimeframe,
 } from "../lib/newsScanner";
 import type { Language } from "../lib/scoreText";
 
@@ -26,12 +28,13 @@ export function NewsScannerPage({ language, marketFilter }: NewsScannerPageProps
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSector, setSelectedSector] = useState("all");
   const [selectedSignal, setSelectedSignal] = useState<SignalFilter>("all");
+  const [selectedTimeframe, setSelectedTimeframe] = useState<NewsTimeframe>("latest");
 
   const refreshNews = async () => {
     setIsLoading(true);
 
     try {
-      setNewsResult(await loadNewsScan(marketFilter));
+      setNewsResult(await loadNewsScan(marketFilter, selectedTimeframe));
     } finally {
       setIsLoading(false);
     }
@@ -41,7 +44,7 @@ export function NewsScannerPage({ language, marketFilter }: NewsScannerPageProps
     let isActive = true;
 
     setIsLoading(true);
-    loadNewsScan(marketFilter)
+    loadNewsScan(marketFilter, selectedTimeframe)
       .then((result) => {
         if (isActive) {
           setNewsResult(result);
@@ -56,7 +59,7 @@ export function NewsScannerPage({ language, marketFilter }: NewsScannerPageProps
     return () => {
       isActive = false;
     };
-  }, [marketFilter]);
+  }, [marketFilter, selectedTimeframe]);
 
   useEffect(() => {
     setSelectedSector("all");
@@ -139,6 +142,20 @@ export function NewsScannerPage({ language, marketFilter }: NewsScannerPageProps
               type="button"
             >
               {signalLabel(signal, language)}
+            </button>
+          ))}
+        </div>
+
+        <div className="news-timeframe-tabs" role="tablist" aria-label={text.timeframeFilter}>
+          {newsTimeframeOptions.map((timeframe) => (
+            <button
+              aria-selected={selectedTimeframe === timeframe}
+              key={timeframe}
+              onClick={() => setSelectedTimeframe(timeframe)}
+              role="tab"
+              type="button"
+            >
+              {timeframeLabel(timeframe, language)}
             </button>
           ))}
         </div>
@@ -330,6 +347,17 @@ function signalLabel(signal: SignalFilter, language: Language) {
   return text[signal];
 }
 
+function timeframeLabel(timeframe: NewsTimeframe, language: Language) {
+  const labels = {
+    "30d": { en: "30D", th: "30 วัน" },
+    "90d": { en: "90D", th: "90 วัน" },
+    all: { en: "All time", th: "ทั้งหมด" },
+    latest: { en: "Latest", th: "ล่าสุด" },
+  };
+
+  return labels[timeframe][language];
+}
+
 function sectorLabel(sector: string, language: Language) {
   if (language === "en") {
     return sector;
@@ -439,6 +467,7 @@ const labels = {
     snapshot: "News snapshot",
     status: "News data status",
     subtitle: "A filtered market tape that maps headlines into sectors and related stocks.",
+    timeframeFilter: "News timeframe",
     title: "News Scanner",
     updated: "Updated",
   },
@@ -469,6 +498,7 @@ const labels = {
     snapshot: "ภาพรวมข่าว",
     status: "สถานะข้อมูลข่าว",
     subtitle: "เทปข่าวที่กรองแล้ว พร้อมจับคู่ข่าวเข้ากลุ่มธุรกิจและหุ้นที่เกี่ยวข้อง",
+    timeframeFilter: "ช่วงเวลาข่าว",
     title: "News Scanner",
     updated: "อัปเดต",
   },

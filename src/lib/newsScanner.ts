@@ -4,6 +4,9 @@ import { weeklyThemeUpdatedAt, weeklyThemes } from "./weeklyThemes";
 
 export type NewsSignal = "hot" | "mixed" | "watch";
 export type NewsProviderStatus = "fallback" | "live";
+export type NewsTimeframe = "latest" | "30d" | "90d" | "all";
+
+export const newsTimeframeOptions: NewsTimeframe[] = ["latest", "30d", "90d", "all"];
 
 export interface NewsScanItem {
   category: string;
@@ -54,11 +57,12 @@ interface RemoteNewsResponse {
 
 export async function loadNewsScan(
   marketFilter: MarketFilter,
+  timeframe: NewsTimeframe = "latest",
   fetcher: Fetcher = fetch,
 ): Promise<NewsScanResult> {
   const endpoints = [
-    "/.netlify/functions/news-scan?category=general",
-    "/api/news-scan?category=general",
+    `/.netlify/functions/news-scan?category=general&timeframe=${timeframe}`,
+    `/api/news-scan?category=general&timeframe=${timeframe}`,
   ];
 
   for (const endpoint of endpoints) {
@@ -73,7 +77,10 @@ export async function loadNewsScan(
 
       return {
         ...remoteResult,
-        items: mergeNewsItems(remoteResult.items, curatedNewsItems(marketFilter)),
+        items: filterNewsItemsByTimeframe(
+          mergeNewsItems(remoteResult.items, curatedNewsItems(marketFilter, timeframe)),
+          timeframe,
+        ),
       };
     } catch {
       continue;
@@ -82,14 +89,17 @@ export async function loadNewsScan(
 
   return {
     fetchedAt: weeklyThemeUpdatedAt,
-    items: curatedNewsItems(marketFilter),
+    items: curatedNewsItems(marketFilter, timeframe),
     provider: "curated",
     status: "fallback",
   };
 }
 
-export function curatedNewsItems(marketFilter: MarketFilter): NewsScanItem[] {
-  return weeklyThemes
+export function curatedNewsItems(
+  marketFilter: MarketFilter,
+  timeframe: NewsTimeframe = "latest",
+): NewsScanItem[] {
+  return filterNewsItemsByTimeframe(weeklyThemes
     .filter((theme) => marketFilter === "All" || theme.market === marketFilter)
     .map((theme) => ({
       category: "weekly-theme",
@@ -100,7 +110,7 @@ export function curatedNewsItems(marketFilter: MarketFilter): NewsScanItem[] {
       },
       market: theme.market,
       provider: "curated" as const,
-      publishedAt: weeklyThemeUpdatedAt,
+      publishedAt: theme.publishedAt,
       sectors: theme.sectors,
       signal: theme.signal,
       source: theme.sourceLabel,
@@ -108,7 +118,7 @@ export function curatedNewsItems(marketFilter: MarketFilter): NewsScanItem[] {
       summary: theme.thesis,
       symbols: theme.symbols,
       title: theme.title,
-    }));
+    })), timeframe);
 }
 
 export function marketMatches(item: NewsScanItem, marketFilter: MarketFilter) {
@@ -185,7 +195,65 @@ function mergeNewsItems(liveItems: NewsScanItem[], fallbackItems: NewsScanItem[]
     mergedItems.push(item);
   }
 
-  return mergedItems;
+  return sortNewsItemsByDate(mergedItems);
+}
+
+export function filterNewsItemsByTimeframe(
+  items: NewsScanItem[],
+  timeframe: NewsTimeframe,
+): NewsScanItem[] {
+  if (timeframe === "all") {
+    return sortNewsItemsByDate(items);
+  }
+
+  const days = newsTimeframeDays(timeframe);
+  const referenceDate = latestNewsDate(items);
+
+  return sortNewsItemsByDate(
+    items.filter((item) => isWithinNewsTimeframe(item.publishedAt, days, referenceDate)),
+  );
+}
+
+export function newsTimeframeDays(timeframe: NewsTimeframe): number {
+  if (timeframe === "30d") {
+    return 30;
+  }
+
+  if (timeframe === "90d") {
+    return 90;
+  }
+
+  return 7;
+}
+
+export function latestNewsDate(items: Pick<NewsScanItem, "publishedAt">[]): Date {
+  const latestTime = items.reduce((latest, item) => {
+    const time = Date.parse(item.publishedAt);
+
+    return Number.isFinite(time) ? Math.max(latest, time) : latest;
+  }, 0);
+
+  return latestTime > 0 ? new Date(latestTime) : new Date();
+}
+
+export function isWithinNewsTimeframe(
+  value: string,
+  days: number,
+  referenceDate: Date = new Date(),
+): boolean {
+  const time = Date.parse(value);
+
+  if (!Number.isFinite(time)) {
+    return false;
+  }
+
+  const cutoff = referenceDate.getTime() - days * 24 * 60 * 60 * 1000;
+
+  return time >= cutoff && time <= referenceDate.getTime() + 24 * 60 * 60 * 1000;
+}
+
+function sortNewsItemsByDate(items: NewsScanItem[]): NewsScanItem[] {
+  return [...items].sort((left, right) => Date.parse(right.publishedAt) - Date.parse(left.publishedAt));
 }
 
 function signalImpact(signal: NewsSignal, language: Language) {

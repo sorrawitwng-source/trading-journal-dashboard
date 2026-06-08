@@ -16,7 +16,7 @@ describe("NewsScannerPage", () => {
           items: [
             {
               category: "company",
-              datetime: 1770000000,
+              datetime: 1780876800,
               headline: "AI data center contract sends shares higher",
               id: "live-1",
               impact: "Positive catalyst",
@@ -57,6 +57,19 @@ describe("NewsScannerPage", () => {
       ),
     ).toBeTruthy();
     expect(screen.queryByText("Quality tech and energy lead this week's US filter")).toBeNull();
+  });
+
+  it("defaults to the latest timeframe and can reveal all curated news", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false })));
+
+    render(<NewsScannerPage language="en" marketFilter="All" />);
+
+    expect(await screen.findByText("Quality tech and energy lead this week's US filter")).toBeTruthy();
+    expect(screen.queryByText("Thai electronics get an AI and data-center narrative")).toBeNull();
+
+    fireEvent.click(screen.getByRole("tab", { name: "All time" }));
+
+    expect(await screen.findByText("Thai electronics get an AI and data-center narrative")).toBeTruthy();
   });
 
   it("translates sector filters and sector chips in Thai", async () => {

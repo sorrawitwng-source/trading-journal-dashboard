@@ -13,6 +13,13 @@ import {
   type PricedStockProfile,
   refreshStockProfilePrices,
 } from "../lib/marketData";
+import {
+  isWithinNewsTimeframe,
+  latestNewsDate,
+  newsTimeframeDays,
+  newsTimeframeOptions,
+  type NewsTimeframe,
+} from "../lib/newsScanner";
 import { weeklyThemeUpdatedAt, weeklyThemes } from "../lib/weeklyThemes";
 import type { Language } from "../lib/scoreText";
 import type { WeeklyTheme } from "../lib/weeklyThemes";
@@ -45,16 +52,23 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
   const [isRefreshingDailyPrices, setIsRefreshingDailyPrices] = useState(false);
   const [lastDailyPriceUpdate, setLastDailyPriceUpdate] = useState<string | null>(null);
   const [activeDailyTab, setActiveDailyTab] = useState<DailyZoneTab>("all");
+  const [selectedNewsTimeframe, setSelectedNewsTimeframe] =
+    useState<NewsTimeframe>("latest");
   const [collapsedDailyZones, setCollapsedDailyZones] = useState<Record<DailyStockZone, boolean>>({
     "zone-1": false,
     "zone-2": false,
     "zone-3": false,
   });
-  const visibleThemes = weeklyThemes.filter(
-    (theme) => marketFilter === "All" || theme.market === marketFilter,
+  const visibleThemes = useMemo(
+    () => filterThemesByTimeframe(
+      weeklyThemes.filter((theme) => marketFilter === "All" || theme.market === marketFilter),
+      selectedNewsTimeframe,
+    ),
+    [marketFilter, selectedNewsTimeframe],
   );
+  const themeUpdatedAt = latestThemeDate(visibleThemes) ?? weeklyThemeUpdatedAt;
   const filteredNewsThemes = useMemo(
-    () => [...visibleThemes].sort((left, right) => themeSignalRank(left) - themeSignalRank(right)),
+    () => [...visibleThemes].sort(compareThemePriority),
     [visibleThemes],
   );
   const sectorMomentum = useMemo(
@@ -201,7 +215,7 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
           </div>
           <div className="ideas-hero__updated">
             <span>{uiText.updated}</span>
-            <strong>{formatDate(weeklyThemeUpdatedAt, language)}</strong>
+            <strong>{formatDate(themeUpdatedAt, language)}</strong>
           </div>
         </div>
       </div>
@@ -213,7 +227,22 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
             <h2 id="market-news-title">{newsText.title}</h2>
             <p>{newsText.description}</p>
           </div>
-          <span>{formatDate(weeklyThemeUpdatedAt, language)}</span>
+          <div className="news-board-actions">
+            <span>{formatDate(themeUpdatedAt, language)}</span>
+            <div className="news-timeframe-tabs" role="tablist" aria-label="News timeframe">
+              {newsTimeframeOptions.map((timeframe) => (
+                <button
+                  aria-selected={selectedNewsTimeframe === timeframe}
+                  key={timeframe}
+                  onClick={() => setSelectedNewsTimeframe(timeframe)}
+                  role="tab"
+                  type="button"
+                >
+                  {timeframeLabel(timeframe, language)}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="market-news-layout">
@@ -228,6 +257,7 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
                 <p>{leadTheme.thesis[language]}</p>
                 <div className="market-news-lead__meta">
                   <span>{leadTheme.market}</span>
+                  <span>{formatDate(leadTheme.publishedAt, language)}</span>
                   <span>{leadTheme.symbols.length} {text.stockCount}</span>
                   <span>{leadTheme.sectors.length} {text.sectorCount}</span>
                 </div>
@@ -281,6 +311,7 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
               <div>
                 <span>{theme.market}</span>
                 <b>{signalText(theme.signal, language)}</b>
+                <span>{formatDate(theme.publishedAt, language)}</span>
               </div>
               <h3>{theme.title[language]}</h3>
               <p>{theme.sectors.slice(0, 4).join(" · ")}</p>
@@ -396,7 +427,7 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
             <h2 id="weekly-themes-title">{text.weeklyTitle}</h2>
             <p>{text.weeklyDescription}</p>
           </div>
-          <span>{formatDate(weeklyThemeUpdatedAt, language)}</span>
+          <span>{formatDate(themeUpdatedAt, language)}</span>
         </div>
 
         <div className="weekly-theme-grid weekly-theme-grid--full">
@@ -415,6 +446,7 @@ export function StockIdeasPage({ language, marketFilter }: StockIdeasPageProps) 
                 <div>
                   <span>{theme.symbols.length} {text.stockCount}</span>
                   <span>{theme.sectors.length} {text.sectorCount}</span>
+                  <span>{formatDate(theme.publishedAt, language)}</span>
                 </div>
               </div>
               <p className="weekly-theme__thesis">{theme.thesis[language]}</p>
@@ -664,6 +696,40 @@ function stockKey(symbol: string, market: string): string {
   return `${market}:${symbol.trim().toUpperCase()}`;
 }
 
+function filterThemesByTimeframe(
+  themes: WeeklyTheme[],
+  timeframe: NewsTimeframe,
+): WeeklyTheme[] {
+  if (timeframe === "all") {
+    return [...themes].sort(compareThemePriority);
+  }
+
+  const referenceDate = latestNewsDate(themes);
+  const days = newsTimeframeDays(timeframe);
+
+  return themes
+    .filter((theme) => isWithinNewsTimeframe(theme.publishedAt, days, referenceDate))
+    .sort(compareThemePriority);
+}
+
+function latestThemeDate(themes: WeeklyTheme[]): string | null {
+  if (themes.length === 0) {
+    return null;
+  }
+
+  return latestNewsDate(themes).toISOString().slice(0, 10);
+}
+
+function compareThemePriority(left: WeeklyTheme, right: WeeklyTheme): number {
+  const dateDiff = Date.parse(right.publishedAt) - Date.parse(left.publishedAt);
+
+  if (dateDiff !== 0) {
+    return dateDiff;
+  }
+
+  return themeSignalRank(left) - themeSignalRank(right);
+}
+
 function buildSectorMomentum(themes: WeeklyTheme[]): SectorMomentum[] {
   const sectorsByName = new Map<string, { markets: Set<string>; score: number; themeCount: number }>();
 
@@ -829,6 +895,17 @@ function signalText(signal: "hot" | "mixed" | "watch", language: Language): stri
   };
 
   return labels[signal][language];
+}
+
+function timeframeLabel(timeframe: NewsTimeframe, language: Language): string {
+  const labels = {
+    "30d": { en: "30D", th: "30 วัน" },
+    "90d": { en: "90D", th: "90 วัน" },
+    all: { en: "All time", th: "ทั้งหมด" },
+    latest: { en: "Latest", th: "ล่าสุด" },
+  };
+
+  return labels[timeframe][language];
 }
 
 const ideaUiLabels = {

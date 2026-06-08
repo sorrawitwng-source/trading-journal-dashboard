@@ -8,6 +8,7 @@ exports.handler = async (event) => {
   const apiKey = process.env.FINNHUB_API_KEY;
   const category = normalizeCategory(event.queryStringParameters?.category);
   const symbols = normalizeSymbols(event.queryStringParameters?.symbols);
+  const timeframe = normalizeTimeframe(event.queryStringParameters?.timeframe);
 
   if (!apiKey) {
     return jsonResponse(200, {
@@ -23,6 +24,7 @@ exports.handler = async (event) => {
       apiKey,
       category,
       symbols: symbols.length > 0 ? symbols : defaultSymbols,
+      timeframe,
     });
 
     return jsonResponse(200, {
@@ -41,10 +43,10 @@ exports.handler = async (event) => {
   }
 };
 
-async function fetchFinnhubNews({ apiKey, category, symbols }) {
+async function fetchFinnhubNews({ apiKey, category, symbols, timeframe }) {
   const marketNews = await fetchMarketNews(apiKey, category);
   const companyNewsGroups = await Promise.all(
-    symbols.slice(0, 6).map((symbol) => fetchCompanyNews(apiKey, symbol)),
+    symbols.slice(0, 6).map((symbol) => fetchCompanyNews(apiKey, symbol, timeframe)),
   );
 
   return dedupeNews([...marketNews, ...companyNewsGroups.flat()])
@@ -73,10 +75,10 @@ async function fetchMarketNews(apiKey, category) {
   return Array.isArray(payload) ? payload : [];
 }
 
-async function fetchCompanyNews(apiKey, symbol) {
+async function fetchCompanyNews(apiKey, symbol, timeframe) {
   const today = new Date();
   const fromDate = new Date(today);
-  fromDate.setUTCDate(today.getUTCDate() - 7);
+  fromDate.setUTCDate(today.getUTCDate() - timeframeToDays(timeframe));
 
   const url = new URL(finnhubCompanyNewsUrl);
   url.searchParams.set("symbol", symbol);
@@ -237,6 +239,28 @@ function normalizeSymbols(symbols) {
     .filter((symbol) => /^[A-Z0-9.\-]{1,12}$/.test(symbol));
 }
 
+function normalizeTimeframe(timeframe) {
+  const normalized = typeof timeframe === "string" ? timeframe.trim().toLowerCase() : "latest";
+
+  if (normalized === "30d" || normalized === "90d" || normalized === "all") {
+    return normalized;
+  }
+
+  return "latest";
+}
+
+function timeframeToDays(timeframe) {
+  if (timeframe === "30d") {
+    return 30;
+  }
+
+  if (timeframe === "90d" || timeframe === "all") {
+    return 90;
+  }
+
+  return 7;
+}
+
 function parseRelatedSymbols(value) {
   if (typeof value !== "string") {
     return [];
@@ -278,5 +302,7 @@ exports._test = {
   classifySignal,
   normalizeCategory,
   normalizeSymbols,
+  normalizeTimeframe,
   parseFinnhubNews,
+  timeframeToDays,
 };

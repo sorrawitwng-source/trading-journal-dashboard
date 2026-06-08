@@ -39,11 +39,23 @@ describe("StockIdeasPage daily ideas", () => {
     expect(screen.queryByText("Quality tech and energy lead this week's US filter")).toBeNull();
   });
 
+  it("shows the latest news first and supports all-time themes", () => {
+    render(<StockIdeasPage language="en" marketFilter="All" />);
+
+    expect(screen.getAllByText("Quality tech and energy lead this week's US filter").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Thai electronics get an AI and data-center narrative")).toBeNull();
+
+    fireEvent.click(screen.getByRole("tab", { name: "All time" }));
+
+    expect(screen.getAllByText("Thai electronics get an AI and data-center narrative").length).toBeGreaterThan(0);
+  });
+
   it("renders daily zone tabs and filters to a selected zone", () => {
     render(<StockIdeasPage language="en" marketFilter="All" />);
 
-    const allTab = screen.getByRole("tab", { name: /All/i });
-    const zoneOneTab = screen.getByRole("tab", { name: /Zone 1/i });
+    const dailyTabs = screen.getByRole("tablist", { name: "Daily stock zone tabs" });
+    const allTab = within(dailyTabs).getByRole("tab", { name: /All/i });
+    const zoneOneTab = within(dailyTabs).getByRole("tab", { name: /Zone 1/i });
 
     expect(allTab.getAttribute("aria-selected")).toBe("true");
 

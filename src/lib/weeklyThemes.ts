@@ -4,6 +4,7 @@ import type { Language } from "./scoreText";
 export interface WeeklyTheme {
   id: string;
   market: Market;
+  publishedAt: string;
   signal: "hot" | "mixed" | "watch";
   sourceLabel: string;
   sourceUrl: string;
@@ -19,6 +20,7 @@ export const weeklyThemes: WeeklyTheme[] = [
   {
     id: "us-quality-tech-energy",
     market: "US",
+    publishedAt: "2026-06-08",
     signal: "hot",
     sourceLabel: "CI Markets Weekly Outlook, Jun 8 2026",
     sourceUrl: "https://completeintel.com/weekly-outlook-june-8-2026/",
@@ -36,6 +38,7 @@ export const weeklyThemes: WeeklyTheme[] = [
   {
     id: "us-ai-dispersion",
     market: "US",
+    publishedAt: "2026-06-05",
     signal: "mixed",
     sourceLabel: "INN Tech Weekly, Jun 5 2026",
     sourceUrl: "https://investingnews.com/top-tech-news/",
@@ -53,6 +56,7 @@ export const weeklyThemes: WeeklyTheme[] = [
   {
     id: "thai-rotation-laggards",
     market: "Thai",
+    publishedAt: "2026-06-04",
     signal: "hot",
     sourceLabel: "Pattaya Mail, Jun 4 2026",
     sourceUrl: "https://www.pattayamail.com/news/set-rally-builds-momentum-as-investors-eye-laggards-and-1620-breakout-target-552085",
@@ -70,6 +74,7 @@ export const weeklyThemes: WeeklyTheme[] = [
   {
     id: "thai-industry-expansion",
     market: "Thai",
+    publishedAt: "2026-06-06",
     signal: "hot",
     sourceLabel: "Nation Thailand, Jun 6 2026",
     sourceUrl: "https://www.nationthailand.com/business/economy/40067057",
@@ -87,6 +92,7 @@ export const weeklyThemes: WeeklyTheme[] = [
   {
     id: "thai-electronics-caution",
     market: "Thai",
+    publishedAt: "2026-06-05",
     signal: "mixed",
     sourceLabel: "Money & Banking, Jun 5 2026",
     sourceUrl: "https://en.moneyandbanking.co.th/2026/248611/",
@@ -104,6 +110,7 @@ export const weeklyThemes: WeeklyTheme[] = [
   {
     id: "us-ai-software",
     market: "US",
+    publishedAt: "2026-05-29",
     signal: "hot",
     sourceLabel: "Schwab Network, May 29 2026",
     sourceUrl:
@@ -158,6 +165,7 @@ export const weeklyThemes: WeeklyTheme[] = [
   {
     id: "us-broadening",
     market: "US",
+    publishedAt: "2026-05-26",
     signal: "mixed",
     sourceLabel: "BWFA Weekly Economic Update, May 26 2026",
     sourceUrl: "https://bwfa.com/articles/weekly-economic-update-may-26-2026/",
@@ -213,6 +221,7 @@ export const weeklyThemes: WeeklyTheme[] = [
   {
     id: "thai-ai-electronics",
     market: "Thai",
+    publishedAt: "2026-05-25",
     signal: "hot",
     sourceLabel: "KResearch, May 25 2026",
     sourceUrl:
@@ -231,6 +240,7 @@ export const weeklyThemes: WeeklyTheme[] = [
   {
     id: "thai-gdp-banks-industrial-estate",
     market: "Thai",
+    publishedAt: "2026-05-25",
     signal: "mixed",
     sourceLabel: "KResearch, May 25 2026",
     sourceUrl:
@@ -249,6 +259,7 @@ export const weeklyThemes: WeeklyTheme[] = [
   {
     id: "thai-energy-dividend-finance",
     market: "Thai",
+    publishedAt: "2026-05-25",
     signal: "watch",
     sourceLabel: "KResearch, May 25 2026",
     sourceUrl:
@@ -285,6 +296,7 @@ export const weeklyThemes: WeeklyTheme[] = [
   {
     id: "thai-tourism-rebound",
     market: "Thai",
+    publishedAt: "2026-05-27",
     signal: "watch",
     sourceLabel: "Nation Thailand, May 27 2026",
     sourceUrl: "https://www.nationthailand.com/news/tourism/40066676",

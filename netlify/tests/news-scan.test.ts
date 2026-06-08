@@ -6,6 +6,7 @@ const { _test } = require("../functions/news-scan.cjs") as {
     classifySignal: (text: string) => "hot" | "mixed" | "watch";
     normalizeCategory: (category: string) => string;
     normalizeSymbols: (symbols: string) => string[];
+    normalizeTimeframe: (timeframe: string) => string;
     parseFinnhubNews: (payload: Record<string, unknown>) => {
       headline: string;
       market: string;
@@ -13,6 +14,7 @@ const { _test } = require("../functions/news-scan.cjs") as {
       sectors: string[];
       signal: "hot" | "mixed" | "watch";
     } | null;
+    timeframeToDays: (timeframe: string) => number;
   };
 };
 
@@ -31,6 +33,13 @@ describe("news scanner helpers", () => {
     expect(_test.normalizeCategory("general")).toBe("general");
     expect(_test.normalizeCategory("invalid")).toBe("general");
     expect(_test.normalizeSymbols("AAPL, NVDA, bad symbol")).toEqual(["AAPL", "NVDA"]);
+  });
+
+  it("normalizes news timeframes safely", () => {
+    expect(_test.normalizeTimeframe("30d")).toBe("30d");
+    expect(_test.normalizeTimeframe("bad")).toBe("latest");
+    expect(_test.timeframeToDays("latest")).toBe(7);
+    expect(_test.timeframeToDays("90d")).toBe(90);
   });
 
   it("parses Finnhub news payloads into scanner items", () => {
