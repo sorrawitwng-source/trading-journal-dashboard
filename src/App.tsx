@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { AnalyticsPage } from "./components/AnalyticsPage";
 import { HoldingsTable, type HoldingRow } from "./components/HoldingsTable";
+import { NewsScannerPage } from "./components/NewsScannerPage";
 import { PerformanceChart } from "./components/PerformanceChart";
 import { PositionForm } from "./components/PositionForm";
 import { StockIdeasPage } from "./components/StockIdeasPage";
@@ -555,8 +556,10 @@ function App() {
             positions={positions}
             usdThbRate={usdThbRate}
           />
-        ) : (
+        ) : activeView === "ideas" ? (
           <StockIdeasPage language={language} marketFilter={marketFilter} />
+        ) : (
+          <NewsScannerPage language={language} marketFilter={marketFilter} />
         )}
       </div>
     </main>

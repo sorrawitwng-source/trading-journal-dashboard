@@ -1,7 +1,7 @@
 import { Moon, Sun } from "lucide-react";
 import type { Currency, MarketFilter } from "../types";
 
-export type AppView = "analytics" | "ideas" | "portfolio";
+export type AppView = "analytics" | "ideas" | "news" | "portfolio";
 
 interface TopBarProps {
   activeView: AppView;
@@ -113,6 +113,7 @@ const viewOptions: { value: AppView }[] = [
   { value: "portfolio" },
   { value: "analytics" },
   { value: "ideas" },
+  { value: "news" },
 ];
 
 const labels = {
@@ -125,11 +126,13 @@ const labels = {
     titles: {
       analytics: "Portfolio Analytics",
       ideas: "Stock Ideas",
+      news: "News Scanner",
       portfolio: "Portfolio Dashboard",
     },
     views: {
       analytics: "Analytics",
       ideas: "Stock Ideas",
+      news: "News",
       portfolio: "Portfolio",
     },
   },
@@ -142,11 +145,13 @@ const labels = {
     titles: {
       analytics: "วิเคราะห์พอร์ต",
       ideas: "หุ้นน่าสนใจ",
+      news: "สแกนข่าว",
       portfolio: "พอร์ตการลงทุน",
     },
     views: {
       analytics: "วิเคราะห์",
       ideas: "หุ้นน่าสนใจ",
+      news: "ข่าว",
       portfolio: "พอร์ต",
     },
   },

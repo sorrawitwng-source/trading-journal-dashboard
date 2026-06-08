@@ -13,10 +13,19 @@ const quoteFunction = require("./netlify/functions/quote.cjs") as {
     statusCode?: number;
   }>;
 };
+const newsScanFunction = require("./netlify/functions/news-scan.cjs") as {
+  handler: (event: {
+    queryStringParameters?: Record<string, string>;
+  }) => Promise<{
+    body?: string;
+    headers?: Record<string, string>;
+    statusCode?: number;
+  }>;
+};
 
 export default defineConfig({
   base: "./",
-  plugins: [react(), localQuoteApi()],
+  plugins: [react(), localApi()],
   test: {
     environment: "jsdom",
     globals: true,
@@ -24,22 +33,27 @@ export default defineConfig({
   },
 });
 
-function localQuoteApi(): Plugin {
+function localApi(): Plugin {
   return {
     configureServer(server) {
       server.middlewares.use(async (request, response, next) => {
         const requestUrl = new URL(request.url ?? "/", "http://localhost");
+        const handler =
+          requestUrl.pathname === "/api/quote" ||
+          requestUrl.pathname === "/.netlify/functions/quote"
+            ? quoteFunction.handler
+            : requestUrl.pathname === "/api/news-scan" ||
+                requestUrl.pathname === "/.netlify/functions/news-scan"
+              ? newsScanFunction.handler
+              : null;
 
-        if (
-          requestUrl.pathname !== "/api/quote" &&
-          requestUrl.pathname !== "/.netlify/functions/quote"
-        ) {
+        if (!handler) {
           next();
           return;
         }
 
         try {
-          const result = await quoteFunction.handler({
+          const result = await handler({
             queryStringParameters: Object.fromEntries(requestUrl.searchParams),
           });
 
@@ -52,10 +66,10 @@ function localQuoteApi(): Plugin {
         } catch {
           response.statusCode = 500;
           response.setHeader("content-type", "application/json");
-          response.end(JSON.stringify({ error: "Quote unavailable" }));
+          response.end(JSON.stringify({ error: "API unavailable" }));
         }
       });
     },
-    name: "local-quote-api",
+    name: "local-dashboard-api",
   };
 }
