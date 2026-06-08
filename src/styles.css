@@ -4290,7 +4290,7 @@ tbody tr:hover .col-actions {
   top: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1fr);
+  grid-template-columns: minmax(220px, 0.34fr) minmax(320px, 1fr) auto;
   align-items: center;
   gap: 18px;
   margin: 0 0 10px;
@@ -4319,6 +4319,50 @@ tbody tr:hover .col-actions {
   font-size: clamp(1.85rem, 2.45vw, 2.9rem);
   letter-spacing: 0;
   white-space: nowrap;
+}
+
+.top-bar__context {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 13px 14px;
+  border: 1px solid color-mix(in srgb, var(--border) 66%, transparent);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent 54%),
+    color-mix(in srgb, var(--panel-contrast) 42%, transparent);
+  box-shadow: inset 0 1px 0 var(--hairline);
+}
+
+.top-bar__context > span {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted-text);
+  font-size: 0.83rem;
+  font-weight: 760;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.top-bar__context-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.top-bar__context-pills b {
+  display: inline-flex;
+  min-height: 27px;
+  align-items: center;
+  padding: 5px 8px;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  border-radius: 999px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--panel) 46%, transparent);
+  font-size: 0.72rem;
+  font-weight: 900;
 }
 
 .top-bar__controls {

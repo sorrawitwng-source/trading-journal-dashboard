@@ -34,12 +34,22 @@ export function TopBar({
   const text = labels[language];
   const nextThemeLabel =
     theme === "dark" ? text.switchToLight : text.switchToDark;
+  const contextText = viewDescriptions[language][activeView];
+  const marketLabel = marketLabels[language][marketFilter];
 
   return (
     <header className="top-bar">
       <div className="top-bar__identity">
         <p className="eyebrow">{text.eyebrow}</p>
         <h1>{text.titles[activeView]}</h1>
+      </div>
+
+      <div className="top-bar__context" aria-label={contextLabels[language]}>
+        <span>{contextText}</span>
+        <div className="top-bar__context-pills">
+          <b>{marketPrefixes[language]}: {marketLabel}</b>
+          <b>{currencyPrefixes[language]}: {baseCurrency}</b>
+        </div>
       </div>
 
       <div className="top-bar__controls" aria-label="Dashboard controls">
@@ -119,6 +129,49 @@ const viewOptions: { value: AppView }[] = [
   { value: "ideas" },
   { value: "news" },
 ];
+
+const contextLabels = {
+  en: "Current workspace context",
+  th: "บริบทหน้าปัจจุบัน",
+};
+
+const currencyPrefixes = {
+  en: "Currency",
+  th: "ค่าเงิน",
+};
+
+const marketPrefixes = {
+  en: "Market",
+  th: "ตลาด",
+};
+
+const marketLabels: Record<"en" | "th", Record<MarketFilter, string>> = {
+  en: {
+    All: "All markets",
+    Thai: "Thai market",
+    US: "US market",
+  },
+  th: {
+    All: "ทุกตลาด",
+    Thai: "ตลาดไทย",
+    US: "ตลาดสหรัฐ",
+  },
+};
+
+const viewDescriptions: Record<"en" | "th", Record<AppView, string>> = {
+  en: {
+    analytics: "Portfolio exposure, concentration, and monthly trading quality.",
+    ideas: "Sector ideas, daily momentum, and research queues.",
+    news: "Filtered headlines mapped to sectors and related stocks.",
+    portfolio: "Holdings, cost basis, P/L, and benchmark comparison.",
+  },
+  th: {
+    analytics: "ดูสัดส่วนพอร์ต ความกระจุกตัว และคุณภาพการเทรดรายเดือน",
+    ideas: "ไอเดียตามกลุ่ม หุ้นซิ่งรายวัน และคิวสำหรับ research ต่อ",
+    news: "กรองข่าวสำคัญ จับคู่เข้ากลุ่มธุรกิจและหุ้นที่เกี่ยวข้อง",
+    portfolio: "รายการถือครอง ต้นทุน กำไรขาดทุน และเทียบ benchmark",
+  },
+};
 
 const labels = {
   en: {
