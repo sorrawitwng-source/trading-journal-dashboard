@@ -37,73 +37,77 @@ export function TopBar({
 
   return (
     <header className="top-bar">
-      <div>
+      <div className="top-bar__identity">
         <p className="eyebrow">{text.eyebrow}</p>
         <h1>{text.titles[activeView]}</h1>
       </div>
 
       <div className="top-bar__controls" aria-label="Dashboard controls">
-        <div className="segmented-control" aria-label="Page selector">
-          {viewOptions.map((view) => (
-            <button
-              aria-pressed={activeView === view.value}
-              className="segmented-control__button segmented-control__button--wide"
-              key={view.value}
-              onClick={() => onViewChange(view.value)}
-              type="button"
-            >
-              {text.views[view.value]}
-            </button>
-          ))}
+        <div className="top-bar__nav-row">
+          <div className="segmented-control segmented-control--views" aria-label="Page selector">
+            {viewOptions.map((view) => (
+              <button
+                aria-pressed={activeView === view.value}
+                className="segmented-control__button segmented-control__button--wide"
+                key={view.value}
+                onClick={() => onViewChange(view.value)}
+                type="button"
+              >
+                {text.views[view.value]}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="segmented-control" aria-label="Market selector">
-          {marketFilters.map((filter) => (
-            <button
-              aria-pressed={marketFilter === filter}
-              className="segmented-control__button"
-              key={filter}
-              onClick={() => onMarketFilterChange(filter)}
-              type="button"
-            >
-              {filter}
-            </button>
-          ))}
+        <div className="top-bar__filter-row">
+          <div className="segmented-control" aria-label="Market selector">
+            {marketFilters.map((filter) => (
+              <button
+                aria-pressed={marketFilter === filter}
+                className="segmented-control__button"
+                key={filter}
+                onClick={() => onMarketFilterChange(filter)}
+                type="button"
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
+
+          <div className="segmented-control" aria-label={text.baseCurrency}>
+            {baseCurrencies.map((currency) => (
+              <button
+                aria-pressed={baseCurrency === currency}
+                className="segmented-control__button"
+                key={currency}
+                onClick={() => onBaseCurrencyChange(currency)}
+                type="button"
+              >
+                {currency}
+              </button>
+            ))}
+          </div>
+
+          <button
+            aria-label={text.languageToggle}
+            className="language-button"
+            onClick={onLanguageToggle}
+            title={text.languageToggle}
+            type="button"
+          >
+            {language === "en" ? "TH" : "EN"}
+          </button>
+
+          <button
+            aria-label={nextThemeLabel}
+            className="icon-button"
+            onClick={onThemeToggle}
+            title={nextThemeLabel}
+            type="button"
+          >
+            <ThemeIcon aria-hidden="true" size={18} />
+          </button>
         </div>
-
-        <div className="segmented-control" aria-label={text.baseCurrency}>
-          {baseCurrencies.map((currency) => (
-            <button
-              aria-pressed={baseCurrency === currency}
-              className="segmented-control__button"
-              key={currency}
-              onClick={() => onBaseCurrencyChange(currency)}
-              type="button"
-            >
-              {currency}
-            </button>
-          ))}
-        </div>
-
-        <button
-          aria-label={text.languageToggle}
-          className="language-button"
-          onClick={onLanguageToggle}
-          title={text.languageToggle}
-          type="button"
-        >
-          {language === "en" ? "TH" : "EN"}
-        </button>
-
-        <button
-          aria-label={nextThemeLabel}
-          className="icon-button"
-          onClick={onThemeToggle}
-          title={nextThemeLabel}
-          type="button"
-        >
-          <ThemeIcon aria-hidden="true" size={18} />
-        </button>
       </div>
     </header>
   );

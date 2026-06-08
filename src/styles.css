@@ -145,6 +145,12 @@ summary {
   padding: 12px 0 4px;
 }
 
+.top-bar__identity {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
 .top-bar h1,
 .section-heading h2,
 .recommendation-card h3 {
@@ -156,6 +162,7 @@ summary {
   margin-top: 6px;
   font-size: clamp(1.9rem, 3.4vw, 3.15rem);
   line-height: 1.02;
+  overflow-wrap: normal;
 }
 
 .eyebrow {
@@ -180,6 +187,19 @@ summary {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.top-bar__nav-row,
+.top-bar__filter-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+
+.top-bar__filter-row {
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .segmented-control {
@@ -4269,6 +4289,8 @@ tbody tr:hover .col-actions {
   position: sticky;
   top: 0;
   z-index: 20;
+  display: grid;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1fr);
   align-items: center;
   margin: -10px -8px 8px;
   padding: 12px 8px 14px;
@@ -4282,20 +4304,42 @@ tbody tr:hover .col-actions {
   backdrop-filter: blur(18px);
 }
 
+.top-bar__identity {
+  padding: 4px 0;
+}
+
 .top-bar h1 {
-  max-width: 720px;
-  font-size: clamp(2rem, 3.1vw, 3.45rem);
+  max-width: 100%;
+  font-size: clamp(1.9rem, 2.6vw, 3rem);
   letter-spacing: 0;
+  white-space: nowrap;
 }
 
 .top-bar__controls {
-  padding: 5px;
-  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--panel-contrast) 78%, transparent);
-  box-shadow:
-    inset 0 1px 0 var(--hairline),
-    0 16px 34px rgba(0, 0, 0, 0.14);
+  display: grid;
+  justify-content: end;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.top-bar__nav-row,
+.top-bar__filter-row {
+  justify-content: flex-end;
+}
+
+.top-bar__nav-row {
+  min-width: min(100%, 450px);
+}
+
+.top-bar__filter-row {
+  min-width: 0;
+}
+
+.segmented-control--views {
+  width: 100%;
 }
 
 .segmented-control,
@@ -4308,7 +4352,12 @@ tbody tr:hover .col-actions {
 
 .segmented-control {
   border-color: color-mix(in srgb, var(--border) 72%, transparent);
-  background: color-mix(in srgb, var(--background) 28%, var(--panel));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel) 86%, transparent), transparent),
+    color-mix(in srgb, var(--background) 28%, var(--panel));
+  box-shadow:
+    inset 0 1px 0 var(--hairline),
+    0 10px 22px rgba(0, 0, 0, 0.1);
 }
 
 .segmented-control__button[aria-pressed="true"] {
@@ -4857,6 +4906,33 @@ tbody tr:hover {
 }
 
 @media (max-width: 1270px) {
+  .top-bar {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .top-bar h1 {
+    white-space: normal;
+  }
+
+  .top-bar__controls {
+    justify-content: stretch;
+  }
+
+  .top-bar__nav-row,
+  .top-bar__filter-row {
+    justify-content: stretch;
+  }
+
+  .segmented-control--views {
+    width: 100%;
+  }
+
+  .segmented-control--views .segmented-control__button {
+    flex: 1;
+  }
+
   .portfolio-workspace {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -4921,6 +4997,8 @@ tbody tr:hover {
 
   .top-bar {
     display: grid;
+    margin-inline: -4px;
+    padding-inline: 4px;
   }
 
   .section-heading--with-action {
@@ -4928,11 +5006,19 @@ tbody tr:hover {
   }
 
   .top-bar__controls {
+    display: grid;
     justify-content: stretch;
+  }
+
+  .top-bar__nav-row,
+  .top-bar__filter-row {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 
   .segmented-control {
     flex: 1;
+    width: 100%;
   }
 
   .segmented-control__button {
@@ -5060,12 +5146,11 @@ tbody tr:hover {
 
 @media (max-width: 460px) {
   .top-bar h1 {
-    font-size: 1.7rem;
+    font-size: 1.8rem;
+    line-height: 1.06;
   }
 
   .top-bar__controls {
-    display: grid;
-    grid-template-columns: 1fr auto;
     width: 100%;
   }
 
