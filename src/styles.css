@@ -65,27 +65,27 @@ summary {
 }
 
 .app-shell {
-  --background: #070b11;
-  --panel: #101821;
-  --panel-strong: #172231;
-  --panel-contrast: #0c121b;
-  --text: #f2f6fb;
-  --muted-text: #a7b4c5;
-  --subtle-text: #78879a;
-  --border: #263445;
-  --hairline: rgba(255, 255, 255, 0.075);
-  --green: #28d986;
+  --background: #030504;
+  --panel: #0b1110;
+  --panel-strong: #111a17;
+  --panel-contrast: #070b0a;
+  --text: #f4fbf7;
+  --muted-text: #afbab4;
+  --subtle-text: #77857e;
+  --border: #21443a;
+  --hairline: rgba(74, 255, 177, 0.11);
+  --green: #24f28c;
   --red: #ff5570;
-  --amber: #f5be4f;
-  --blue: #4ea2ff;
-  --violet: #8d97ff;
-  --magenta: #f071a7;
-  --accent: #23d6bd;
-  --accent-strong: #16aa96;
-  --button-text: #031f1b;
-  --row-hover: rgba(34, 199, 167, 0.08);
-  --shadow: 0 22px 56px rgba(0, 0, 0, 0.28);
-  --soft-shadow: 0 14px 32px rgba(0, 0, 0, 0.2);
+  --amber: #f6c554;
+  --blue: #60a5fa;
+  --violet: #9a8cff;
+  --magenta: #f46aa5;
+  --accent: #18e48a;
+  --accent-strong: #0daa62;
+  --button-text: #02130b;
+  --row-hover: rgba(24, 228, 138, 0.09);
+  --shadow: 0 26px 62px rgba(0, 0, 0, 0.42);
+  --soft-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
   --bg: var(--background);
   --muted: var(--muted-text);
   --subtle: var(--subtle-text);
@@ -100,8 +100,8 @@ summary {
   padding: 24px;
   color: var(--text);
   background:
-    linear-gradient(180deg, rgba(78, 162, 255, 0.09), transparent 300px),
-    linear-gradient(90deg, rgba(35, 214, 189, 0.055), transparent 38%, rgba(240, 113, 167, 0.035)),
+    linear-gradient(180deg, rgba(24, 228, 138, 0.12), transparent 340px),
+    linear-gradient(90deg, rgba(96, 165, 250, 0.055), transparent 34%, rgba(246, 197, 84, 0.035)),
     var(--background);
 }
 
@@ -127,35 +127,6 @@ summary {
   --row-hover: rgba(15, 143, 125, 0.08);
   --shadow: 0 18px 38px rgba(32, 45, 62, 0.08);
   --soft-shadow: 0 8px 22px rgba(32, 45, 62, 0.07);
-}
-
-.app-shell[data-theme="ftmo"] {
-  --background: #030504;
-  --panel: #0b1110;
-  --panel-strong: #111a17;
-  --panel-contrast: #070b0a;
-  --text: #f4fbf7;
-  --muted-text: #afbab4;
-  --subtle-text: #77857e;
-  --border: #21443a;
-  --hairline: rgba(74, 255, 177, 0.11);
-  --green: #24f28c;
-  --red: #ff4d67;
-  --amber: #f6c554;
-  --blue: #60a5fa;
-  --violet: #9a8cff;
-  --magenta: #f46aa5;
-  --accent: #18e48a;
-  --accent-strong: #0daa62;
-  --button-text: #02130b;
-  --row-hover: rgba(24, 228, 138, 0.09);
-  --shadow: 0 26px 62px rgba(0, 0, 0, 0.42);
-  --soft-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
-
-  background:
-    linear-gradient(180deg, rgba(24, 228, 138, 0.12), transparent 340px),
-    linear-gradient(90deg, rgba(96, 165, 250, 0.055), transparent 34%, rgba(246, 197, 84, 0.035)),
-    var(--background);
 }
 
 .dashboard {
@@ -5051,11 +5022,11 @@ tbody tr:hover .col-actions {
 }
 
 .theme-control {
-  min-width: 188px;
+  min-width: 132px;
 }
 
 .theme-control__button {
-  min-width: 58px;
+  min-width: 56px;
   padding-inline: 10px;
 }
 

@@ -1,7 +1,7 @@
 import type { Currency, MarketFilter } from "../types";
 
 export type AppView = "analytics" | "ideas" | "news" | "portfolio" | "scan";
-export type AppTheme = "dark" | "ftmo" | "light";
+export type AppTheme = "dark" | "light";
 type ExistingAppView = Exclude<AppView, "scan">;
 
 interface TopBarProps {
@@ -19,17 +19,15 @@ interface TopBarProps {
 
 const marketFilters: MarketFilter[] = ["All", "Thai", "US"];
 const baseCurrencies: Currency[] = ["THB", "USD"];
-const themeOptions: AppTheme[] = ["dark", "ftmo", "light"];
+const themeOptions: AppTheme[] = ["dark", "light"];
 
 const themeLabels: Record<"en" | "th", Record<AppTheme, string>> = {
   en: {
     dark: "Dark",
-    ftmo: "FTMO",
     light: "Light",
   },
   th: {
     dark: "มืด",
-    ftmo: "FTMO",
     light: "สว่าง",
   },
 };
