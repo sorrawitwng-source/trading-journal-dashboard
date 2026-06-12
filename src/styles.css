@@ -4875,7 +4875,7 @@ tbody tr:hover .col-actions {
   grid-template-areas:
     "identity controls"
     "context controls";
-  grid-template-columns: minmax(260px, 0.72fr) minmax(560px, 1.16fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: stretch;
   gap: 12px 18px;
   margin: 0 0 10px;
@@ -4917,7 +4917,10 @@ tbody tr:hover .col-actions {
   display: grid;
   gap: 9px;
   min-width: 0;
-  max-width: 720px;
+  width: 100%;
+  min-height: 76px;
+  max-width: none;
+  align-content: center;
   padding: 10px 12px;
   border: 1px solid color-mix(in srgb, var(--border) 66%, transparent);
   border-radius: 8px;
@@ -4962,7 +4965,7 @@ tbody tr:hover .col-actions {
   grid-area: controls;
   align-self: center;
   display: grid;
-  justify-items: end;
+  justify-items: stretch;
   align-content: center;
   gap: 10px;
   min-width: 0;
@@ -4979,21 +4982,28 @@ tbody tr:hover .col-actions {
 
 .top-bar__nav-row,
 .top-bar__filter-row {
+  width: 100%;
   gap: 10px;
-  justify-content: flex-end;
+  justify-content: stretch;
 }
 
 .top-bar__nav-row {
-  width: min(100%, 640px);
-  min-width: min(100%, 560px);
-}
-
-.top-bar__filter-row {
-  flex-wrap: wrap;
   min-width: 0;
 }
 
+.top-bar__filter-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.72fr) 54px minmax(0, 0.72fr);
+  min-width: 0;
+}
+
+.top-bar__filter-row > .segmented-control {
+  width: 100%;
+}
+
 .segmented-control--views {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   width: 100%;
 }
 
@@ -5017,23 +5027,26 @@ tbody tr:hover .col-actions {
 }
 
 .top-bar .segmented-control__button {
+  flex: 1 1 0;
+  min-width: 0;
   min-height: 38px;
-  padding: 9px 16px;
+  padding: 9px 10px;
 }
 
 .theme-control {
-  min-width: 132px;
+  width: 100%;
+  min-width: 0;
 }
 
 .theme-control__button {
-  min-width: 56px;
+  min-width: 0;
   padding-inline: 10px;
 }
 
 .top-bar .icon-button,
 .top-bar .language-button {
-  width: 44px;
-  height: 44px;
+  width: 100%;
+  height: 50px;
 }
 
 .segmented-control__button[aria-pressed="true"] {
@@ -5587,7 +5600,7 @@ tbody tr:hover {
 
 @media (max-width: 1500px) {
   .top-bar {
-    grid-template-columns: minmax(250px, 0.68fr) minmax(500px, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .top-bar__context {
