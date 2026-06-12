@@ -1,7 +1,7 @@
-import { Moon, Sun } from "lucide-react";
 import type { Currency, MarketFilter } from "../types";
 
 export type AppView = "analytics" | "ideas" | "news" | "portfolio" | "scan";
+export type AppTheme = "dark" | "ftmo" | "light";
 type ExistingAppView = Exclude<AppView, "scan">;
 
 interface TopBarProps {
@@ -13,12 +13,27 @@ interface TopBarProps {
   onLanguageToggle: () => void;
   onViewChange: (view: AppView) => void;
   onMarketFilterChange: (marketFilter: MarketFilter) => void;
-  theme: "dark" | "light";
-  onThemeToggle: () => void;
+  theme: AppTheme;
+  onThemeChange: (theme: AppTheme) => void;
 }
 
 const marketFilters: MarketFilter[] = ["All", "Thai", "US"];
 const baseCurrencies: Currency[] = ["THB", "USD"];
+const themeOptions: AppTheme[] = ["dark", "ftmo", "light"];
+
+const themeLabels: Record<"en" | "th", Record<AppTheme, string>> = {
+  en: {
+    dark: "Dark",
+    ftmo: "FTMO",
+    light: "Light",
+  },
+  th: {
+    dark: "มืด",
+    ftmo: "FTMO",
+    light: "สว่าง",
+  },
+};
+
 export function TopBar({
   activeView,
   baseCurrency,
@@ -29,12 +44,9 @@ export function TopBar({
   onViewChange,
   onMarketFilterChange,
   theme,
-  onThemeToggle,
+  onThemeChange,
 }: TopBarProps) {
-  const ThemeIcon = theme === "dark" ? Sun : Moon;
   const text = labels[language];
-  const nextThemeLabel =
-    theme === "dark" ? text.switchToLight : text.switchToDark;
   const contextText = viewDescription(activeView, language);
   const marketLabel = marketLabels[language][marketFilter];
 
@@ -109,15 +121,19 @@ export function TopBar({
             {language === "en" ? "TH" : "EN"}
           </button>
 
-          <button
-            aria-label={nextThemeLabel}
-            className="icon-button"
-            onClick={onThemeToggle}
-            title={nextThemeLabel}
-            type="button"
-          >
-            <ThemeIcon aria-hidden="true" size={18} />
-          </button>
+          <div className="segmented-control theme-control" aria-label={text.themeMode}>
+            {themeOptions.map((themeOption) => (
+              <button
+                aria-pressed={theme === themeOption}
+                className="segmented-control__button theme-control__button"
+                key={themeOption}
+                onClick={() => onThemeChange(themeOption)}
+                type="button"
+              >
+                {themeLabels[language][themeOption]}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </header>
@@ -225,6 +241,7 @@ const labels = {
     eyebrow: "Trading Journal",
     languageToggle: "Switch language",
     baseCurrency: "Portfolio currency",
+    themeMode: "Theme mode",
     switchToDark: "Switch to dark mode",
     switchToLight: "Switch to light mode",
     titles: {
@@ -244,6 +261,7 @@ const labels = {
     eyebrow: "บันทึกการเทรด",
     languageToggle: "เปลี่ยนภาษา",
     baseCurrency: "สกุลเงินพอร์ต",
+    themeMode: "ธีมหน้าจอ",
     switchToDark: "เปลี่ยนเป็นโหมดมืด",
     switchToLight: "เปลี่ยนเป็นโหมดสว่าง",
     titles: {

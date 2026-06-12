@@ -8,7 +8,7 @@ import { PositionForm } from "./components/PositionForm";
 import { StockIdeasPage } from "./components/StockIdeasPage";
 import { StockScanPage } from "./components/StockScanPage";
 import { SummaryStrip } from "./components/SummaryStrip";
-import { TopBar, type AppView } from "./components/TopBar";
+import { TopBar, type AppTheme, type AppView } from "./components/TopBar";
 import { benchmarkSeries } from "./data/benchmarks";
 import { stockUniverse } from "./data/stocks";
 import { combinedChartSeries } from "./lib/benchmarks";
@@ -35,7 +35,7 @@ import {
 } from "./lib/validation";
 import type { Currency, MarketFilter, PortfolioPosition, PriceStatus } from "./types";
 
-type Theme = "dark" | "light";
+type Theme = AppTheme;
 type Language = "en" | "th";
 type EditDraft = {
   buyDate: string;
@@ -471,9 +471,7 @@ function App() {
             )
           }
           onMarketFilterChange={setMarketFilter}
-          onThemeToggle={() =>
-            setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"))
-          }
+          onThemeChange={setTheme}
           onViewChange={setActiveView}
           theme={theme}
         />
