@@ -6,6 +6,7 @@ import { NewsScannerPage } from "./components/NewsScannerPage";
 import { PerformanceChart } from "./components/PerformanceChart";
 import { PositionForm } from "./components/PositionForm";
 import { StockIdeasPage } from "./components/StockIdeasPage";
+import { StockScanPage } from "./components/StockScanPage";
 import { SummaryStrip } from "./components/SummaryStrip";
 import { TopBar, type AppView } from "./components/TopBar";
 import { benchmarkSeries } from "./data/benchmarks";
@@ -558,6 +559,8 @@ function App() {
           />
         ) : activeView === "ideas" ? (
           <StockIdeasPage language={language} marketFilter={marketFilter} />
+        ) : activeView === "scan" ? (
+          <StockScanPage language={language} marketFilter={marketFilter} />
         ) : (
           <NewsScannerPage language={language} marketFilter={marketFilter} />
         )}

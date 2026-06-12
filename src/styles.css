@@ -1780,6 +1780,382 @@ summary {
   color: var(--muted-text);
 }
 
+.stock-scan-page {
+  display: grid;
+  gap: 18px;
+}
+
+.stock-scan-hero,
+.stock-scan-input-panel,
+.stock-scan-empty,
+.stock-scan-verdict,
+.stock-scan-factors,
+.stock-scan-news {
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent 48%),
+    color-mix(in srgb, var(--panel) 94%, var(--background));
+  box-shadow: var(--soft-shadow);
+}
+
+.stock-scan-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.42fr);
+  gap: 16px;
+  align-items: end;
+  padding: 24px;
+  overflow: hidden;
+}
+
+.stock-scan-hero h2,
+.stock-scan-hero p {
+  margin: 0;
+}
+
+.stock-scan-hero h2 {
+  color: var(--text);
+  font-size: clamp(1.9rem, 3.2vw, 3.4rem);
+  line-height: 1;
+}
+
+.stock-scan-hero p:not(.eyebrow) {
+  margin-top: 10px;
+  max-width: 760px;
+  color: var(--muted-text);
+  font-size: 0.95rem;
+  font-weight: 750;
+  line-height: 1.55;
+}
+
+.stock-scan-status {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel-contrast) 42%, transparent);
+}
+
+.stock-scan-status span {
+  color: var(--muted-text);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.stock-scan-status strong {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.stock-scan-input-panel {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.62fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+}
+
+.stock-scan-input {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  padding: 0 13px;
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, var(--border));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel-contrast) 52%, transparent);
+}
+
+.stock-scan-input svg {
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+
+.stock-scan-input input {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  color: var(--text);
+  background: transparent;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 900;
+  outline: none;
+  text-transform: uppercase;
+}
+
+.stock-scan-input input::placeholder {
+  color: var(--subtle-text);
+  text-transform: none;
+}
+
+.stock-scan-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stock-scan-suggestions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 999px;
+  color: var(--muted-text);
+  background: color-mix(in srgb, var(--panel-strong) 42%, transparent);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.stock-scan-suggestions button:hover {
+  border-color: color-mix(in srgb, var(--accent) 46%, var(--border));
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.stock-scan-empty {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  padding: 36px 20px;
+  color: var(--muted-text);
+  text-align: center;
+}
+
+.stock-scan-empty strong {
+  color: var(--text);
+  font-size: 1.1rem;
+}
+
+.stock-scan-result {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.42fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.stock-scan-verdict {
+  --scan-tone: var(--muted-text);
+  position: sticky;
+  top: 16px;
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border-color: color-mix(in srgb, var(--scan-tone) 36%, var(--border));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--scan-tone) 13%, transparent), transparent 50%),
+    color-mix(in srgb, var(--panel) 92%, var(--background));
+}
+
+.stock-scan-verdict--positive {
+  --scan-tone: var(--positive);
+}
+
+.stock-scan-verdict--negative {
+  --scan-tone: var(--negative);
+}
+
+.stock-scan-verdict--neutral {
+  --scan-tone: var(--blue);
+}
+
+.stock-scan-verdict--unknown {
+  --scan-tone: var(--muted-text);
+}
+
+.stock-scan-verdict > div:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.stock-scan-verdict > div:first-child span {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  padding: 5px 8px;
+  border: 1px solid color-mix(in srgb, var(--scan-tone) 32%, var(--border));
+  border-radius: 999px;
+  color: var(--muted-text);
+  background: color-mix(in srgb, var(--panel-contrast) 40%, transparent);
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.stock-scan-verdict > strong {
+  color: var(--scan-tone);
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  line-height: 0.9;
+}
+
+.stock-scan-verdict h3,
+.stock-scan-verdict p {
+  margin: 0;
+}
+
+.stock-scan-verdict h3 {
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.stock-scan-verdict p {
+  color: var(--muted-text);
+  font-size: 0.82rem;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.stock-scan-scoreline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--scan-tone) 34%, var(--border));
+  border-radius: 8px;
+  color: var(--scan-tone);
+  background: color-mix(in srgb, var(--scan-tone) 8%, transparent);
+}
+
+.stock-scan-scoreline b {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.stock-scan-scoreline span {
+  color: var(--text);
+  font-weight: 900;
+}
+
+.stock-scan-result > section {
+  min-width: 0;
+}
+
+.stock-scan-factors,
+.stock-scan-news {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.stock-scan-factor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.stock-scan-factor {
+  --factor-tone: var(--muted-text);
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--factor-tone) 28%, var(--border));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel-contrast) 38%, transparent);
+}
+
+.stock-scan-factor--positive {
+  --factor-tone: var(--positive);
+}
+
+.stock-scan-factor--negative {
+  --factor-tone: var(--negative);
+}
+
+.stock-scan-factor--neutral {
+  --factor-tone: var(--blue);
+}
+
+.stock-scan-factor--unknown {
+  --factor-tone: var(--muted-text);
+}
+
+.stock-scan-factor span {
+  color: var(--factor-tone);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.stock-scan-factor strong {
+  color: var(--text);
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.stock-scan-factor small {
+  overflow: hidden;
+  color: var(--muted-text);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stock-scan-news-list {
+  display: grid;
+  gap: 10px;
+}
+
+.stock-scan-news-list a {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  padding: 12px 36px 12px 12px;
+  border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+  border-radius: 8px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--panel-contrast) 36%, transparent);
+  text-decoration: none;
+}
+
+.stock-scan-news-list a > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.stock-scan-news-list a span,
+.stock-scan-news-list a b {
+  display: inline-flex;
+  min-height: 23px;
+  align-items: center;
+  padding: 4px 7px;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 999px;
+  color: var(--muted-text);
+  background: color-mix(in srgb, var(--panel-strong) 42%, transparent);
+  font-size: 0.66rem;
+  font-weight: 900;
+}
+
+.stock-scan-news-list a strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stock-scan-news-list a small {
+  color: var(--muted-text);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.stock-scan-news-list a svg {
+  position: absolute;
+  right: 12px;
+  top: 14px;
+  color: var(--muted-text);
+}
+
 .news-scanner-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 0.36fr);
@@ -5238,6 +5614,9 @@ tbody tr:hover {
   .market-news-layout,
   .news-scanner-hero,
   .news-scanner-layout,
+  .stock-scan-hero,
+  .stock-scan-input-panel,
+  .stock-scan-result,
   .thai-broker-strip,
   .thai-source-rail,
   .analytics-grid--wide {
@@ -5328,6 +5707,10 @@ tbody tr:hover {
   .news-scanner-hero,
   .news-scanner-layout,
   .news-scanner-metrics,
+  .stock-scan-factor-grid,
+  .stock-scan-hero,
+  .stock-scan-input-panel,
+  .stock-scan-result,
   .daily-method-grid,
   .daily-zone-grid,
   .analytics-grid,
@@ -5379,6 +5762,15 @@ tbody tr:hover {
 
   .news-radar-panel {
     position: static;
+  }
+
+  .stock-scan-verdict {
+    position: static;
+  }
+
+  .stock-scan-suggestions button {
+    flex: 1 1 84px;
+    justify-content: center;
   }
 
   .news-refresh-button {

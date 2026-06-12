@@ -1,7 +1,8 @@
 import { Moon, Sun } from "lucide-react";
 import type { Currency, MarketFilter } from "../types";
 
-export type AppView = "analytics" | "ideas" | "news" | "portfolio";
+export type AppView = "analytics" | "ideas" | "news" | "portfolio" | "scan";
+type ExistingAppView = Exclude<AppView, "scan">;
 
 interface TopBarProps {
   activeView: AppView;
@@ -34,14 +35,14 @@ export function TopBar({
   const text = labels[language];
   const nextThemeLabel =
     theme === "dark" ? text.switchToLight : text.switchToDark;
-  const contextText = viewDescriptions[language][activeView];
+  const contextText = viewDescription(activeView, language);
   const marketLabel = marketLabels[language][marketFilter];
 
   return (
     <header className="top-bar">
       <div className="top-bar__identity">
         <p className="eyebrow">{text.eyebrow}</p>
-        <h1>{text.titles[activeView]}</h1>
+        <h1>{viewTitle(activeView, language, text)}</h1>
       </div>
 
       <div className="top-bar__context" aria-label={contextLabels[language]}>
@@ -63,7 +64,7 @@ export function TopBar({
                 onClick={() => onViewChange(view.value)}
                 type="button"
               >
-                {text.views[view.value]}
+                {viewLabel(view.value, language, text)}
               </button>
             ))}
           </div>
@@ -126,6 +127,7 @@ export function TopBar({
 const viewOptions: { value: AppView }[] = [
   { value: "portfolio" },
   { value: "analytics" },
+  { value: "scan" },
   { value: "ideas" },
   { value: "news" },
 ];
@@ -158,7 +160,7 @@ const marketLabels: Record<"en" | "th", Record<MarketFilter, string>> = {
   },
 };
 
-const viewDescriptions: Record<"en" | "th", Record<AppView, string>> = {
+const viewDescriptions: Record<"en" | "th", Record<ExistingAppView, string>> = {
   en: {
     analytics: "Portfolio exposure, concentration, and monthly trading quality.",
     ideas: "Sector ideas, daily momentum, and research queues.",
@@ -170,6 +172,51 @@ const viewDescriptions: Record<"en" | "th", Record<AppView, string>> = {
     ideas: "ไอเดียตามกลุ่ม หุ้นซิ่งรายวัน และคิวสำหรับ research ต่อ",
     news: "กรองข่าวสำคัญ จับคู่เข้ากลุ่มธุรกิจและหุ้นที่เกี่ยวข้อง",
     portfolio: "รายการถือครอง ต้นทุน กำไรขาดทุน และเทียบ benchmark",
+  },
+};
+
+function viewDescription(view: AppView, language: "en" | "th"): string {
+  if (view === "scan") {
+    return scanViewText[language].description;
+  }
+
+  return viewDescriptions[language][view];
+}
+
+function viewTitle(
+  view: AppView,
+  language: "en" | "th",
+  text: (typeof labels)["en"],
+): string {
+  if (view === "scan") {
+    return scanViewText[language].title;
+  }
+
+  return text.titles[view];
+}
+
+function viewLabel(
+  view: AppView,
+  language: "en" | "th",
+  text: (typeof labels)["en"],
+): string {
+  if (view === "scan") {
+    return scanViewText[language].label;
+  }
+
+  return text.views[view];
+}
+
+const scanViewText = {
+  en: {
+    description: "Ticker-level sentiment from news, themes, and profile factors.",
+    label: "Stock Scan",
+    title: "Stock Scan",
+  },
+  th: {
+    description: "สแกน sentiment รายหุ้นจากข่าว ธีม และปัจจัยในระบบ",
+    label: "สแกนหุ้น",
+    title: "สแกนหุ้น",
   },
 };
 
