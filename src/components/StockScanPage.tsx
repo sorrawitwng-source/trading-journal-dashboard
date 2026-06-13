@@ -4,6 +4,7 @@ import { dailySmallCapUniverse } from "../data/dailySmallCaps";
 import { stockUniverse } from "../data/stocks";
 import {
   loadNewsScan,
+  trustedResearchNewsItems,
   type NewsScanItem,
   type NewsScanResult,
 } from "../lib/newsScanner";
@@ -31,19 +32,20 @@ export function StockScanPage({ language, marketFilter }: StockScanPageProps) {
   const [isLoadingNews, setIsLoadingNews] = useState(true);
   const profiles = useMemo(() => mergeProfiles([...stockUniverse, ...dailySmallCapUniverse]), []);
   const newsItems = newsResult?.items ?? [];
+  const trustedNewsItems = useMemo(() => trustedResearchNewsItems(newsItems), [newsItems]);
   const result = useMemo(
     () =>
       scanInput.trim()
         ? analyzeStockSentiment({
             marketFilter,
-            newsItems,
+            newsItems: trustedNewsItems,
             profiles,
             symbol: scanInput,
           })
         : null,
-    [marketFilter, newsItems, profiles, scanInput],
+    [marketFilter, trustedNewsItems, profiles, scanInput],
   );
-  const headlineNews = result ? [...result.directNews, ...result.sectorNews].slice(0, 5) : [];
+  const headlineNews = result ? [...result.directNews, ...result.sectorNews].slice(0, 8) : [];
 
   async function refreshNews() {
     setIsLoadingNews(true);
@@ -87,6 +89,7 @@ export function StockScanPage({ language, marketFilter }: StockScanPageProps) {
         <div className="stock-scan-status">
           <span>{text.newsWindow}</span>
           <strong>{formatDate(newsResult?.fetchedAt, language)}</strong>
+          <small>{text.sourcePolicy}</small>
           <button
             className="secondary-button"
             disabled={isLoadingNews}
@@ -193,9 +196,11 @@ function StockScanResult({
                 <div>
                   <span>{item.source}</span>
                   <b>{sentimentText(signalTone(item.signal), language)}</b>
+                  <em>{newsMatchType(item, result, language)}</em>
                 </div>
                 <strong>{item.title[language]}</strong>
-                <small>{formatDate(item.publishedAt, language)}</small>
+                <p>{item.summary[language]}</p>
+                <small>{item.impact[language]} · {formatDate(item.publishedAt, language)}</small>
                 <ArrowUpRight aria-hidden="true" size={14} />
               </a>
             ))}
@@ -292,29 +297,42 @@ function sentimentText(sentiment: StockSentimentTone, language: Language) {
   return text[sentiment][language];
 }
 
+function newsMatchType(
+  item: NewsScanItem,
+  result: StockSentimentResult,
+  language: Language,
+) {
+  const isDirectMatch = item.symbols.some(
+    (symbol) => normalizeScanSymbol(symbol) === result.normalizedSymbol,
+  );
+
+  if (isDirectMatch) {
+    return language === "th" ? "ตรงหุ้น" : "Direct";
+  }
+
+  return language === "th" ? "ตามกลุ่ม" : "Sector";
+}
+
 function verdictSummary(result: StockSentimentResult, language: Language) {
   if (result.sentiment === "unknown") {
     return language === "th"
-      ? "ยังไม่มีข่าวหรือข้อมูลในระบบพอสำหรับสรุป sentiment ของหุ้นตัวนี้"
-      : "There is not enough matched news or profile data to form a sentiment call yet.";
+      ? "ยังไม่มีข่าวจาก SET หรือบทวิเคราะห์โบรกเกอร์ที่ตรงกับหุ้น/กลุ่มนี้มากพอ จึงไม่สรุปเป็นบวกหรือลบ"
+      : "There is not enough SET or broker-sourced evidence to make a positive or negative call.";
   }
 
   const newsCount = result.directNews.length + result.sectorNews.length;
 
   return language === "th"
-    ? `คะแนนสุทธิ ${result.score.toFixed(2)} จากข่าว/ธีม ${newsCount} รายการ และข้อมูลพื้นฐานที่มีในระบบ`
-    : `Net score ${result.score.toFixed(2)} from ${newsCount} news/theme matches and available profile data.`;
+    ? `สรุปจากข่าว SET/โบรกเกอร์ ${newsCount} รายการ คะแนนสุทธิ ${result.score.toFixed(2)} โดยไม่ใช้คะแนนเทคนิคหรือ valuation มาปน`
+    : `Net score ${result.score.toFixed(2)} from ${newsCount} SET/broker evidence items, without technical or valuation scoring.`;
 }
 
 function factorTitle(factor: StockSentimentFactor, language: Language) {
   const labels = {
     "data-gap": { en: "Data gap", th: "ข้อมูลไม่พอ" },
-    "direct-news": { en: "Direct news", th: "ข่าวตรงตัวหุ้น" },
-    dividend: { en: "Dividend support", th: "แรงหนุนปันผล" },
-    momentum: { en: "Momentum", th: "โมเมนตัม" },
-    risk: { en: "Risk pressure", th: "แรงกดจากความเสี่ยง" },
-    "sector-news": { en: "Sector theme", th: "ธีมกลุ่มธุรกิจ" },
-    valuation: { en: "Valuation", th: "มูลค่า/valuation" },
+    "direct-news": { en: "Direct SET/Broker evidence", th: "ข่าว SET/โบรกเกอร์ตรงตัว" },
+    "sector-news": { en: "Sector evidence", th: "ข่าวกลุ่มธุรกิจ" },
+    "source-coverage": { en: "Source coverage", th: "จำนวนแหล่งข้อมูล" },
   };
 
   return labels[factor.id][language];
@@ -323,17 +341,23 @@ function factorTitle(factor: StockSentimentFactor, language: Language) {
 function factorDetail(factor: StockSentimentFactor, language: Language) {
   if (factor.id === "direct-news" || factor.id === "sector-news") {
     return language === "th"
-      ? `${factor.count ?? 0} รายการ ${factor.tone === "negative" ? "กด sentiment" : "หนุน sentiment"}`
-      : `${factor.count ?? 0} item${factor.count === 1 ? "" : "s"} ${factor.tone === "negative" ? "weigh on sentiment" : "support sentiment"}`;
+      ? `${factor.count ?? 0} รายการ ${factor.tone === "negative" ? "กด sentiment" : factor.tone === "positive" ? "หนุน sentiment" : "เป็นกลางต่อ sentiment"}`
+      : `${factor.count ?? 0} item${factor.count === 1 ? "" : "s"} ${factor.tone === "negative" ? "weigh on sentiment" : factor.tone === "positive" ? "support sentiment" : "are neutral"}`;
+  }
+
+  if (factor.id === "source-coverage") {
+    return language === "th"
+      ? `อ้างอิง ${factor.count ?? 0} แหล่งข่าวที่ผ่านเกณฑ์`
+      : `${factor.count ?? 0} trusted source${factor.count === 1 ? "" : "s"} used`;
   }
 
   if (factor.id === "data-gap") {
-    return language === "th" ? "ไม่พบข่าวตรงตัวหุ้นหรือข้อมูลใน universe" : "No matched news or profile data found.";
+    return language === "th"
+      ? "ไม่พบข่าวจาก SET หรือโบรกเกอร์ที่ตรงกับหุ้น/กลุ่มนี้"
+      : "No matched SET or broker research item found.";
   }
 
-  return language === "th"
-    ? `ค่าในระบบ ${factor.value ?? "-"} / 100`
-    : `Model value ${factor.value ?? "-"} / 100`;
+  return factorScoreText(factor.score);
 }
 
 function factorScoreText(score: number) {
@@ -362,23 +386,24 @@ function formatDate(value: string | undefined, language: Language) {
 
 const labels = {
   en: {
-    emptyDescription: "Start with a ticker such as AAPL, NVDA, PTT, DELTA, CPALL, or SKY.",
-    emptyTitle: "Type a ticker to scan sentiment",
-    eyebrow: "Stock Scan",
-    factorEyebrow: "Explainable scan",
-    factorTitle: "Why sentiment looks this way",
+    emptyDescription: "Start with a ticker such as PTT, DELTA, CPALL, or AAPL. The scan only uses SET and broker/research sources.",
+    emptyTitle: "Type a ticker to scan broker-backed evidence",
+    eyebrow: "Evidence Scan",
+    factorEyebrow: "Source-based scan",
+    factorTitle: "Evidence behind the read",
     inputLabel: "Stock symbol input",
-    newsEyebrow: "Evidence",
-    newsTitle: "Matched news and themes",
-    newsWindow: "30D news window",
-    noNewsDescription: "The result is currently driven by profile, sector, or technical factors.",
-    noNewsTitle: "No matched headlines",
+    newsEyebrow: "SET / Broker sources",
+    newsTitle: "Matched research and disclosures",
+    newsWindow: "30D SET/Broker window",
+    noNewsDescription: "No trusted SET or broker item matched this symbol or sector yet.",
+    noNewsTitle: "No trusted source match",
     placeholder: "Type stock symbol, e.g. AAPL or PTT",
     refresh: "Refresh news",
     refreshing: "Refreshing",
-    subtitle: "Type a stock symbol and get a positive, negative, or neutral read with the factors behind it.",
+    sourcePolicy: "Only SET, broker, and research-desk sources are scored.",
+    subtitle: "Type a stock symbol and see a neutral, source-backed sentiment read from SET disclosures and broker research only.",
     suggestions: "Suggested symbols",
-    title: "Stock Sentiment Scanner",
+    title: "SET/Broker Evidence Scanner",
     unknownMarket: "Unknown market",
     unknownStock: "Unknown stock",
   },
@@ -397,11 +422,11 @@ const labels = {
     placeholder: "พิมพ์ ticker เช่น AAPL หรือ PTT",
     refresh: "อัปเดตข่าว",
     refreshing: "กำลังอัปเดต",
-    subtitle: "พิมพ์ชื่อหุ้น แล้วดูว่า sentiment ตอนนี้เป็นบวก ลบ หรือกลาง พร้อมปัจจัยที่ทำให้เป็นแบบนั้น",
+    sourcePolicy: "ให้คะแนนเฉพาะข่าวจาก SET โบรกเกอร์ และทีม research เท่านั้น",
+    subtitle: "พิมพ์ชื่อหุ้น แล้วดู sentiment จากประกาศ SET และบทวิเคราะห์โบรกเกอร์เท่านั้น พร้อมเหตุผลจากแหล่งข่าวจริง",
     suggestions: "หุ้นตัวอย่าง",
-    title: "สแกน Sentiment หุ้น",
+    title: "สแกนหุ้นจาก SET/โบรกเกอร์",
     unknownMarket: "ไม่ทราบตลาด",
     unknownStock: "ไม่พบชื่อหุ้น",
   },
 };
-

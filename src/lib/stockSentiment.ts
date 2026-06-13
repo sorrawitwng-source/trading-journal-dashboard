@@ -1,16 +1,17 @@
 import type { MarketFilter, StockProfile } from "../types";
-import type { NewsScanItem, NewsSignal } from "./newsScanner";
+import {
+  trustedResearchNewsItems,
+  type NewsScanItem,
+  type NewsSignal,
+} from "./newsScanner";
 
 export type StockSentimentTone = "negative" | "neutral" | "positive" | "unknown";
 export type StockSentimentConfidence = "high" | "low" | "medium";
 export type StockSentimentFactorId =
   | "data-gap"
   | "direct-news"
-  | "dividend"
-  | "momentum"
-  | "risk"
   | "sector-news"
-  | "valuation";
+  | "source-coverage";
 
 export interface StockSentimentFactor {
   count?: number;
@@ -52,13 +53,14 @@ export function analyzeStockSentiment({
     return emptySentiment(normalizedSymbol, matchedProfile);
   }
 
-  const directNews = newsItems.filter((item) =>
+  const trustedNewsItems = trustedResearchNewsItems(newsItems);
+  const directNews = trustedNewsItems.filter((item) =>
     item.symbols.some((newsSymbol) => normalizeScanSymbol(newsSymbol) === normalizedSymbol),
   );
   const sectorNews =
     matchedProfile === null
       ? []
-      : newsItems.filter(
+      : trustedNewsItems.filter(
           (item) =>
             item.market === matchedProfile.market &&
             !directNews.includes(item) &&
@@ -96,9 +98,18 @@ export function analyzeStockSentiment({
     });
   }
 
-  const profileScore = matchedProfile ? profileSentimentScore(matchedProfile, factors) : 0;
-  const score = roundScore(directScore + sectorScore + profileScore);
-  const evidenceScore = directNews.length * 2 + sectorNews.length + (matchedProfile ? 2 : 0);
+  if (directNews.length + sectorNews.length > 0) {
+    factors.push({
+      count: uniqueValues([...directNews, ...sectorNews].map((item) => item.source)).length,
+      id: "source-coverage",
+      score: 0,
+      sources: uniqueValues([...directNews, ...sectorNews].map((item) => item.source)).slice(0, 5),
+      tone: "neutral",
+    });
+  }
+
+  const score = roundScore(directScore + sectorScore);
+  const evidenceScore = directNews.length * 2 + sectorNews.length;
 
   if (evidenceScore === 0) {
     return {
@@ -209,77 +220,22 @@ function sectorAlias(value: string): string {
 
 function scoreNewsSignal(signal: NewsSignal): number {
   if (signal === "hot") {
-    return 1.8;
+    return 1;
   }
 
   if (signal === "watch") {
-    return -1.8;
+    return -1;
   }
 
-  return 0.35;
-}
-
-function profileSentimentScore(
-  profile: StockProfile,
-  factors: StockSentimentFactor[],
-): number {
-  let score = 0;
-
-  if (profile.momentum !== null) {
-    const momentumScore = profile.momentum >= 70 ? 1.1 : profile.momentum >= 55 ? 0.55 : profile.momentum < 40 ? -0.75 : 0;
-    score += momentumScore;
-    factors.push({
-      id: "momentum",
-      score: momentumScore,
-      tone: toneFromScore(momentumScore),
-      value: profile.momentum,
-    });
-  }
-
-  if (profile.valuation !== null) {
-    const valuationScore = profile.valuation >= 62 ? 0.45 : profile.valuation <= 35 ? -0.45 : 0;
-    score += valuationScore;
-    factors.push({
-      id: "valuation",
-      score: valuationScore,
-      tone: toneFromScore(valuationScore),
-      value: profile.valuation,
-    });
-  }
-
-  if (profile.dividend !== null && profile.dividend >= 60) {
-    score += 0.35;
-    factors.push({
-      id: "dividend",
-      score: 0.35,
-      tone: "positive",
-      value: profile.dividend,
-    });
-  }
-
-  const riskPressure =
-    (profile.risk !== null && profile.risk >= 68 ? -0.75 : 0) +
-    (profile.volatility !== null && profile.volatility >= 76 ? -0.45 : 0);
-
-  if (riskPressure !== 0 || profile.risk !== null || profile.volatility !== null) {
-    score += riskPressure;
-    factors.push({
-      id: "risk",
-      score: riskPressure,
-      tone: toneFromScore(riskPressure),
-      value: Math.max(profile.risk ?? 0, profile.volatility ?? 0),
-    });
-  }
-
-  return score;
+  return 0;
 }
 
 function sentimentFromScore(score: number): StockSentimentTone {
-  if (score >= 1.2) {
+  if (score >= 0.75) {
     return "positive";
   }
 
-  if (score <= -1) {
+  if (score <= -0.75) {
     return "negative";
   }
 
@@ -321,4 +277,3 @@ function roundScore(value: number): number {
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
-

@@ -223,14 +223,14 @@ function viewLabel(
 
 const scanViewText = {
   en: {
-    description: "Ticker-level sentiment from news, themes, and profile factors.",
+    description: "SET and broker-sourced evidence for each stock.",
     label: "Stock Scan",
-    title: "Stock Scan",
+    title: "Evidence Scan",
   },
   th: {
-    description: "สแกน sentiment รายหุ้นจากข่าว ธีม และปัจจัยในระบบ",
+    description: "สแกนข่าวรายหุ้นจาก SET และบทวิเคราะห์โบรกเกอร์",
     label: "สแกนหุ้น",
-    title: "สแกนหุ้น",
+    title: "สแกนข่าวหุ้น",
   },
 };
 

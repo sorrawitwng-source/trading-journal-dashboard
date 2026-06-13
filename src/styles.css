@@ -1850,6 +1850,13 @@ summary {
   font-size: 1rem;
 }
 
+.stock-scan-status small {
+  color: var(--muted-text);
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
 .stock-scan-input-panel {
   display: grid;
   grid-template-columns: minmax(260px, 0.62fr) minmax(0, 1fr);
@@ -2124,7 +2131,8 @@ summary {
 }
 
 .stock-scan-news-list a span,
-.stock-scan-news-list a b {
+.stock-scan-news-list a b,
+.stock-scan-news-list a em {
   display: inline-flex;
   min-height: 23px;
   align-items: center;
@@ -2135,12 +2143,31 @@ summary {
   background: color-mix(in srgb, var(--panel-strong) 42%, transparent);
   font-size: 0.66rem;
   font-weight: 900;
+  font-style: normal;
+}
+
+.stock-scan-news-list a em {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .stock-scan-news-list a strong {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.stock-scan-news-list a p {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--muted-text);
+  font-size: 0.78rem;
+  font-weight: 750;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .stock-scan-news-list a small {

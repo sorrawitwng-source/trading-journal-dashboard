@@ -36,11 +36,11 @@ const baseNews: Omit<NewsScanItem, "id" | "signal" | "symbols" | "title"> = {
   category: "company",
   impact: { en: "Positive catalyst", th: "Positive catalyst" },
   market: "US",
-  provider: "finnhub",
+  provider: "curated",
   publishedAt: "2026-06-10",
   sectors: ["Technology"],
-  source: "Finnhub",
-  sourceUrl: "https://example.com",
+  source: "Schwab Network",
+  sourceUrl: "https://schwabnetwork.com/example",
   summary: { en: "summary", th: "summary" },
 };
 
@@ -49,7 +49,7 @@ describe("stock sentiment", () => {
     expect(normalizeScanSymbol(" ptt.bk ")).toBe("PTT");
   });
 
-  it("marks direct positive news and momentum as positive", () => {
+  it("marks direct positive broker evidence as positive", () => {
     const result = analyzeStockSentiment({
       marketFilter: "All",
       newsItems: [
@@ -68,9 +68,10 @@ describe("stock sentiment", () => {
     expect(result.sentiment).toBe("positive");
     expect(result.directNews).toHaveLength(1);
     expect(result.factors.some((factor) => factor.id === "direct-news")).toBe(true);
+    expect(result.factors.some((factor) => factor.id === "source-coverage")).toBe(true);
   });
 
-  it("marks direct risk news and weak technicals as negative", () => {
+  it("marks direct SET risk evidence as negative", () => {
     const result = analyzeStockSentiment({
       marketFilter: "Thai",
       newsItems: [
@@ -78,8 +79,11 @@ describe("stock sentiment", () => {
           ...baseNews,
           id: "ptt-watch",
           market: "Thai",
+          provider: "curated",
           sectors: ["Energy"],
           signal: "watch",
+          source: "SET News & Market Alerts",
+          sourceUrl: "https://www.set.or.th/en/market/news-and-alert/",
           symbols: ["PTT"],
           title: { en: "Energy margin risk rises", th: "Energy margin risk rises" },
         },
@@ -89,7 +93,30 @@ describe("stock sentiment", () => {
     });
 
     expect(result.sentiment).toBe("negative");
-    expect(result.factors.some((factor) => factor.id === "risk")).toBe(true);
+    expect(result.factors.some((factor) => factor.id === "direct-news")).toBe(true);
+  });
+
+  it("ignores untrusted general news providers", () => {
+    const result = analyzeStockSentiment({
+      marketFilter: "All",
+      newsItems: [
+        {
+          ...baseNews,
+          id: "aapl-finnhub",
+          provider: "finnhub",
+          signal: "hot",
+          source: "Finnhub",
+          sourceUrl: "https://example.com/aapl",
+          symbols: ["AAPL"],
+          title: { en: "Apple wins AI contract", th: "Apple wins AI contract" },
+        },
+      ],
+      profiles,
+      symbol: "AAPL",
+    });
+
+    expect(result.sentiment).toBe("unknown");
+    expect(result.directNews).toHaveLength(0);
   });
 
   it("returns unknown when there is no evidence", () => {
@@ -104,4 +131,3 @@ describe("stock sentiment", () => {
     expect(result.factors[0]?.id).toBe("data-gap");
   });
 });
-

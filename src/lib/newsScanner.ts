@@ -125,6 +125,36 @@ export function marketMatches(item: NewsScanItem, marketFilter: MarketFilter) {
   return marketFilter === "All" || item.market === marketFilter;
 }
 
+export function trustedResearchNewsItems(items: NewsScanItem[]): NewsScanItem[] {
+  return items.filter(isTrustedResearchNewsItem);
+}
+
+export function isTrustedResearchNewsItem(item: NewsScanItem): boolean {
+  if (item.provider === "finnhub") {
+    return false;
+  }
+
+  const sourceText = `${item.source} ${item.sourceUrl}`.toLowerCase();
+
+  return trustedResearchSourcePatterns.some((pattern) => pattern.test(sourceText));
+}
+
+const trustedResearchSourcePatterns = [
+  /\bset\b/,
+  /set\.or\.th/,
+  /research/,
+  /securities/,
+  /broker/,
+  /bualuang/,
+  /innovestx/,
+  /kasikorn/,
+  /ks\s*research/,
+  /kresearch/,
+  /pi\s*research/,
+  /yuanta/,
+  /schwab/,
+];
+
 function parseRemoteNewsResponse(payload: RemoteNewsResponse): NewsScanResult {
   const items = Array.isArray(payload?.items)
     ? payload.items
