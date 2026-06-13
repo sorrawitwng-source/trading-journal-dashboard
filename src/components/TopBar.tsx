@@ -1,8 +1,7 @@
 import type { Currency, MarketFilter } from "../types";
 
-export type AppView = "analytics" | "ideas" | "news" | "portfolio" | "scan";
+export type AppView = "ai" | "analytics" | "ideas" | "news" | "portfolio" | "scan";
 export type AppTheme = "dark" | "light";
-type ExistingAppView = Exclude<AppView, "scan">;
 
 interface TopBarProps {
   activeView: AppView;
@@ -20,17 +19,14 @@ interface TopBarProps {
 const marketFilters: MarketFilter[] = ["All", "Thai", "US"];
 const baseCurrencies: Currency[] = ["THB", "USD"];
 const themeOptions: AppTheme[] = ["dark", "light"];
-
-const themeLabels: Record<"en" | "th", Record<AppTheme, string>> = {
-  en: {
-    dark: "Dark",
-    light: "Light",
-  },
-  th: {
-    dark: "มืด",
-    light: "สว่าง",
-  },
-};
+const viewOptions: { value: AppView }[] = [
+  { value: "portfolio" },
+  { value: "analytics" },
+  { value: "scan" },
+  { value: "ideas" },
+  { value: "ai" },
+  { value: "news" },
+];
 
 export function TopBar({
   activeView,
@@ -45,27 +41,26 @@ export function TopBar({
   onThemeChange,
 }: TopBarProps) {
   const text = labels[language];
-  const contextText = viewDescription(activeView, language);
-  const marketLabel = marketLabels[language][marketFilter];
+  const marketLabel = text.markets[marketFilter];
 
   return (
     <header className="top-bar">
       <div className="top-bar__identity">
         <p className="eyebrow">{text.eyebrow}</p>
-        <h1>{viewTitle(activeView, language, text)}</h1>
+        <h1>{text.titles[activeView]}</h1>
       </div>
 
-      <div className="top-bar__context" aria-label={contextLabels[language]}>
-        <span>{contextText}</span>
+      <div className="top-bar__context" aria-label={text.contextLabel}>
+        <span>{text.descriptions[activeView]}</span>
         <div className="top-bar__context-pills">
-          <b>{marketPrefixes[language]}: {marketLabel}</b>
-          <b>{currencyPrefixes[language]}: {baseCurrency}</b>
+          <b>{text.marketPrefix}: {marketLabel}</b>
+          <b>{text.currencyPrefix}: {baseCurrency}</b>
         </div>
       </div>
 
-      <div className="top-bar__controls" aria-label="Dashboard controls">
+      <div className="top-bar__controls" aria-label={text.dashboardControls}>
         <div className="top-bar__nav-row">
-          <div className="segmented-control segmented-control--views" aria-label="Page selector">
+          <div className="segmented-control segmented-control--views" aria-label={text.pageSelector}>
             {viewOptions.map((view) => (
               <button
                 aria-pressed={activeView === view.value}
@@ -74,14 +69,14 @@ export function TopBar({
                 onClick={() => onViewChange(view.value)}
                 type="button"
               >
-                {viewLabel(view.value, language, text)}
+                {text.views[view.value]}
               </button>
             ))}
           </div>
         </div>
 
         <div className="top-bar__filter-row">
-          <div className="segmented-control" aria-label="Market selector">
+          <div className="segmented-control" aria-label={text.marketSelector}>
             {marketFilters.map((filter) => (
               <button
                 aria-pressed={marketFilter === filter}
@@ -128,7 +123,7 @@ export function TopBar({
                 onClick={() => onThemeChange(themeOption)}
                 type="button"
               >
-                {themeLabels[language][themeOption]}
+                {text.themeLabels[themeOption]}
               </button>
             ))}
           </div>
@@ -138,141 +133,114 @@ export function TopBar({
   );
 }
 
-const viewOptions: { value: AppView }[] = [
-  { value: "portfolio" },
-  { value: "analytics" },
-  { value: "scan" },
-  { value: "ideas" },
-  { value: "news" },
-];
-
-const contextLabels = {
-  en: "Current workspace context",
-  th: "บริบทหน้าปัจจุบัน",
-};
-
-const currencyPrefixes = {
-  en: "Currency",
-  th: "ค่าเงิน",
-};
-
-const marketPrefixes = {
-  en: "Market",
-  th: "ตลาด",
-};
-
-const marketLabels: Record<"en" | "th", Record<MarketFilter, string>> = {
-  en: {
-    All: "All markets",
-    Thai: "Thai market",
-    US: "US market",
-  },
-  th: {
-    All: "ทุกตลาด",
-    Thai: "ตลาดไทย",
-    US: "ตลาดสหรัฐ",
-  },
-};
-
-const viewDescriptions: Record<"en" | "th", Record<ExistingAppView, string>> = {
-  en: {
-    analytics: "Portfolio exposure, concentration, and monthly trading quality.",
-    ideas: "Sector ideas, daily momentum, and research queues.",
-    news: "Filtered headlines mapped to sectors and related stocks.",
-    portfolio: "Holdings, cost basis, P/L, and benchmark comparison.",
-  },
-  th: {
-    analytics: "ดูสัดส่วนพอร์ต ความกระจุกตัว และคุณภาพการเทรดรายเดือน",
-    ideas: "ไอเดียตามกลุ่ม หุ้นซิ่งรายวัน และคิวสำหรับ research ต่อ",
-    news: "กรองข่าวสำคัญ จับคู่เข้ากลุ่มธุรกิจและหุ้นที่เกี่ยวข้อง",
-    portfolio: "รายการถือครอง ต้นทุน กำไรขาดทุน และเทียบ benchmark",
-  },
-};
-
-function viewDescription(view: AppView, language: "en" | "th"): string {
-  if (view === "scan") {
-    return scanViewText[language].description;
-  }
-
-  return viewDescriptions[language][view];
-}
-
-function viewTitle(
-  view: AppView,
-  language: "en" | "th",
-  text: (typeof labels)["en"],
-): string {
-  if (view === "scan") {
-    return scanViewText[language].title;
-  }
-
-  return text.titles[view];
-}
-
-function viewLabel(
-  view: AppView,
-  language: "en" | "th",
-  text: (typeof labels)["en"],
-): string {
-  if (view === "scan") {
-    return scanViewText[language].label;
-  }
-
-  return text.views[view];
-}
-
-const scanViewText = {
-  en: {
-    description: "SET and broker-sourced evidence for each stock.",
-    label: "Stock Scan",
-    title: "Evidence Scan",
-  },
-  th: {
-    description: "สแกนข่าวรายหุ้นจาก SET และบทวิเคราะห์โบรกเกอร์",
-    label: "สแกนหุ้น",
-    title: "สแกนข่าวหุ้น",
-  },
-};
-
 const labels = {
   en: {
+    baseCurrency: "Portfolio currency",
+    contextLabel: "Current workspace context",
+    currencyPrefix: "Currency",
+    dashboardControls: "Dashboard controls",
+    descriptions: {
+      ai: "ChatGPT market and stock summaries from your portfolio context.",
+      analytics: "Portfolio exposure, concentration, and monthly trading quality.",
+      ideas: "Sector ideas, daily momentum, and research queues.",
+      news: "Filtered headlines mapped to sectors and related stocks.",
+      portfolio: "Holdings, cost basis, P/L, and benchmark comparison.",
+      scan: "SET and broker-sourced evidence for each stock.",
+    },
     eyebrow: "Trading Journal",
     languageToggle: "Switch language",
-    baseCurrency: "Portfolio currency",
+    marketPrefix: "Market",
+    marketSelector: "Market selector",
+    markets: {
+      All: "All markets",
+      Thai: "Thai market",
+      US: "US market",
+    },
+    pageSelector: "Page selector",
+    themeLabels: {
+      dark: "Dark",
+      light: "Light",
+    },
     themeMode: "Theme mode",
-    switchToDark: "Switch to dark mode",
-    switchToLight: "Switch to light mode",
     titles: {
+      ai: "ChatGPT Summary",
       analytics: "Portfolio Analytics",
       ideas: "Stock Ideas",
       news: "News Scanner",
       portfolio: "Portfolio Dashboard",
+      scan: "Evidence Scan",
     },
     views: {
+      ai: "AI Summary",
       analytics: "Analytics",
       ideas: "Stock Ideas",
       news: "News",
       portfolio: "Portfolio",
+      scan: "Stock Scan",
     },
   },
   th: {
+    baseCurrency: "สกุลเงินพอร์ต",
+    contextLabel: "บริบทของหน้าปัจจุบัน",
+    currencyPrefix: "ค่าเงิน",
+    dashboardControls: "ตัวควบคุมแดชบอร์ด",
+    descriptions: {
+      ai: "สรุปตลาดและหุ้นรายตัวด้วย ChatGPT จากบริบทพอร์ตของคุณ",
+      analytics: "ดูสัดส่วนพอร์ต ความกระจุกตัว คุณภาพข้อมูล และผลงานรายเดือน",
+      ideas: "ไอเดียหุ้นตาม sector หุ้นซิ่งรายวัน และคิวสำหรับ research ต่อ",
+      news: "ข่าวที่กรองแล้ว จับคู่กับ sector และหุ้นที่เกี่ยวข้อง",
+      portfolio: "รายการหุ้น ต้นทุน กำไร/ขาดทุน และเทียบ benchmark",
+      scan: "สแกนข่าวรายหุ้นจาก SET และบทวิเคราะห์โบรกเกอร์",
+    },
     eyebrow: "บันทึกการเทรด",
     languageToggle: "เปลี่ยนภาษา",
-    baseCurrency: "สกุลเงินพอร์ต",
+    marketPrefix: "ตลาด",
+    marketSelector: "เลือกตลาด",
+    markets: {
+      All: "ทุกตลาด",
+      Thai: "ตลาดไทย",
+      US: "ตลาดสหรัฐฯ",
+    },
+    pageSelector: "เลือกหน้า",
+    themeLabels: {
+      dark: "มืด",
+      light: "สว่าง",
+    },
     themeMode: "ธีมหน้าจอ",
-    switchToDark: "เปลี่ยนเป็นโหมดมืด",
-    switchToLight: "เปลี่ยนเป็นโหมดสว่าง",
     titles: {
+      ai: "สรุปด้วย ChatGPT",
       analytics: "วิเคราะห์พอร์ต",
       ideas: "หุ้นน่าสนใจ",
       news: "สแกนข่าว",
-      portfolio: "พอร์ตการลงทุน",
+      portfolio: "Portfolio Dashboard",
+      scan: "สแกนหุ้นจาก SET/โบรกเกอร์",
     },
     views: {
+      ai: "AI สรุป",
       analytics: "วิเคราะห์",
       ideas: "หุ้นน่าสนใจ",
       news: "ข่าว",
       portfolio: "พอร์ต",
+      scan: "สแกนหุ้น",
     },
   },
-};
+} satisfies Record<
+  "en" | "th",
+  {
+    baseCurrency: string;
+    contextLabel: string;
+    currencyPrefix: string;
+    dashboardControls: string;
+    descriptions: Record<AppView, string>;
+    eyebrow: string;
+    languageToggle: string;
+    marketPrefix: string;
+    marketSelector: string;
+    markets: Record<MarketFilter, string>;
+    pageSelector: string;
+    themeLabels: Record<AppTheme, string>;
+    themeMode: string;
+    titles: Record<AppView, string>;
+    views: Record<AppView, string>;
+  }
+>;

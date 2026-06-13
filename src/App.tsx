@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
+import { AiSummaryPage } from "./components/AiSummaryPage";
 import { AnalyticsPage } from "./components/AnalyticsPage";
 import { HoldingsTable, type HoldingRow } from "./components/HoldingsTable";
 import { NewsScannerPage } from "./components/NewsScannerPage";
@@ -559,6 +560,13 @@ function App() {
           <StockIdeasPage language={language} marketFilter={marketFilter} />
         ) : activeView === "scan" ? (
           <StockScanPage language={language} marketFilter={marketFilter} />
+        ) : activeView === "ai" ? (
+          <AiSummaryPage
+            baseCurrency={baseCurrency}
+            language={language}
+            marketFilter={marketFilter}
+            positions={positions}
+          />
         ) : (
           <NewsScannerPage language={language} marketFilter={marketFilter} />
         )}
