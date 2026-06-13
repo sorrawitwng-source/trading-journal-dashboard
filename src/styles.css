@@ -4900,13 +4900,13 @@ tbody tr:hover .col-actions {
   z-index: 20;
   display: grid;
   grid-template-areas:
-    "identity context"
-    "controls controls";
-  grid-template-columns: minmax(260px, 0.86fr) minmax(340px, 1.14fr);
+    "identity controls"
+    "context controls";
+  grid-template-columns: minmax(330px, 0.78fr) minmax(660px, 1.22fr);
   align-items: stretch;
-  gap: 12px;
+  gap: 12px 20px;
   margin: 0 0 10px;
-  padding: 18px;
+  padding: 18px 20px;
   border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
   border-radius: 8px;
   background:
@@ -4924,7 +4924,7 @@ tbody tr:hover .col-actions {
 
 .top-bar__identity {
   grid-area: identity;
-  align-self: center;
+  align-self: end;
   min-width: 0;
   padding: 2px 0;
 }
@@ -4940,7 +4940,7 @@ tbody tr:hover .col-actions {
 
 .top-bar__context {
   grid-area: context;
-  align-self: stretch;
+  align-self: start;
   display: grid;
   gap: 9px;
   min-width: 0;
@@ -4990,7 +4990,7 @@ tbody tr:hover .col-actions {
 
 .top-bar__controls {
   grid-area: controls;
-  align-self: stretch;
+  align-self: center;
   display: grid;
   justify-items: stretch;
   align-content: center;
@@ -5010,6 +5010,7 @@ tbody tr:hover .col-actions {
 
 .top-bar__nav-row,
 .top-bar__filter-row {
+  display: grid;
   width: 100%;
   gap: 10px;
   justify-content: stretch;
@@ -5805,7 +5806,7 @@ tbody tr:hover {
 
 @media (max-width: 1500px) {
   .top-bar {
-    grid-template-columns: minmax(240px, 0.8fr) minmax(320px, 1.2fr);
+    grid-template-columns: minmax(300px, 0.72fr) minmax(620px, 1.28fr);
   }
 
   .top-bar__context {
