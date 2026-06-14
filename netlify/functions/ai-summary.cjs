@@ -62,10 +62,11 @@ function buildInstructions(language) {
   const outputLanguage = language === "th" ? "Thai" : "English";
 
   return [
-    `You are a professional market analyst. Respond in ${outputLanguage}.`,
+    `You are a neutral institutional market strategist. Respond in ${outputLanguage}.`,
     "Use only the portfolio and market context supplied by the user.",
     "Do not invent live prices, news, analyst ratings, or financial facts.",
-    "Clearly separate bullish factors, risks, and what to verify next.",
+    "Frame the answer around the selected timeframe and market region.",
+    "Clearly separate market direction, sector impact, large-cap and broad-market stock impact, risks, and what to verify next.",
     "This is research support, not financial advice.",
   ].join(" ");
 }
@@ -73,6 +74,8 @@ function buildInstructions(language) {
 function buildSummaryPrompt(payload) {
   const mode = normalizeSummaryMode(payload?.mode);
   const language = payload?.language === "th" ? "th" : "en";
+  const marketRegion = normalizeMarketRegion(payload?.marketRegion);
+  const timeframe = normalizeTimeframe(payload?.timeframe);
   const positions = Array.isArray(payload?.positions) ? payload.positions : [];
   const symbol = stringValue(payload?.symbol)?.toUpperCase() ?? "";
   const filteredPositions =
@@ -90,6 +93,8 @@ function buildSummaryPrompt(payload) {
   return [
     `mode: ${mode}`,
     `language: ${language}`,
+    `timeframe: ${timeframe}`,
+    `target market region: ${marketRegion}`,
     `market filter: ${stringValue(payload?.marketFilter) ?? "All"}`,
     `base currency: ${stringValue(payload?.baseCurrency) ?? "THB"}`,
     symbol ? `stock symbol: ${symbol}` : "",
@@ -97,8 +102,16 @@ function buildSummaryPrompt(payload) {
     positionLines || "No positions supplied.",
     "",
     mode === "stock"
-      ? "Write a concise single-stock research summary with sentiment, key drivers, risks, and what to check next."
-      : "Write a concise market and portfolio summary with market tone, sector drivers, portfolio risks, and what to watch next.",
+      ? [
+          "Write a single-stock research brief for the selected timeframe and region.",
+          "Include: current sentiment (+/neutral/-), factors that support the view, factors that weaken the view, sector/macro read-through, and what data to verify next.",
+          "Explain how the selected market region could affect this stock and its sector.",
+        ].join(" ")
+      : [
+          "Write a market-impact brief for the selected timeframe and target market region, not a generic portfolio recap.",
+          "Include: market regime, key macro/sector drivers, sectors likely to benefit, sectors under pressure, large-cap and broad-market stock impact, portfolio implications, and what data to verify next.",
+          "Be direct and practical: explain how the region can affect index leaders, mega-cap stocks, cyclicals, defensives, exporters, banks, energy, technology, and liquidity-sensitive names where relevant.",
+        ].join(" "),
   ]
     .filter(Boolean)
     .join("\n");
@@ -156,6 +169,14 @@ function normalizeSummaryMode(mode) {
   return mode === "stock" ? "stock" : "market";
 }
 
+function normalizeMarketRegion(region) {
+  return region === "US" || region === "Asia" ? region : "Thai";
+}
+
+function normalizeTimeframe(timeframe) {
+  return timeframe === "day" || timeframe === "month" ? timeframe : "week";
+}
+
 function normalizeModel(model) {
   const normalized = stringValue(model);
 
@@ -211,5 +232,7 @@ function jsonResponse(statusCode, body) {
 exports._test = {
   buildSummaryPrompt,
   extractOutputText,
+  normalizeMarketRegion,
   normalizeSummaryMode,
+  normalizeTimeframe,
 };

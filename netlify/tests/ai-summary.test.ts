@@ -6,7 +6,9 @@ const { _test } = require("../functions/ai-summary.cjs") as {
   _test: {
     buildSummaryPrompt: (payload: Record<string, unknown>) => string;
     extractOutputText: (payload: unknown) => string;
+    normalizeMarketRegion: (region: unknown) => "Thai" | "US" | "Asia";
     normalizeSummaryMode: (mode: unknown) => "market" | "stock";
+    normalizeTimeframe: (timeframe: unknown) => "day" | "week" | "month";
   };
 };
 
@@ -16,10 +18,18 @@ describe("ai summary helpers", () => {
     expect(_test.normalizeSummaryMode("bad")).toBe("market");
   });
 
-  it("builds a market prompt from portfolio context", () => {
+  it("normalizes market regions and timeframes", () => {
+    expect(_test.normalizeMarketRegion("Asia")).toBe("Asia");
+    expect(_test.normalizeMarketRegion("bad")).toBe("Thai");
+    expect(_test.normalizeTimeframe("month")).toBe("month");
+    expect(_test.normalizeTimeframe("bad")).toBe("week");
+  });
+
+  it("builds a timeframe and region specific market prompt from portfolio context", () => {
     const prompt = _test.buildSummaryPrompt({
       baseCurrency: "THB",
       language: "th",
+      marketRegion: "US",
       marketFilter: "Thai",
       mode: "market",
       positions: [
@@ -31,9 +41,13 @@ describe("ai summary helpers", () => {
           symbol: "PTT",
         },
       ],
+      timeframe: "week",
     });
 
     expect(prompt).toContain("mode: market");
+    expect(prompt).toContain("timeframe: week");
+    expect(prompt).toContain("target market region: US");
+    expect(prompt).toContain("large-cap and broad-market stock impact");
     expect(prompt).toContain("PTT");
     expect(prompt).toContain("Energy");
   });

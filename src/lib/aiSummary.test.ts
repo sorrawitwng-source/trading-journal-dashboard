@@ -19,6 +19,7 @@ describe("aiSummary client", () => {
         apiKey: "sk-test-key",
         baseCurrency: "THB",
         language: "en",
+        marketRegion: "US",
         marketFilter: "US",
         mode: "market",
         positions: [
@@ -31,6 +32,7 @@ describe("aiSummary client", () => {
             symbol: "AAPL",
           },
         ],
+        timeframe: "week",
       },
       fetcher,
     );
@@ -46,8 +48,10 @@ describe("aiSummary client", () => {
 
     expect(JSON.parse(String(requestInit.body))).toMatchObject({
       apiKey: "sk-test-key",
+      marketRegion: "US",
       mode: "market",
       positions: [{ symbol: "AAPL" }],
+      timeframe: "week",
     });
   });
 
@@ -60,9 +64,11 @@ describe("aiSummary client", () => {
           apiKey: "",
           baseCurrency: "THB",
           language: "en",
+          marketRegion: "Thai",
           marketFilter: "All",
           mode: "market",
           positions: [],
+          timeframe: "day",
         },
         fetcher,
       ),

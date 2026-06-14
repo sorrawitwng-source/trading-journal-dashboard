@@ -1,6 +1,8 @@
 import type { Currency, Market, MarketFilter } from "../types";
 
 export type AiSummaryMode = "market" | "stock";
+export type AiSummaryTimeframe = "day" | "week" | "month";
+export type AiMarketRegion = "Thai" | "US" | "Asia";
 
 export interface AiSummaryPosition {
   currentPrice: number;
@@ -15,11 +17,13 @@ export interface AiSummaryRequest {
   apiKey: string;
   baseCurrency: Currency;
   language: "en" | "th";
+  marketRegion: AiMarketRegion;
   marketFilter: MarketFilter;
   mode: AiSummaryMode;
   model?: string;
   positions: AiSummaryPosition[];
   symbol?: string;
+  timeframe: AiSummaryTimeframe;
 }
 
 export interface AiSummaryResult {
@@ -51,8 +55,10 @@ export async function requestAiSummary(
         body: JSON.stringify({
           ...request,
           apiKey: request.apiKey.trim(),
+          marketRegion: request.marketRegion,
           model: request.model?.trim() || undefined,
           symbol: request.symbol?.trim().toUpperCase() || undefined,
+          timeframe: request.timeframe,
         }),
         headers: {
           "content-type": "application/json",

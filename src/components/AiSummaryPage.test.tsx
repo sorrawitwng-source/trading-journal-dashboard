@@ -11,18 +11,20 @@ describe("AiSummaryPage", () => {
     vi.unstubAllGlobals();
   });
 
-  it("saves the OpenAI key locally and requests a stock summary", async () => {
+  it("saves the OpenAI key locally and requests a region/timeframe stock summary", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => ({
+      json: async () => ({
+        fetchedAt: "2026-06-14T00:00:00.000Z",
+        model: "gpt-5.2",
+        provider: "openai",
+        summary: "AAPL sentiment is positive but valuation risk is elevated.",
+      }),
+      ok: true,
+    }));
+
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => ({
-        json: async () => ({
-          fetchedAt: "2026-06-14T00:00:00.000Z",
-          model: "gpt-5.2",
-          provider: "openai",
-          summary: "AAPL sentiment is positive but valuation risk is elevated.",
-        }),
-        ok: true,
-      })),
+      fetchMock,
     );
 
     render(
@@ -56,14 +58,24 @@ describe("AiSummaryPage", () => {
       target: { value: "sk-test-key" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Save key" }));
+    fireEvent.click(screen.getByRole("button", { name: "Month" }));
+    fireEvent.click(screen.getByRole("button", { name: "Asia" }));
     fireEvent.change(screen.getByLabelText("Stock symbol"), {
       target: { value: "AAPL" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Summarize stock" }));
+    fireEvent.click(screen.getByRole("button", { name: "Analyze stock" }));
 
     expect(await screen.findByText(/AAPL sentiment is positive/)).toBeTruthy();
     expect(localStorage.getItem("trading-journal.openai-api-key.v1")).toBe(
       "sk-test-key",
     );
+    const requestInit = fetchMock.mock.calls[0]?.[1] as RequestInit;
+
+    expect(JSON.parse(String(requestInit.body))).toMatchObject({
+      marketRegion: "Asia",
+      mode: "stock",
+      symbol: "AAPL",
+      timeframe: "month",
+    });
   });
 });
