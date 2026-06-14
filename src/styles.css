@@ -5767,15 +5767,21 @@ tbody tr:hover {
   background: color-mix(in srgb, var(--negative) 8%, var(--panel));
 }
 
-.ai-summary-desk {
+.ai-summary-setup {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr) minmax(300px, 0.86fr);
-  gap: 14px;
-  align-items: stretch;
-  padding: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
+  border-radius: 8px;
   background:
-    linear-gradient(90deg, color-mix(in srgb, var(--accent) 7%, transparent), transparent 54%),
-    color-mix(in srgb, var(--panel) 92%, var(--background));
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent 56%),
+    color-mix(in srgb, var(--panel-contrast) 36%, transparent);
+}
+
+.ai-summary-setup .ai-impact-map {
+  grid-column: 1 / -1;
 }
 
 .ai-option-group {
@@ -5902,24 +5908,44 @@ tbody tr:hover {
 .ai-summary-checklist {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 8px 14px;
+  padding: 10px 2px 0;
 }
 
 .ai-summary-checklist--compact {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.ai-summary-checklist b {
+  grid-column: 1 / -1;
+  color: color-mix(in srgb, var(--muted-text) 88%, var(--text));
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .ai-summary-checklist span {
   display: inline-flex;
-  min-height: 38px;
+  min-height: 0;
   align-items: center;
-  padding: 8px 10px;
-  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border));
-  border-radius: 8px;
-  color: color-mix(in srgb, var(--text) 92%, var(--accent));
-  background: color-mix(in srgb, var(--panel-contrast) 44%, transparent);
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  color: color-mix(in srgb, var(--muted-text) 84%, var(--text));
+  background: transparent;
   font-size: 0.78rem;
-  font-weight: 880;
+  font-weight: 820;
+}
+
+.ai-summary-checklist span::before {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 12%, transparent);
+  content: "";
 }
 
 .ai-summary-result {
@@ -6019,7 +6045,6 @@ tbody tr:hover {
   }
 
   .analytics-hero,
-  .ai-summary-desk,
   .ai-summary-hero,
   .ideas-hero,
   .market-news-layout,
@@ -6050,7 +6075,7 @@ tbody tr:hover {
     grid-template-columns: 1fr;
   }
 
-  .ai-summary-desk {
+  .ai-summary-setup {
     grid-template-columns: 1fr;
   }
 
@@ -6127,6 +6152,7 @@ tbody tr:hover {
 
   .summary-strip,
   .ai-option-group__buttons,
+  .ai-summary-checklist,
   .field-grid--two,
   .portfolio-workspace,
   .recommendation-list,

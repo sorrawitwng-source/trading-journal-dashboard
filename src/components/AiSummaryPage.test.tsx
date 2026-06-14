@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AiSummaryPage } from "./AiSummaryPage";
 
@@ -77,5 +77,23 @@ describe("AiSummaryPage", () => {
       symbol: "AAPL",
       timeframe: "month",
     });
+  });
+
+  it("keeps timeframe and market selectors in the market analysis card", () => {
+    render(
+      <AiSummaryPage
+        baseCurrency="THB"
+        language="en"
+        marketFilter="US"
+        positions={[]}
+      />,
+    );
+
+    const analyzeButton = screen.getByRole("button", { name: "Analyze market" });
+    const marketCard = analyzeButton.closest("article");
+
+    expect(marketCard).not.toBeNull();
+    expect(within(marketCard as HTMLElement).getByRole("button", { name: "Month" })).toBeTruthy();
+    expect(within(marketCard as HTMLElement).getByRole("button", { name: "Asia" })).toBeTruthy();
   });
 });

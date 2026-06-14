@@ -160,26 +160,6 @@ export function AiSummaryPage({
         </div>
       )}
 
-      <section className="panel ai-summary-desk" aria-label={text.controlsPanel}>
-        <OptionGroup
-          label={text.timeframe}
-          options={timeframeOptions}
-          value={timeframe}
-          onChange={setTimeframe}
-        />
-        <OptionGroup
-          label={text.focus}
-          options={marketOptions}
-          value={marketRegion}
-          onChange={setMarketRegion}
-        />
-        <div className="ai-impact-map">
-          <span>{text.outputShape}</span>
-          <strong>{text.marketRegionNames[marketRegion]} / {text.timeframeNames[timeframe]}</strong>
-          <p>{text.impactMapCopy}</p>
-        </div>
-      </section>
-
       <section className="ai-summary-grid">
         <SummaryWorkbench
           buttonLabel={text.marketButton}
@@ -191,7 +171,17 @@ export function AiSummaryPage({
           title={text.marketTitle}
           onRun={() => void handleSummarize("market")}
         >
+          <AnalysisSetup
+            marketOptions={marketOptions}
+            marketRegion={marketRegion}
+            onMarketRegionChange={setMarketRegion}
+            onTimeframeChange={setTimeframe}
+            text={text}
+            timeframe={timeframe}
+            timeframeOptions={timeframeOptions}
+          />
           <div className="ai-summary-checklist">
+            <b>{text.outputShape}</b>
             {text.marketBriefPoints.map((point) => (
               <span key={point}>{point}</span>
             ))}
@@ -270,6 +260,46 @@ function SummaryWorkbench({
         {result ? <p>{result}</p> : <span>{placeholder}</span>}
       </div>
     </article>
+  );
+}
+
+function AnalysisSetup({
+  marketOptions,
+  marketRegion,
+  onMarketRegionChange,
+  onTimeframeChange,
+  text,
+  timeframe,
+  timeframeOptions,
+}: {
+  marketOptions: Array<{ description: string; label: string; value: AiMarketRegion }>;
+  marketRegion: AiMarketRegion;
+  onMarketRegionChange: (value: AiMarketRegion) => void;
+  onTimeframeChange: (value: AiSummaryTimeframe) => void;
+  text: UiLabels;
+  timeframe: AiSummaryTimeframe;
+  timeframeOptions: Array<{ description: string; label: string; value: AiSummaryTimeframe }>;
+}) {
+  return (
+    <div className="ai-summary-setup" aria-label={text.controlsPanel}>
+      <OptionGroup
+        label={text.timeframe}
+        options={timeframeOptions}
+        value={timeframe}
+        onChange={onTimeframeChange}
+      />
+      <OptionGroup
+        label={text.focus}
+        options={marketOptions}
+        value={marketRegion}
+        onChange={onMarketRegionChange}
+      />
+      <div className="ai-impact-map">
+        <span>{text.outputShape}</span>
+        <strong>{text.marketRegionNames[marketRegion]} / {text.timeframeNames[timeframe]}</strong>
+        <p>{text.impactMapCopy}</p>
+      </div>
+    </div>
   );
 }
 
