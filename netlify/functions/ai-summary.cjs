@@ -1,5 +1,5 @@
 const openAiResponsesUrl = "https://api.openai.com/v1/responses";
-const defaultModel = "gpt-5.2";
+const defaultModel = "gpt-5.5";
 
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {

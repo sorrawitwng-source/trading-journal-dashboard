@@ -115,7 +115,7 @@ function parseAiSummaryResult(payload: unknown): AiSummaryResult {
   return {
     fetchedAt:
       typeof result.fetchedAt === "string" ? result.fetchedAt : new Date().toISOString(),
-    model: typeof result.model === "string" ? result.model : "gpt-5.2",
+    model: typeof result.model === "string" ? result.model : "gpt-5.5",
     provider: "openai",
     summary: result.summary.trim(),
   };

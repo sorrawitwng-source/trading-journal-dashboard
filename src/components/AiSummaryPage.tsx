@@ -19,7 +19,45 @@ interface AiSummaryPageProps {
   positions: PortfolioPosition[];
 }
 
-const defaultModel = "gpt-5.2";
+const modelPresets = [
+  {
+    description: {
+      en: "gpt-5.5, best quality",
+      th: "gpt-5.5 คุณภาพดีที่สุด",
+    },
+    label: {
+      en: "Best",
+      th: "ดีที่สุด",
+    },
+    value: "gpt-5.5",
+  },
+  {
+    description: {
+      en: "gpt-5.4, balanced cost",
+      th: "gpt-5.4 สมดุลราคา",
+    },
+    label: {
+      en: "Balanced",
+      th: "สมดุล",
+    },
+    value: "gpt-5.4",
+  },
+  {
+    description: {
+      en: "gpt-5.4-mini, faster",
+      th: "gpt-5.4-mini เร็วกว่า",
+    },
+    label: {
+      en: "Fast",
+      th: "เร็ว",
+    },
+    value: "gpt-5.4-mini",
+  },
+] as const;
+
+type AiModelPreset = (typeof modelPresets)[number]["value"];
+
+const defaultModel: AiModelPreset = "gpt-5.5";
 
 export function AiSummaryPage({
   baseCurrency,
@@ -29,7 +67,7 @@ export function AiSummaryPage({
 }: AiSummaryPageProps) {
   const text = labels[language];
   const [apiKey, setApiKey] = useState(() => loadStoredOpenAiApiKey());
-  const [model, setModel] = useState(defaultModel);
+  const [model, setModel] = useState<AiModelPreset>(defaultModel);
   const [stockSymbol, setStockSymbol] = useState("");
   const [savedMessage, setSavedMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -53,6 +91,7 @@ export function AiSummaryPage({
     [positions],
   );
   const hasStoredKey = apiKey.trim().length > 0;
+  const modelOptions = getModelOptions(language);
   const timeframeOptions = getTimeframeOptions(text);
   const marketOptions = getMarketRegionOptions(text);
 
@@ -133,15 +172,12 @@ export function AiSummaryPage({
               value={apiKey}
             />
           </label>
-          <label>
-            <span>{text.model}</span>
-            <input
-              aria-label={text.model}
-              onChange={(event) => setModel(event.target.value)}
-              placeholder={defaultModel}
-              value={model}
-            />
-          </label>
+          <OptionGroup
+            label={text.model}
+            options={modelOptions}
+            value={model}
+            onChange={setModel}
+          />
           <div className="ai-key-actions">
             <button className="secondary-button" onClick={handleSaveKey} type="button">
               {text.saveKey}
@@ -337,6 +373,14 @@ function OptionGroup<TValue extends string>({
 
 function defaultMarketRegion(marketFilter: MarketFilter): AiMarketRegion {
   return marketFilter === "US" ? "US" : "Thai";
+}
+
+function getModelOptions(language: "en" | "th") {
+  return modelPresets.map((preset) => ({
+    description: preset.description[language],
+    label: preset.label[language],
+    value: preset.value,
+  }));
 }
 
 function getTimeframeOptions(text: UiLabels) {

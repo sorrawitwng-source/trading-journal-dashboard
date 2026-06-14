@@ -58,6 +58,7 @@ describe("AiSummaryPage", () => {
       target: { value: "sk-test-key" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Save key" }));
+    fireEvent.click(screen.getByRole("button", { name: "Fast" }));
     fireEvent.click(screen.getByRole("button", { name: "Month" }));
     fireEvent.click(screen.getByRole("button", { name: "Asia" }));
     fireEvent.change(screen.getByLabelText("Stock symbol"), {
@@ -73,10 +74,27 @@ describe("AiSummaryPage", () => {
 
     expect(JSON.parse(String(requestInit.body))).toMatchObject({
       marketRegion: "Asia",
+      model: "gpt-5.4-mini",
       mode: "stock",
       symbol: "AAPL",
       timeframe: "month",
     });
+  });
+
+  it("uses model preset buttons instead of a free text model field", () => {
+    render(
+      <AiSummaryPage
+        baseCurrency="THB"
+        language="en"
+        marketFilter="US"
+        positions={[]}
+      />,
+    );
+
+    expect(screen.queryByRole("textbox", { name: "Model" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Best" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Balanced" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Fast" })).toBeTruthy();
   });
 
   it("keeps timeframe and market selectors in the market analysis card", () => {
