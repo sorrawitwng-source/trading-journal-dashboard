@@ -7,10 +7,10 @@ import {
   requestAiSummary,
 } from "../lib/aiSummary";
 import {
-  clearStoredOpenAiApiKey,
-  loadStoredOpenAiApiKey,
-  saveStoredOpenAiApiKey,
-} from "../lib/openAiSettings";
+  clearStoredGeminiApiKey,
+  loadStoredGeminiApiKey,
+  saveStoredGeminiApiKey,
+} from "../lib/geminiSettings";
 
 interface AiSummaryPageProps {
   baseCurrency: Currency;
@@ -22,42 +22,42 @@ interface AiSummaryPageProps {
 const modelPresets = [
   {
     description: {
-      en: "gpt-5.5, best quality",
-      th: "gpt-5.5 คุณภาพดีที่สุด",
+      en: "Gemini 3.5 Flash, best quality",
+      th: "Gemini 3.5 Flash คุณภาพดีที่สุด",
     },
     label: {
       en: "Best",
       th: "ดีที่สุด",
     },
-    value: "gpt-5.5",
+    value: "gemini-3.5-flash",
   },
   {
     description: {
-      en: "gpt-5.4, balanced cost",
-      th: "gpt-5.4 สมดุลราคา",
+      en: "Gemini 2.5 Flash, balanced",
+      th: "Gemini 2.5 Flash สมดุล",
     },
     label: {
       en: "Balanced",
       th: "สมดุล",
     },
-    value: "gpt-5.4",
+    value: "gemini-2.5-flash",
   },
   {
     description: {
-      en: "gpt-5.4-mini, faster",
-      th: "gpt-5.4-mini เร็วกว่า",
+      en: "Gemini 2.5 Flash-Lite, faster",
+      th: "Gemini 2.5 Flash-Lite เร็วกว่า",
     },
     label: {
       en: "Fast",
       th: "เร็ว",
     },
-    value: "gpt-5.4-mini",
+    value: "gemini-2.5-flash-lite",
   },
 ] as const;
 
 type AiModelPreset = (typeof modelPresets)[number]["value"];
 
-const defaultModel: AiModelPreset = "gpt-5.5";
+const defaultModel: AiModelPreset = "gemini-3.5-flash";
 
 export function AiSummaryPage({
   baseCurrency,
@@ -66,7 +66,7 @@ export function AiSummaryPage({
   positions,
 }: AiSummaryPageProps) {
   const text = labels[language];
-  const [apiKey, setApiKey] = useState(() => loadStoredOpenAiApiKey());
+  const [apiKey, setApiKey] = useState(() => loadStoredGeminiApiKey());
   const [model, setModel] = useState<AiModelPreset>(defaultModel);
   const [stockSymbol, setStockSymbol] = useState("");
   const [savedMessage, setSavedMessage] = useState("");
@@ -96,13 +96,13 @@ export function AiSummaryPage({
   const marketOptions = getMarketRegionOptions(text);
 
   function handleSaveKey() {
-    saveStoredOpenAiApiKey(apiKey);
+    saveStoredGeminiApiKey(apiKey);
     setSavedMessage(text.saved);
     setErrorMessage("");
   }
 
   function handleClearKey() {
-    clearStoredOpenAiApiKey();
+    clearStoredGeminiApiKey();
     setApiKey("");
     setSavedMessage(text.cleared);
     setErrorMessage("");
@@ -167,7 +167,7 @@ export function AiSummaryPage({
               aria-label={text.apiKey}
               autoComplete="off"
               onChange={(event) => setApiKey(event.target.value)}
-              placeholder="sk-..."
+              placeholder="AIza..."
               type="password"
               value={apiKey}
             />
@@ -279,7 +279,7 @@ function SummaryWorkbench({
     <article className="panel ai-summary-card">
       <div className="section-heading section-heading--with-action">
         <div>
-          <p className="eyebrow">ChatGPT</p>
+          <p className="eyebrow">Gemini</p>
           <h2>{title}</h2>
         </div>
         <button
@@ -425,7 +425,7 @@ function getMarketRegionOptions(text: UiLabels) {
 
 const labels = {
   en: {
-    apiKey: "OpenAI API key",
+    apiKey: "Gemini API key",
     asiaHint: "Asia flows, China/Japan/Korea, regional risk-on/off",
     clearKey: "Clear key",
     cleared: "API key cleared from this browser.",
@@ -437,7 +437,7 @@ const labels = {
     impactMapCopy:
       "The answer will focus on market direction, sector rotation, broad index leaders, and what could pressure the next move.",
     keyHint: "Stored only in this browser. For production, prefer server-side secrets.",
-    keyPanel: "OpenAI settings",
+    keyPanel: "Gemini settings",
     keyReady: "Key is ready for this browser.",
     marketBriefPoints: [
       "Market regime",
@@ -470,7 +470,7 @@ const labels = {
     stockSymbol: "Stock symbol",
     stockTitle: "Single-stock impact",
     subtitle:
-      "Choose timeframe and market region, then let ChatGPT explain how the market could affect sectors, index leaders, and your portfolio.",
+      "Choose timeframe and market region, then let Gemini explain how the market could affect sectors, index leaders, and your portfolio.",
     symbolRequired: "Please enter a stock symbol first.",
     thaiHint: "SET, Thai economy, banks, energy, tourism, domestic demand",
     thinking: "Analyzing...",
@@ -486,7 +486,7 @@ const labels = {
     weekHint: "Weekly sector rotation and headline pressure",
   },
   th: {
-    apiKey: "OpenAI API key",
+    apiKey: "Gemini API key",
     asiaHint: "ฟันด์โฟลว์เอเชีย จีน ญี่ปุ่น เกาหลี และภาวะ risk-on/risk-off",
     clearKey: "ล้าง key",
     cleared: "ล้าง API key ออกจากเบราว์เซอร์นี้แล้ว",
@@ -498,7 +498,7 @@ const labels = {
     impactMapCopy:
       "คำตอบจะเน้นทิศทางตลาด sector rotation หุ้นใหญ่ที่ขับเคลื่อนดัชนี และแรงกดดันที่ควรระวัง",
     keyHint: "บันทึกเฉพาะในเบราว์เซอร์นี้ ถ้าใช้จริงแบบ public ควรใช้ server-side secret",
-    keyPanel: "ตั้งค่า OpenAI",
+    keyPanel: "ตั้งค่า Gemini",
     keyReady: "มี key พร้อมใช้งานในเบราว์เซอร์นี้",
     marketBriefPoints: [
       "ภาวะตลาดตอนนี้",
@@ -531,7 +531,7 @@ const labels = {
     stockSymbol: "ชื่อหุ้น",
     stockTitle: "วิเคราะห์หุ้นรายตัว",
     subtitle:
-      "เลือกกรอบเวลาและตลาด แล้วให้ ChatGPT วิเคราะห์ว่าภาพตลาดส่งผลต่อ sector หุ้นใหญ่ ดัชนี และพอร์ตของคุณอย่างไร",
+      "เลือกกรอบเวลาและตลาด แล้วให้ Gemini วิเคราะห์ว่าภาพตลาดส่งผลต่อ sector หุ้นใหญ่ ดัชนี และพอร์ตของคุณอย่างไร",
     symbolRequired: "กรุณาใส่ชื่อหุ้นก่อน",
     thaiHint: "SET เศรษฐกิจไทย ธนาคาร พลังงาน ท่องเที่ยว และกำลังซื้อในประเทศ",
     thinking: "กำลังวิเคราะห์...",

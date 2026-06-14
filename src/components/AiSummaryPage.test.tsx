@@ -11,12 +11,12 @@ describe("AiSummaryPage", () => {
     vi.unstubAllGlobals();
   });
 
-  it("saves the OpenAI key locally and requests a region/timeframe stock summary", async () => {
+  it("saves the Gemini key locally and requests a region/timeframe stock summary", async () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => ({
       json: async () => ({
         fetchedAt: "2026-06-14T00:00:00.000Z",
-        model: "gpt-5.2",
-        provider: "openai",
+        model: "gemini-2.5-flash",
+        provider: "gemini",
         summary: "AAPL sentiment is positive but valuation risk is elevated.",
       }),
       ok: true,
@@ -54,8 +54,8 @@ describe("AiSummaryPage", () => {
       />,
     );
 
-    fireEvent.change(screen.getByLabelText("OpenAI API key"), {
-      target: { value: "sk-test-key" },
+    fireEvent.change(screen.getByLabelText("Gemini API key"), {
+      target: { value: "gemini-test-key" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Save key" }));
     fireEvent.click(screen.getByRole("button", { name: "Fast" }));
@@ -67,14 +67,14 @@ describe("AiSummaryPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Analyze stock" }));
 
     expect(await screen.findByText(/AAPL sentiment is positive/)).toBeTruthy();
-    expect(localStorage.getItem("trading-journal.openai-api-key.v1")).toBe(
-      "sk-test-key",
+    expect(localStorage.getItem("trading-journal.gemini-api-key.v1")).toBe(
+      "gemini-test-key",
     );
     const requestInit = fetchMock.mock.calls[0]?.[1] as RequestInit;
 
     expect(JSON.parse(String(requestInit.body))).toMatchObject({
       marketRegion: "Asia",
-      model: "gpt-5.4-mini",
+      model: "gemini-2.5-flash-lite",
       mode: "stock",
       symbol: "AAPL",
       timeframe: "month",

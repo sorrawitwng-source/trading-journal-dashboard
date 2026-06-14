@@ -6,8 +6,8 @@ describe("aiSummary client", () => {
     const fetcher = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => ({
       json: async () => ({
         fetchedAt: "2026-06-14T00:00:00.000Z",
-        model: "gpt-5.2",
-        provider: "openai",
+        model: "gemini-2.5-flash",
+        provider: "gemini",
         summary: "Market breadth is improving.",
       }),
       ok: true,
@@ -72,7 +72,7 @@ describe("aiSummary client", () => {
         },
         fetcher,
       ),
-    ).rejects.toThrow("OpenAI API key is required");
+    ).rejects.toThrow("Gemini API key is required");
     expect(fetcher).not.toHaveBeenCalled();
   });
 

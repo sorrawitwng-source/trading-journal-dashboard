@@ -1,5 +1,5 @@
-const openAiResponsesUrl = "https://api.openai.com/v1/responses";
-const defaultModel = "gpt-5.5";
+const geminiModelsUrl = "https://generativelanguage.googleapis.com/v1beta/models";
+const defaultModel = "gemini-3.5-flash";
 
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
@@ -14,43 +14,50 @@ exports.handler = async (event) => {
   const apiKey = stringValue(payload?.apiKey);
 
   if (!apiKey) {
-    return jsonResponse(400, { error: "OpenAI API key is required" });
+    return jsonResponse(400, { error: "Gemini API key is required" });
   }
 
   const model = normalizeModel(payload?.model);
 
   try {
-    const openAiResponse = await fetch(openAiResponsesUrl, {
+    const geminiResponse = await fetch(`${geminiModelsUrl}/${model}:generateContent`, {
       body: JSON.stringify({
-        input: buildSummaryPrompt(payload),
-        instructions: buildInstructions(payload?.language),
-        max_output_tokens: 900,
-        model,
+        contents: [
+          {
+            parts: [{ text: buildSummaryPrompt(payload) }],
+          },
+        ],
+        generationConfig: {
+          maxOutputTokens: 900,
+        },
+        system_instruction: {
+          parts: [{ text: buildInstructions(payload?.language) }],
+        },
       }),
       headers: {
-        authorization: `Bearer ${apiKey}`,
         "content-type": "application/json",
+        "x-goog-api-key": apiKey,
       },
       method: "POST",
     });
-    const responsePayload = await openAiResponse.json().catch(() => ({}));
+    const responsePayload = await geminiResponse.json().catch(() => ({}));
 
-    if (!openAiResponse.ok) {
+    if (!geminiResponse.ok) {
       return jsonResponse(502, {
-        error: openAiErrorMessage(responsePayload) ?? "OpenAI request failed",
+        error: geminiErrorMessage(responsePayload) ?? "Gemini request failed",
       });
     }
 
     const summary = extractOutputText(responsePayload);
 
     if (!summary) {
-      return jsonResponse(502, { error: "OpenAI returned an empty summary" });
+      return jsonResponse(502, { error: "Gemini returned an empty summary" });
     }
 
     return jsonResponse(200, {
       fetchedAt: new Date().toISOString(),
       model,
-      provider: "openai",
+      provider: "gemini",
       summary,
     });
   } catch {
@@ -139,27 +146,15 @@ function formatPositionLine(position) {
 }
 
 function extractOutputText(payload) {
-  if (typeof payload?.output_text === "string" && payload.output_text.trim()) {
-    return payload.output_text.trim();
-  }
-
-  if (!Array.isArray(payload?.output)) {
+  if (!Array.isArray(payload?.candidates)) {
     return "";
   }
 
-  return payload.output
-    .flatMap((item) => (Array.isArray(item?.content) ? item.content : []))
-    .map((content) => {
-      if (typeof content?.text === "string") {
-        return content.text;
-      }
-
-      if (typeof content?.output_text === "string") {
-        return content.output_text;
-      }
-
-      return "";
-    })
+  return payload.candidates
+    .flatMap((candidate) =>
+      Array.isArray(candidate?.content?.parts) ? candidate.content.parts : [],
+    )
+    .map((part) => (typeof part?.text === "string" ? part.text : ""))
     .filter(Boolean)
     .join("\n")
     .trim();
@@ -187,7 +182,7 @@ function normalizeModel(model) {
   return defaultModel;
 }
 
-function openAiErrorMessage(payload) {
+function geminiErrorMessage(payload) {
   return stringValue(payload?.error?.message) ?? stringValue(payload?.message);
 }
 
@@ -233,6 +228,7 @@ exports._test = {
   buildSummaryPrompt,
   extractOutputText,
   normalizeMarketRegion,
+  normalizeModel,
   normalizeSummaryMode,
   normalizeTimeframe,
 };

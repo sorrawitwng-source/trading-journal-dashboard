@@ -29,7 +29,7 @@ export interface AiSummaryRequest {
 export interface AiSummaryResult {
   fetchedAt: string;
   model: string;
-  provider: "openai";
+  provider: "gemini";
   summary: string;
 }
 
@@ -48,7 +48,7 @@ export async function requestAiSummary(
   fetcher: SummaryFetcher = fetch,
 ): Promise<AiSummaryResult> {
   if (!request.apiKey.trim()) {
-    throw new Error("OpenAI API key is required");
+    throw new Error("Gemini API key is required");
   }
 
   const endpoints = ["/api/ai-summary", "/.netlify/functions/ai-summary"];
@@ -115,8 +115,8 @@ function parseAiSummaryResult(payload: unknown): AiSummaryResult {
   return {
     fetchedAt:
       typeof result.fetchedAt === "string" ? result.fetchedAt : new Date().toISOString(),
-    model: typeof result.model === "string" ? result.model : "gpt-5.5",
-    provider: "openai",
+    model: typeof result.model === "string" ? result.model : "gemini-3.5-flash",
+    provider: "gemini",
     summary: result.summary.trim(),
   };
 }

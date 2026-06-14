@@ -7,6 +7,7 @@ const { _test } = require("../functions/ai-summary.cjs") as {
     buildSummaryPrompt: (payload: Record<string, unknown>) => string;
     extractOutputText: (payload: unknown) => string;
     normalizeMarketRegion: (region: unknown) => "Thai" | "US" | "Asia";
+    normalizeModel: (model: unknown) => string;
     normalizeSummaryMode: (mode: unknown) => "market" | "stock";
     normalizeTimeframe: (timeframe: unknown) => "day" | "week" | "month";
   };
@@ -52,18 +53,21 @@ describe("ai summary helpers", () => {
     expect(prompt).toContain("Energy");
   });
 
-  it("extracts text from a Responses API payload", () => {
+  it("normalizes Gemini model presets", () => {
+    expect(_test.normalizeModel("gemini-2.5-flash-lite")).toBe(
+      "gemini-2.5-flash-lite",
+    );
+    expect(_test.normalizeModel("bad model")).toBe("gemini-3.5-flash");
+  });
+
+  it("extracts text from a Gemini generateContent payload", () => {
     expect(
       _test.extractOutputText({
-        output: [
+        candidates: [
           {
-            content: [
-              {
-                text: "Summary text",
-                type: "output_text",
-              },
-            ],
-            type: "message",
+            content: {
+              parts: [{ text: "Summary text" }],
+            },
           },
         ],
       }),
