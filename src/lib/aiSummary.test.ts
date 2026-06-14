@@ -75,4 +75,31 @@ describe("aiSummary client", () => {
     ).rejects.toThrow("OpenAI API key is required");
     expect(fetcher).not.toHaveBeenCalled();
   });
+
+  it("surfaces detailed server error messages instead of hiding them behind status codes", async () => {
+    const fetcher = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => ({
+      json: async () => ({
+        error: "Incorrect API key provided.",
+      }),
+      ok: false,
+      status: 502,
+    }));
+
+    await expect(
+      requestAiSummary(
+        {
+          apiKey: "sk-test-key",
+          baseCurrency: "THB",
+          language: "en",
+          marketRegion: "US",
+          marketFilter: "US",
+          mode: "market",
+          positions: [],
+          timeframe: "week",
+        },
+        fetcher,
+      ),
+    ).rejects.toThrow("Incorrect API key provided.");
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
 });

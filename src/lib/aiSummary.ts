@@ -38,6 +38,11 @@ type SummaryFetcher = (
   init?: RequestInit,
 ) => Promise<Pick<Response, "json" | "ok" | "status">>;
 
+interface AiSummaryErrorPayload {
+  error?: unknown;
+  message?: unknown;
+}
+
 export async function requestAiSummary(
   request: AiSummaryRequest,
   fetcher: SummaryFetcher = fetch,
@@ -67,7 +72,10 @@ export async function requestAiSummary(
       });
 
       if (!response.ok) {
-        lastError = new Error(`AI summary request failed (${response.status})`);
+        lastError = await parseAiSummaryError(response);
+        if (response.status !== 404 && response.status !== 405) {
+          break;
+        }
         continue;
       }
 
@@ -78,6 +86,19 @@ export async function requestAiSummary(
   }
 
   throw lastError ?? new Error("AI summary unavailable");
+}
+
+async function parseAiSummaryError(
+  response: Pick<Response, "json" | "status">,
+): Promise<Error> {
+  const payload = await response.json().catch(() => null);
+  const message =
+    payload && typeof payload === "object"
+      ? stringValue((payload as AiSummaryErrorPayload).error) ??
+        stringValue((payload as AiSummaryErrorPayload).message)
+      : undefined;
+
+  return new Error(message ?? `AI summary request failed (${response.status})`);
 }
 
 function parseAiSummaryResult(payload: unknown): AiSummaryResult {
@@ -98,4 +119,8 @@ function parseAiSummaryResult(payload: unknown): AiSummaryResult {
     provider: "openai",
     summary: result.summary.trim(),
   };
+}
+
+function stringValue(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
