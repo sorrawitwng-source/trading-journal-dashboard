@@ -97,6 +97,62 @@ describe("AiSummaryPage", () => {
     expect(screen.getByRole("button", { name: "Fast" })).toBeTruthy();
   });
 
+  it("requests market analysis as an all-stock universe scan without portfolio holdings", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => ({
+      json: async () => ({
+        fetchedAt: "2026-06-14T00:00:00.000Z",
+        model: "gemini-2.5-flash",
+        provider: "gemini",
+        summary: "Thai market breadth is improving across domestic sectors.",
+      }),
+      ok: true,
+    }));
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <AiSummaryPage
+        baseCurrency="THB"
+        language="en"
+        marketFilter="Thai"
+        positions={[
+          {
+            buyDate: "2026-06-01",
+            buyPrice: 30,
+            currency: "THB",
+            currentPrice: 36,
+            dataQuality: "complete",
+            id: "ptt",
+            isCustom: false,
+            market: "Thai",
+            name: "PTT Public Company Limited",
+            priceStatus: "live",
+            quantity: 500,
+            riskLevel: "Medium",
+            score: 63,
+            sector: "Energy",
+            symbol: "PTT",
+          },
+        ]}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Gemini API key"), {
+      target: { value: "gemini-test-key" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Analyze market" }));
+
+    expect(await screen.findByText(/Thai market breadth/)).toBeTruthy();
+    const requestInit = fetchMock.mock.calls[0]?.[1] as RequestInit;
+
+    expect(JSON.parse(String(requestInit.body))).toMatchObject({
+      mode: "market",
+      positions: [],
+    });
+    expect(screen.queryByText("Portfolio risk check")).toBeNull();
+    expect(screen.getByText("Market risks to watch")).toBeTruthy();
+  });
+
   it("keeps timeframe and market selectors in the market analysis card", () => {
     render(
       <AiSummaryPage

@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { Currency, MarketFilter, PortfolioPosition } from "../types";
 import {
   type AiMarketRegion,
@@ -63,7 +63,6 @@ export function AiSummaryPage({
   baseCurrency,
   language,
   marketFilter,
-  positions,
 }: AiSummaryPageProps) {
   const text = labels[language];
   const [apiKey, setApiKey] = useState(() => loadStoredGeminiApiKey());
@@ -78,18 +77,6 @@ export function AiSummaryPage({
     defaultMarketRegion(marketFilter),
   );
   const [loadingMode, setLoadingMode] = useState<AiSummaryMode | null>(null);
-  const aiPositions = useMemo(
-    () =>
-      positions.map((position) => ({
-        currentPrice: position.currentPrice,
-        market: position.market,
-        name: position.name,
-        quantity: position.quantity,
-        sector: position.sector,
-        symbol: position.symbol,
-      })),
-    [positions],
-  );
   const hasStoredKey = apiKey.trim().length > 0;
   const modelOptions = getModelOptions(language);
   const timeframeOptions = getTimeframeOptions(text);
@@ -128,7 +115,7 @@ export function AiSummaryPage({
         marketRegion,
         mode,
         model,
-        positions: aiPositions,
+        positions: [],
         symbol: mode === "stock" ? stockSymbol : undefined,
         timeframe,
       });
@@ -153,7 +140,7 @@ export function AiSummaryPage({
           <h2 id="ai-summary-title">{text.title}</h2>
           <p>{text.subtitle}</p>
           <div className="ai-summary-meta">
-            <span>{text.positions}: {positions.length}</span>
+            <span>{text.universe}</span>
             <span>{text.focus}: {text.marketRegionNames[marketRegion]}</span>
             <span>{text.timeframe}: {text.timeframeNames[timeframe]}</span>
             <span>{text.currency}: {baseCurrency}</span>
@@ -443,7 +430,7 @@ const labels = {
       "Market regime",
       "Sector winners and losers",
       "Large-cap and index impact",
-      "Portfolio risk check",
+      "Market risks to watch",
       "What to verify next",
     ],
     marketButton: "Analyze market",
@@ -470,7 +457,7 @@ const labels = {
     stockSymbol: "Stock symbol",
     stockTitle: "Single-stock impact",
     subtitle:
-      "Choose timeframe and market region, then let Gemini explain how the market could affect sectors, index leaders, and your portfolio.",
+      "Choose timeframe and market region, then let Gemini explain how the market could affect sectors, index leaders, and all listed stocks.",
     symbolRequired: "Please enter a stock symbol first.",
     thaiHint: "SET, Thai economy, banks, energy, tourism, domestic demand",
     thinking: "Analyzing...",
@@ -481,6 +468,7 @@ const labels = {
       week: "Week",
     },
     title: "AI Market Impact",
+    universe: "Coverage: all listed stocks",
     usHint: "S&P 500, Nasdaq, Fed, mega-cap tech, US liquidity",
     waiting: "Choose the setup and run the analysis.",
     weekHint: "Weekly sector rotation and headline pressure",
@@ -504,7 +492,7 @@ const labels = {
       "ภาวะตลาดตอนนี้",
       "กลุ่มที่ได้ประโยชน์และเสียประโยชน์",
       "ผลต่อหุ้นใหญ่และดัชนี",
-      "ความเสี่ยงของพอร์ต",
+      "ความเสี่ยงที่ต้องระวัง",
       "ข้อมูลที่ควรเช็คต่อ",
     ],
     marketButton: "วิเคราะห์ตลาด",
@@ -531,7 +519,7 @@ const labels = {
     stockSymbol: "ชื่อหุ้น",
     stockTitle: "วิเคราะห์หุ้นรายตัว",
     subtitle:
-      "เลือกกรอบเวลาและตลาด แล้วให้ Gemini วิเคราะห์ว่าภาพตลาดส่งผลต่อ sector หุ้นใหญ่ ดัชนี และพอร์ตของคุณอย่างไร",
+      "เลือกกรอบเวลาและตลาด แล้วให้ Gemini วิเคราะห์ว่าภาพตลาดส่งผลต่อ sector หุ้นใหญ่ ดัชนี และหุ้นทั้งหมดในตลาดอย่างไร",
     symbolRequired: "กรุณาใส่ชื่อหุ้นก่อน",
     thaiHint: "SET เศรษฐกิจไทย ธนาคาร พลังงาน ท่องเที่ยว และกำลังซื้อในประเทศ",
     thinking: "กำลังวิเคราะห์...",
@@ -542,6 +530,7 @@ const labels = {
       week: "สัปดาห์",
     },
     title: "AI วิเคราะห์ผลกระทบตลาด",
+    universe: "ครอบคลุม: หุ้นทั้งหมดในตลาดที่เลือก",
     usHint: "S&P 500, Nasdaq, Fed, mega-cap tech และสภาพคล่องสหรัฐฯ",
     waiting: "เลือกเงื่อนไขแล้วกดวิเคราะห์",
     weekHint: "ภาพรายสัปดาห์ sector rotation และแรงกดดันจากข่าว",

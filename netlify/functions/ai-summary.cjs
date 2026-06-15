@@ -70,7 +70,8 @@ function buildInstructions(language) {
 
   return [
     `You are a neutral institutional market strategist. Respond in ${outputLanguage}.`,
-    "Use only the portfolio and market context supplied by the user.",
+    "Use the selected market setup and any supplied stock symbol as the analysis scope.",
+    "Do not anchor the answer to the user's portfolio, holdings, cost basis, or base currency unless the user explicitly asks for portfolio analysis.",
     "Do not invent live prices, news, analyst ratings, or financial facts.",
     "Frame the answer around the selected timeframe and market region.",
     "Clearly separate market direction, sector impact, large-cap and broad-market stock impact, risks, and what to verify next.",
@@ -83,7 +84,8 @@ function buildSummaryPrompt(payload) {
   const language = payload?.language === "th" ? "th" : "en";
   const marketRegion = normalizeMarketRegion(payload?.marketRegion);
   const timeframe = normalizeTimeframe(payload?.timeframe);
-  const positions = Array.isArray(payload?.positions) ? payload.positions : [];
+  const positions =
+    mode === "stock" && Array.isArray(payload?.positions) ? payload.positions : [];
   const symbol = stringValue(payload?.symbol)?.toUpperCase() ?? "";
   const filteredPositions =
     mode === "stock" && symbol
@@ -103,10 +105,12 @@ function buildSummaryPrompt(payload) {
     `timeframe: ${timeframe}`,
     `target market region: ${marketRegion}`,
     `market filter: ${stringValue(payload?.marketFilter) ?? "All"}`,
-    `base currency: ${stringValue(payload?.baseCurrency) ?? "THB"}`,
+    mode === "stock"
+      ? `base currency: ${stringValue(payload?.baseCurrency) ?? "THB"}`
+      : "coverage universe: all listed stocks and sectors in the selected market region",
     symbol ? `stock symbol: ${symbol}` : "",
-    "portfolio positions:",
-    positionLines || "No positions supplied.",
+    mode === "stock" ? "optional user position context:" : "",
+    mode === "stock" ? positionLines || "No user position context supplied." : "",
     "",
     mode === "stock"
       ? [
@@ -115,8 +119,8 @@ function buildSummaryPrompt(payload) {
           "Explain how the selected market region could affect this stock and its sector.",
         ].join(" ")
       : [
-          "Write a market-impact brief for the selected timeframe and target market region, not a generic portfolio recap.",
-          "Include: market regime, key macro/sector drivers, sectors likely to benefit, sectors under pressure, large-cap and broad-market stock impact, portfolio implications, and what data to verify next.",
+          "Write a whole-market stock universe scan for the selected timeframe and target market region, not a portfolio recap.",
+          "Include: market regime, key macro/sector drivers, sectors and industries likely to benefit, sectors under pressure, large-cap and broad-market stock impact, watchlist ideas to research further, market risks, and what data to verify next.",
           "Be direct and practical: explain how the region can affect index leaders, mega-cap stocks, cyclicals, defensives, exporters, banks, energy, technology, and liquidity-sensitive names where relevant.",
         ].join(" "),
   ]

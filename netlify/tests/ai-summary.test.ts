@@ -26,7 +26,7 @@ describe("ai summary helpers", () => {
     expect(_test.normalizeTimeframe("bad")).toBe("week");
   });
 
-  it("builds a timeframe and region specific market prompt from portfolio context", () => {
+  it("builds a timeframe and region specific market prompt for the whole stock universe", () => {
     const prompt = _test.buildSummaryPrompt({
       baseCurrency: "THB",
       language: "th",
@@ -48,9 +48,11 @@ describe("ai summary helpers", () => {
     expect(prompt).toContain("mode: market");
     expect(prompt).toContain("timeframe: week");
     expect(prompt).toContain("target market region: US");
+    expect(prompt).toContain("coverage universe: all listed stocks");
     expect(prompt).toContain("large-cap and broad-market stock impact");
-    expect(prompt).toContain("PTT");
-    expect(prompt).toContain("Energy");
+    expect(prompt).not.toContain("portfolio positions");
+    expect(prompt).not.toContain("PTT");
+    expect(prompt).not.toContain("Energy");
   });
 
   it("normalizes Gemini model presets", () => {
