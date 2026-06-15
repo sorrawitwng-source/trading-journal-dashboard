@@ -68,6 +68,8 @@ export function AiSummaryPage({
   const [apiKey, setApiKey] = useState(() => loadStoredGeminiApiKey());
   const [model, setModel] = useState<AiModelPreset>(defaultModel);
   const [stockSymbol, setStockSymbol] = useState("");
+  const [marketQuestion, setMarketQuestion] = useState("");
+  const [stockQuestion, setStockQuestion] = useState("");
   const [savedMessage, setSavedMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [marketSummary, setMarketSummary] = useState("");
@@ -104,6 +106,13 @@ export function AiSummaryPage({
       return;
     }
 
+    const question = mode === "stock" ? stockQuestion : marketQuestion;
+
+    if (!question.trim()) {
+      setErrorMessage(text.questionRequired);
+      return;
+    }
+
     setLoadingMode(mode);
 
     try {
@@ -116,6 +125,7 @@ export function AiSummaryPage({
         mode,
         model,
         positions: [],
+        question,
         symbol: mode === "stock" ? stockSymbol : undefined,
         timeframe,
       });
@@ -203,12 +213,12 @@ export function AiSummaryPage({
             timeframe={timeframe}
             timeframeOptions={timeframeOptions}
           />
-          <div className="ai-summary-checklist">
-            <b>{text.outputShape}</b>
-            {text.marketBriefPoints.map((point) => (
-              <span key={point}>{point}</span>
-            ))}
-          </div>
+          <QuestionField
+            label={text.marketQuestion}
+            onChange={setMarketQuestion}
+            placeholder={text.marketQuestionPlaceholder}
+            value={marketQuestion}
+          />
         </SummaryWorkbench>
 
         <SummaryWorkbench
@@ -230,11 +240,12 @@ export function AiSummaryPage({
               value={stockSymbol}
             />
           </label>
-          <div className="ai-summary-checklist ai-summary-checklist--compact">
-            {text.stockBriefPoints.map((point) => (
-              <span key={point}>{point}</span>
-            ))}
-          </div>
+          <QuestionField
+            label={text.stockQuestion}
+            onChange={setStockQuestion}
+            placeholder={text.stockQuestionPlaceholder}
+            value={stockQuestion}
+          />
         </SummaryWorkbench>
       </section>
     </div>
@@ -429,12 +440,32 @@ function AnalysisSetup({
         value={marketRegion}
         onChange={onMarketRegionChange}
       />
-      <div className="ai-impact-map">
-        <span>{text.outputShape}</span>
-        <strong>{text.marketRegionNames[marketRegion]} / {text.timeframeNames[timeframe]}</strong>
-        <p>{text.impactMapCopy}</p>
-      </div>
     </div>
+  );
+}
+
+function QuestionField({
+  label,
+  onChange,
+  placeholder,
+  value,
+}: {
+  label: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  value: string;
+}) {
+  return (
+    <label className="ai-question-field">
+      <span>{label}</span>
+      <textarea
+        aria-label={label}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        rows={4}
+        value={value}
+      />
+    </label>
   );
 }
 
@@ -552,10 +583,14 @@ const labels = {
       US: "US",
     },
     marketTitle: "Market impact brief",
+    marketQuestion: "Market question",
+    marketQuestionPlaceholder:
+      "Type what you want to know, e.g. Which Thai sectors look strongest today?",
     model: "Model",
     monthHint: "Positioning, macro trend, and monthly regime",
     outputShape: "Output focus",
     positions: "Positions",
+    questionRequired: "Please type your question first.",
     requestFailed: "AI market analysis is unavailable right now.",
     saveKey: "Save key",
     saved: "API key saved in this browser.",
@@ -566,6 +601,9 @@ const labels = {
       "Follow-up research checklist",
     ],
     stockButton: "Analyze stock",
+    stockQuestion: "Stock question",
+    stockQuestionPlaceholder:
+      "Ask about sentiment, catalysts, risk, news impact, or what to verify next.",
     stockSymbol: "Stock symbol",
     stockTitle: "Single-stock impact",
     subtitle:
@@ -614,10 +652,14 @@ const labels = {
       US: "เมกา",
     },
     marketTitle: "สรุปผลกระทบตลาด",
+    marketQuestion: "คำถามตลาด",
+    marketQuestionPlaceholder:
+      "พิมพ์สิ่งที่อยากรู้ เช่น วันนี้หุ้นไทยกลุ่มไหนแข็งสุด?",
     model: "โมเดล",
     monthHint: "ภาพรายเดือน แนวโน้ม macro และ positioning",
     outputShape: "โฟกัสคำตอบ",
     positions: "จำนวนหุ้น",
+    questionRequired: "กรุณาพิมพ์คำถามก่อน",
     requestFailed: "ตอนนี้ยังเรียก AI วิเคราะห์ตลาดไม่ได้",
     saveKey: "บันทึก key",
     saved: "บันทึก API key ในเบราว์เซอร์นี้แล้ว",
@@ -628,6 +670,9 @@ const labels = {
       "เช็กลิสต์สำหรับ research ต่อ",
     ],
     stockButton: "วิเคราะห์หุ้น",
+    stockQuestion: "คำถามหุ้น",
+    stockQuestionPlaceholder:
+      "ถาม sentiment ปัจจัยหนุน ความเสี่ยง ข่าวที่กระทบ หรือสิ่งที่ควรเช็คต่อ",
     stockSymbol: "ชื่อหุ้น",
     stockTitle: "วิเคราะห์หุ้นรายตัว",
     subtitle:

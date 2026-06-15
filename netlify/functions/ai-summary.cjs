@@ -89,6 +89,7 @@ function buildSummaryPrompt(payload) {
   const language = payload?.language === "th" ? "th" : "en";
   const marketRegion = normalizeMarketRegion(payload?.marketRegion);
   const timeframe = normalizeTimeframe(payload?.timeframe);
+  const question = stringValue(payload?.question);
   const positions =
     mode === "stock" && Array.isArray(payload?.positions) ? payload.positions : [];
   const symbol = stringValue(payload?.symbol)?.toUpperCase() ?? "";
@@ -113,6 +114,7 @@ function buildSummaryPrompt(payload) {
     mode === "stock"
       ? `base currency: ${stringValue(payload?.baseCurrency) ?? "THB"}`
       : "coverage universe: all listed stocks and sectors in the selected market region",
+    `user question: ${question ?? defaultQuestion(mode, marketRegion, timeframe)}`,
     symbol ? `stock symbol: ${symbol}` : "",
     mode === "stock" ? "optional user position context:" : "",
     mode === "stock" ? positionLines || "No user position context supplied." : "",
@@ -123,6 +125,7 @@ function buildSummaryPrompt(payload) {
       language === "th"
         ? "Write in Thai only except ticker symbols and market names."
         : "Write in English.",
+      "Prioritize the user question over the default checklist.",
       "Use short sections with 1-3 bullets per section.",
       "Start with a one-sentence bottom line, then give practical sector/stock implications.",
     ].join(" "),
@@ -141,6 +144,14 @@ function buildSummaryPrompt(payload) {
   ]
     .filter(Boolean)
     .join("\n");
+}
+
+function defaultQuestion(mode, marketRegion, timeframe) {
+  if (mode === "stock") {
+    return `Summarize the selected stock sentiment, catalysts, risks, and what to verify next for the ${timeframe} timeframe.`;
+  }
+
+  return `Summarize the strongest market, sector, and stock implications for ${marketRegion} over the ${timeframe} timeframe.`;
 }
 
 function formatPositionLine(position) {

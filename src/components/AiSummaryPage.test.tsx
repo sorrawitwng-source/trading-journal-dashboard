@@ -64,6 +64,9 @@ describe("AiSummaryPage", () => {
     fireEvent.change(screen.getByLabelText("Stock symbol"), {
       target: { value: "AAPL" },
     });
+    fireEvent.change(screen.getByLabelText("Stock question"), {
+      target: { value: "What is the current sentiment and key risk?" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Analyze stock" }));
 
     expect(await screen.findByText(/AAPL sentiment is positive/)).toBeTruthy();
@@ -76,6 +79,7 @@ describe("AiSummaryPage", () => {
       marketRegion: "Asia",
       model: "gemini-2.5-flash-lite",
       mode: "stock",
+      question: "What is the current sentiment and key risk?",
       symbol: "AAPL",
       timeframe: "month",
     });
@@ -140,6 +144,9 @@ describe("AiSummaryPage", () => {
     fireEvent.change(screen.getByLabelText("Gemini API key"), {
       target: { value: "gemini-test-key" },
     });
+    fireEvent.change(screen.getByLabelText("Market question"), {
+      target: { value: "Which Thai sectors look strongest today?" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Analyze market" }));
 
     expect(await screen.findByText(/Thai market breadth/)).toBeTruthy();
@@ -148,9 +155,11 @@ describe("AiSummaryPage", () => {
     expect(JSON.parse(String(requestInit.body))).toMatchObject({
       mode: "market",
       positions: [],
+      question: "Which Thai sectors look strongest today?",
     });
     expect(screen.queryByText("Portfolio risk check")).toBeNull();
-    expect(screen.getByText("Market risks to watch")).toBeTruthy();
+    expect(screen.queryByText("Output focus")).toBeNull();
+    expect(screen.queryByText("Market risks to watch")).toBeNull();
   });
 
   it("renders AI markdown responses as clean summary sections", async () => {
@@ -178,6 +187,9 @@ describe("AiSummaryPage", () => {
 
     fireEvent.change(screen.getByLabelText("Gemini API key"), {
       target: { value: "gemini-test-key" },
+    });
+    fireEvent.change(screen.getByLabelText("Market question"), {
+      target: { value: "Summarize the Thai market today." },
     });
     fireEvent.click(screen.getByRole("button", { name: "Analyze market" }));
 

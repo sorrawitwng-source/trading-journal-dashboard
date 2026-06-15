@@ -22,6 +22,7 @@ export interface AiSummaryRequest {
   mode: AiSummaryMode;
   model?: string;
   positions: AiSummaryPosition[];
+  question?: string;
   symbol?: string;
   timeframe: AiSummaryTimeframe;
 }
@@ -62,6 +63,7 @@ export async function requestAiSummary(
           apiKey: request.apiKey.trim(),
           marketRegion: request.marketRegion,
           model: request.model?.trim() || undefined,
+          question: request.question?.trim() || undefined,
           symbol: request.symbol?.trim().toUpperCase() || undefined,
           timeframe: request.timeframe,
         }),

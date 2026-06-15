@@ -5705,21 +5705,24 @@ tbody tr:hover {
 }
 
 .ai-key-panel label,
-.ai-stock-field {
+.ai-stock-field,
+.ai-question-field {
   display: grid;
   gap: 7px;
   min-width: 0;
 }
 
 .ai-key-panel label span,
-.ai-stock-field span {
+.ai-stock-field span,
+.ai-question-field span {
   color: var(--muted-text);
   font-size: 0.75rem;
   font-weight: 900;
 }
 
 .ai-key-panel input,
-.ai-stock-field input {
+.ai-stock-field input,
+.ai-question-field textarea {
   width: 100%;
   min-height: 42px;
   border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
@@ -5732,8 +5735,15 @@ tbody tr:hover {
   outline: none;
 }
 
+.ai-question-field textarea {
+  min-height: 118px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
 .ai-key-panel input:focus,
-.ai-stock-field input:focus {
+.ai-stock-field input:focus,
+.ai-question-field textarea:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
@@ -5778,10 +5788,6 @@ tbody tr:hover {
   background:
     linear-gradient(90deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent 56%),
     color-mix(in srgb, var(--panel-contrast) 36%, transparent);
-}
-
-.ai-summary-setup .ai-impact-map {
-  grid-column: 1 / -1;
 }
 
 .ai-option-group {
