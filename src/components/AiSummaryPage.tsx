@@ -280,9 +280,121 @@ function SummaryWorkbench({
       </div>
       <div className="ai-summary-card__controls">{children}</div>
       <div className="ai-summary-result" aria-live="polite">
-        {result ? <p>{result}</p> : <span>{placeholder}</span>}
+        <AiSummaryResult result={result} placeholder={placeholder} />
       </div>
     </article>
+  );
+}
+
+function AiSummaryResult({
+  placeholder,
+  result,
+}: {
+  placeholder: string;
+  result: string;
+}) {
+  if (!result) {
+    return <span className="ai-summary-placeholder">{placeholder}</span>;
+  }
+
+  const sections = parseSummarySections(result);
+
+  return (
+    <div className="ai-summary-output">
+      {sections.map((section, sectionIndex) => (
+        <section className="ai-summary-section" key={`${section.title}-${sectionIndex}`}>
+          <h3>{section.title}</h3>
+          {section.points.length > 0 && (
+            <ul>
+              {section.points.map((point, pointIndex) => (
+                <li key={`${point}-${pointIndex}`}>{point}</li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ))}
+    </div>
+  );
+}
+
+interface SummarySection {
+  points: string[];
+  title: string;
+}
+
+function parseSummarySections(summary: string): SummarySection[] {
+  const fallbackTitle = /[ก-๙]/.test(summary) ? "สรุป" : "Summary";
+  const sections: SummarySection[] = [];
+  let currentSection: SummarySection | null = null;
+
+  for (const rawLine of summary.split(/\r?\n/)) {
+    const trimmedLine = rawLine.trim();
+    const cleanedLine = cleanSummaryLine(trimmedLine);
+
+    if (!cleanedLine) {
+      continue;
+    }
+
+    const markdownHeading = /^#{1,6}\s+/.test(trimmedLine);
+    const labelledLine = cleanedLine.match(/^([^:：]{2,48})[:：]\s+(.+)$/);
+
+    if (markdownHeading) {
+      currentSection = { points: [], title: cleanedLine };
+      sections.push(currentSection);
+      continue;
+    }
+
+    if (labelledLine && isSummaryLabel(labelledLine[1])) {
+      currentSection = {
+        points: [labelledLine[2].trim()],
+        title: labelledLine[1].trim(),
+      };
+      sections.push(currentSection);
+      continue;
+    }
+
+    if (isStandaloneSummaryHeading(cleanedLine)) {
+      currentSection = { points: [], title: cleanedLine };
+      sections.push(currentSection);
+      continue;
+    }
+
+    if (!currentSection) {
+      currentSection = { points: [], title: fallbackTitle };
+      sections.push(currentSection);
+    }
+
+    currentSection.points.push(cleanedLine);
+  }
+
+  return sections.length > 0 ? sections : [{ points: [summary.trim()], title: fallbackTitle }];
+}
+
+function cleanSummaryLine(line: string) {
+  return line
+    .replace(/^#{1,6}\s+/, "")
+    .replace(/^[-*•]\s+/, "")
+    .replace(/^\d+[.)]\s+/, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/__(.*?)__/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isSummaryLabel(label: string) {
+  return /^(summary|market|regime|direction|sector|watchlist|risk|verify|check|sentiment|impact|สรุป|ภาพรวม|ทิศทาง|กลุ่ม|หุ้น|ความเสี่ยง|เช็ค|ปัจจัย)/i.test(
+    label.trim(),
+  );
+}
+
+function isStandaloneSummaryHeading(line: string) {
+  return (
+    line.length <= 72 &&
+    !/[.!?]$/.test(line) &&
+    /^(summary|market|sector|watchlist|risk|verify|สรุป|ภาพรวม|ทิศทาง|กลุ่ม|หุ้น|ความเสี่ยง|เช็ค)/i.test(
+      line,
+    )
   );
 }
 
