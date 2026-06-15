@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AiSummaryPage } from "./AiSummaryPage";
 
@@ -11,7 +11,7 @@ describe("AiSummaryPage", () => {
     vi.unstubAllGlobals();
   });
 
-  it("saves the Gemini key locally and requests a region/timeframe stock summary", async () => {
+  it("saves the Gemini key locally and requests a weekly market summary without extra conditions", async () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => ({
       json: async () => ({
         fetchedAt: "2026-06-14T00:00:00.000Z",
@@ -59,15 +59,14 @@ describe("AiSummaryPage", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Save key" }));
     fireEvent.click(screen.getByRole("button", { name: "Fast" }));
-    fireEvent.click(screen.getByRole("button", { name: "Month" }));
-    fireEvent.click(screen.getByRole("button", { name: "Asia" }));
-    fireEvent.change(screen.getByLabelText("Stock symbol"), {
-      target: { value: "AAPL" },
-    });
-    fireEvent.change(screen.getByLabelText("Stock question"), {
-      target: { value: "What is the current sentiment and key risk?" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Analyze stock" }));
+    expect(screen.queryByLabelText("Market question")).toBeNull();
+    expect(screen.queryByLabelText("Stock question")).toBeNull();
+    expect(screen.queryByLabelText("Stock symbol")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Day" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Month" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Asia" })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Summarize week" }));
 
     expect(await screen.findByText(/AAPL sentiment is positive/)).toBeTruthy();
     expect(localStorage.getItem("trading-journal.gemini-api-key.v1")).toBe(
@@ -76,13 +75,14 @@ describe("AiSummaryPage", () => {
     const requestInit = fetchMock.mock.calls[0]?.[1] as RequestInit;
 
     expect(JSON.parse(String(requestInit.body))).toMatchObject({
-      marketRegion: "Asia",
+      marketRegion: "US",
       model: "gemini-2.5-flash-lite",
-      mode: "stock",
-      question: "What is the current sentiment and key risk?",
-      symbol: "AAPL",
-      timeframe: "month",
+      mode: "market",
+      positions: [],
+      timeframe: "week",
     });
+    expect(JSON.parse(String(requestInit.body))).not.toHaveProperty("question");
+    expect(JSON.parse(String(requestInit.body))).not.toHaveProperty("symbol");
   });
 
   it("uses model preset buttons instead of a free text model field", () => {
@@ -101,7 +101,7 @@ describe("AiSummaryPage", () => {
     expect(screen.getByRole("button", { name: "Fast" })).toBeTruthy();
   });
 
-  it("requests market analysis as an all-stock universe scan without portfolio holdings", async () => {
+  it("requests weekly market analysis as an all-stock universe scan without portfolio holdings", async () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => ({
       json: async () => ({
         fetchedAt: "2026-06-14T00:00:00.000Z",
@@ -144,19 +144,19 @@ describe("AiSummaryPage", () => {
     fireEvent.change(screen.getByLabelText("Gemini API key"), {
       target: { value: "gemini-test-key" },
     });
-    fireEvent.change(screen.getByLabelText("Market question"), {
-      target: { value: "Which Thai sectors look strongest today?" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Analyze market" }));
+    fireEvent.click(screen.getByRole("button", { name: "Summarize week" }));
 
     expect(await screen.findByText(/Thai market breadth/)).toBeTruthy();
     const requestInit = fetchMock.mock.calls[0]?.[1] as RequestInit;
 
     expect(JSON.parse(String(requestInit.body))).toMatchObject({
+      marketRegion: "Thai",
       mode: "market",
       positions: [],
-      question: "Which Thai sectors look strongest today?",
+      timeframe: "week",
     });
+    expect(JSON.parse(String(requestInit.body))).not.toHaveProperty("question");
+    expect(JSON.parse(String(requestInit.body))).not.toHaveProperty("symbol");
     expect(screen.queryByText("Portfolio risk check")).toBeNull();
     expect(screen.queryByText("Output focus")).toBeNull();
     expect(screen.queryByText("Market risks to watch")).toBeNull();
@@ -188,10 +188,7 @@ describe("AiSummaryPage", () => {
     fireEvent.change(screen.getByLabelText("Gemini API key"), {
       target: { value: "gemini-test-key" },
     });
-    fireEvent.change(screen.getByLabelText("Market question"), {
-      target: { value: "Summarize the Thai market today." },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Analyze market" }));
+    fireEvent.click(screen.getByRole("button", { name: "Summarize week" }));
 
     expect(await screen.findByRole("heading", { name: "Market Regime: Thai Equity Market" })).toBeTruthy();
     expect(screen.queryByText(/###/)).toBeNull();
@@ -227,10 +224,7 @@ describe("AiSummaryPage", () => {
     fireEvent.change(screen.getByLabelText("Gemini API key"), {
       target: { value: "gemini-test-key" },
     });
-    fireEvent.change(screen.getByLabelText("Market question"), {
-      target: { value: "Explain bank sector impact." },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Analyze market" }));
+    fireEvent.click(screen.getByRole("button", { name: "Summarize week" }));
 
     expect(await screen.findByRole("heading", { name: "Summary" })).toBeTruthy();
     expect(
@@ -243,7 +237,7 @@ describe("AiSummaryPage", () => {
     expect(screen.queryByText(/Banks\)\*/)).toBeNull();
   });
 
-  it("keeps timeframe and market selectors in the market analysis card", () => {
+  it("keeps AI summary focused on one weekly market card", () => {
     render(
       <AiSummaryPage
         baseCurrency="THB"
@@ -253,11 +247,9 @@ describe("AiSummaryPage", () => {
       />,
     );
 
-    const analyzeButton = screen.getByRole("button", { name: "Analyze market" });
-    const marketCard = analyzeButton.closest("article");
-
-    expect(marketCard).not.toBeNull();
-    expect(within(marketCard as HTMLElement).getByRole("button", { name: "Month" })).toBeTruthy();
-    expect(within(marketCard as HTMLElement).getByRole("button", { name: "Asia" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Summarize week" })).toBeTruthy();
+    expect(screen.getByText("Weekly market picture")).toBeTruthy();
+    expect(screen.queryByText("Single-stock impact")).toBeNull();
+    expect(screen.queryByLabelText("AI market controls")).toBeNull();
   });
 });

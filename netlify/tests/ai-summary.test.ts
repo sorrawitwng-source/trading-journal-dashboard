@@ -26,14 +26,13 @@ describe("ai summary helpers", () => {
     expect(_test.normalizeTimeframe("bad")).toBe("week");
   });
 
-  it("builds a timeframe and region specific market prompt for the whole stock universe", () => {
+  it("builds a weekly market picture prompt for the whole stock universe", () => {
     const prompt = _test.buildSummaryPrompt({
       baseCurrency: "THB",
       language: "th",
       marketRegion: "US",
       marketFilter: "Thai",
       mode: "market",
-      question: "Which sectors have the strongest setup this week?",
       positions: [
         {
           market: "Thai",
@@ -50,13 +49,14 @@ describe("ai summary helpers", () => {
     expect(prompt).toContain("timeframe: week");
     expect(prompt).toContain("target market region: US");
     expect(prompt).toContain("coverage universe: all listed stocks");
-    expect(prompt).toContain(
-      "user question: Which sectors have the strongest setup this week?",
-    );
+    expect(prompt).toContain("task: weekly market picture summary");
+    expect(prompt).toContain("Do not call this a daily scan");
     expect(prompt).toContain("Return a concise decision-ready summary");
     expect(prompt).toContain("Do not use Markdown headings");
     expect(prompt).toContain("Do not output bullet points");
-    expect(prompt).toContain("large-cap and broad-market stock impact");
+    expect(prompt).toContain("large-cap and broad-market stock implications");
+    expect(prompt).not.toContain("user question:");
+    expect(prompt).not.toContain("Daily Whole-Market");
     expect(prompt).not.toContain("portfolio positions");
     expect(prompt).not.toContain("PTT");
     expect(prompt).not.toContain("Energy");

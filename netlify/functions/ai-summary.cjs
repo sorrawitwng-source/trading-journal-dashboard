@@ -104,6 +104,9 @@ function buildSummaryPrompt(payload) {
     .map(formatPositionLine)
     .filter(Boolean)
     .join("\n");
+  const taskLine = question
+    ? `user question: ${question}`
+    : `task: ${defaultQuestion(mode, marketRegion, timeframe)}`;
 
   return [
     `mode: ${mode}`,
@@ -114,7 +117,7 @@ function buildSummaryPrompt(payload) {
     mode === "stock"
       ? `base currency: ${stringValue(payload?.baseCurrency) ?? "THB"}`
       : "coverage universe: all listed stocks and sectors in the selected market region",
-    `user question: ${question ?? defaultQuestion(mode, marketRegion, timeframe)}`,
+    taskLine,
     symbol ? `stock symbol: ${symbol}` : "",
     mode === "stock" ? "optional user position context:" : "",
     mode === "stock" ? positionLines || "No user position context supplied." : "",
@@ -126,7 +129,9 @@ function buildSummaryPrompt(payload) {
       language === "th"
         ? "Write in Thai only except ticker symbols and market names."
         : "Write in English.",
-      "Prioritize the user question over the default checklist.",
+      question
+        ? "Prioritize the user question over the default checklist."
+        : "Follow the task line directly and do not describe the output as a daily scan.",
       "Use complete sentences in 2-4 short explanatory paragraphs.",
       "Start with a one-sentence bottom line, then explain practical sector/stock implications.",
     ].join(" "),
@@ -138,8 +143,9 @@ function buildSummaryPrompt(payload) {
           "Explain how the selected market region could affect this stock and its sector.",
         ].join(" ")
       : [
-          "Write a whole-market stock universe scan for the selected timeframe and target market region, not a portfolio recap.",
-          "Include: market regime, key macro/sector drivers, sectors and industries likely to benefit, sectors under pressure, large-cap and broad-market stock impact, watchlist ideas to research further, market risks, and what data to verify next.",
+          "Write a weekly market picture summary for the selected target market region, not a portfolio recap and not a daily scan.",
+          "Do not call this a daily scan, daily universe scan, or daily market report.",
+          "Include: market tone for the week, key macro/sector drivers, sectors and industries likely to benefit, sectors under pressure, large-cap and broad-market stock implications, watchlist ideas to research further, market risks, and what data to verify next week.",
           "Be direct and practical: explain how the region can affect index leaders, mega-cap stocks, cyclicals, defensives, exporters, banks, energy, technology, and liquidity-sensitive names where relevant.",
         ].join(" "),
   ]
@@ -152,7 +158,7 @@ function defaultQuestion(mode, marketRegion, timeframe) {
     return `Summarize the selected stock sentiment, catalysts, risks, and what to verify next for the ${timeframe} timeframe.`;
   }
 
-  return `Summarize the strongest market, sector, and stock implications for ${marketRegion} over the ${timeframe} timeframe.`;
+  return `weekly market picture summary for ${marketRegion}: summarize market sentiment, sector rotation, groups with positive or negative momentum, major catalysts, risks, and what to watch next week`;
 }
 
 function formatPositionLine(position) {
