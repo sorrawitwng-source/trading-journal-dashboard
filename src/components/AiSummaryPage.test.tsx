@@ -195,9 +195,52 @@ describe("AiSummaryPage", () => {
 
     expect(await screen.findByRole("heading", { name: "Market Regime: Thai Equity Market" })).toBeTruthy();
     expect(screen.queryByText(/###/)).toBeNull();
+    expect(screen.queryAllByRole("listitem")).toHaveLength(0);
     expect(screen.getByText("The market is neutral-to-positive.")).toBeTruthy();
     expect(screen.getByText("Banks and tourism have improving momentum.")).toBeTruthy();
     expect(screen.getByText("Energy remains sensitive to oil prices.")).toBeTruthy();
+  });
+
+  it("turns malformed markdown fragments into explanatory prose", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => ({
+      json: async () => ({
+        fetchedAt: "2026-06-14T00:00:00.000Z",
+        model: "gemini-2.5-flash",
+        provider: "gemini",
+        summary:
+          "Summary\n\n- **Banks)*: Net Interest Margin trends, credit cost, and asset quality matter for big-cap banks.\n- *",
+      }),
+      ok: true,
+    }));
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <AiSummaryPage
+        baseCurrency="THB"
+        language="en"
+        marketFilter="Thai"
+        positions={[]}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Gemini API key"), {
+      target: { value: "gemini-test-key" },
+    });
+    fireEvent.change(screen.getByLabelText("Market question"), {
+      target: { value: "Explain bank sector impact." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Analyze market" }));
+
+    expect(await screen.findByRole("heading", { name: "Summary" })).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Banks: Net Interest Margin trends, credit cost, and asset quality matter for big-cap banks.",
+      ),
+    ).toBeTruthy();
+    expect(screen.queryAllByRole("listitem")).toHaveLength(0);
+    expect(screen.queryByText("*")).toBeNull();
+    expect(screen.queryByText(/Banks\)\*/)).toBeNull();
   });
 
   it("keeps timeframe and market selectors in the market analysis card", () => {

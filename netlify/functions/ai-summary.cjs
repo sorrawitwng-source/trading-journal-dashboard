@@ -79,7 +79,7 @@ function buildInstructions(language) {
     "Do not use Markdown headings, hash symbols, tables, or code fences.",
     language === "th"
       ? "Use Thai only except ticker symbols, market names, and common sector terms."
-      : "Use clear English with short section labels and bullets.",
+      : "Use clear English with short explanatory paragraphs.",
     "This is research support, not financial advice.",
   ].join(" ");
 }
@@ -122,12 +122,13 @@ function buildSummaryPrompt(payload) {
     [
       "Return a concise decision-ready summary.",
       "Do not use Markdown headings, hash symbols, tables, or code fences.",
+      "Do not output bullet points, numbered lists, list markers, or fragment-only lines.",
       language === "th"
         ? "Write in Thai only except ticker symbols and market names."
         : "Write in English.",
       "Prioritize the user question over the default checklist.",
-      "Use short sections with 1-3 bullets per section.",
-      "Start with a one-sentence bottom line, then give practical sector/stock implications.",
+      "Use complete sentences in 2-4 short explanatory paragraphs.",
+      "Start with a one-sentence bottom line, then explain practical sector/stock implications.",
     ].join(" "),
     "",
     mode === "stock"

@@ -55,6 +55,7 @@ describe("ai summary helpers", () => {
     );
     expect(prompt).toContain("Return a concise decision-ready summary");
     expect(prompt).toContain("Do not use Markdown headings");
+    expect(prompt).toContain("Do not output bullet points");
     expect(prompt).toContain("large-cap and broad-market stock impact");
     expect(prompt).not.toContain("portfolio positions");
     expect(prompt).not.toContain("PTT");

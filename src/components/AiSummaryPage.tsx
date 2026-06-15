@@ -316,11 +316,11 @@ function AiSummaryResult({
         <section className="ai-summary-section" key={`${section.title}-${sectionIndex}`}>
           <h3>{section.title}</h3>
           {section.points.length > 0 && (
-            <ul>
+            <div className="ai-summary-prose">
               {section.points.map((point, pointIndex) => (
-                <li key={`${point}-${pointIndex}`}>{point}</li>
+                <p key={`${point}-${pointIndex}`}>{point}</p>
               ))}
-            </ul>
+            </div>
           )}
         </section>
       ))}
@@ -382,15 +382,19 @@ function parseSummarySections(summary: string): SummarySection[] {
 }
 
 function cleanSummaryLine(line: string) {
-  return line
+  const cleaned = line
     .replace(/^#{1,6}\s+/, "")
-    .replace(/^[-*•]\s+/, "")
+    .replace(/^[-*•]\s*/, "")
     .replace(/^\d+[.)]\s+/, "")
     .replace(/\*\*(.*?)\*\*/g, "$1")
     .replace(/__(.*?)__/g, "$1")
     .replace(/`([^`]+)`/g, "$1")
+    .replace(/\*+/g, "")
+    .replace(/\)\s*:/g, ":")
     .replace(/\s+/g, " ")
     .trim();
+
+  return /^[#*_–—-]+$/.test(cleaned) ? "" : cleaned;
 }
 
 function isSummaryLabel(label: string) {
