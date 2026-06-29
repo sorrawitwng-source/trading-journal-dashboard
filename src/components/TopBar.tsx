@@ -1,6 +1,6 @@
-import type { Currency, MarketFilter } from "../types";
+﻿import type { Currency, MarketFilter } from "../types";
 
-export type AppView = "ai" | "analytics" | "ideas" | "news" | "portfolio" | "scan";
+export type AppView = "analytics" | "ideas" | "news" | "portfolio" | "scan";
 export type AppTheme = "dark" | "light";
 
 interface TopBarProps {
@@ -24,7 +24,6 @@ const viewOptions: { value: AppView }[] = [
   { value: "analytics" },
   { value: "scan" },
   { value: "ideas" },
-  { value: "ai" },
   { value: "news" },
 ];
 
@@ -140,7 +139,6 @@ const labels = {
     currencyPrefix: "Currency",
     dashboardControls: "Dashboard controls",
     descriptions: {
-      ai: "ChatGPT market and stock summaries from your portfolio context.",
       analytics: "Portfolio exposure, concentration, and monthly trading quality.",
       ideas: "Sector ideas, daily momentum, and research queues.",
       news: "Filtered headlines mapped to sectors and related stocks.",
@@ -163,7 +161,6 @@ const labels = {
     },
     themeMode: "Theme mode",
     titles: {
-      ai: "ChatGPT Summary",
       analytics: "Portfolio Analytics",
       ideas: "Stock Ideas",
       news: "News Scanner",
@@ -171,7 +168,6 @@ const labels = {
       scan: "Evidence Scan",
     },
     views: {
-      ai: "AI Summary",
       analytics: "Analytics",
       ideas: "Stock Ideas",
       news: "News",
@@ -181,16 +177,15 @@ const labels = {
   },
   th: {
     baseCurrency: "สกุลเงินพอร์ต",
-    contextLabel: "บริบทของหน้าปัจจุบัน",
+    contextLabel: "บริบทหน้าปัจจุบัน",
     currencyPrefix: "ค่าเงิน",
     dashboardControls: "ตัวควบคุมแดชบอร์ด",
     descriptions: {
-      ai: "สรุปตลาดและหุ้นรายตัวด้วย ChatGPT จากบริบทพอร์ตของคุณ",
-      analytics: "ดูสัดส่วนพอร์ต ความกระจุกตัว คุณภาพข้อมูล และผลงานรายเดือน",
+      analytics: "ดูสัดส่วนพอร์ต ความกระจุกตัว คุณภาพข้อมูล และผลลัพธ์รายเดือน",
       ideas: "ไอเดียหุ้นตาม sector หุ้นซิ่งรายวัน และคิวสำหรับ research ต่อ",
-      news: "ข่าวที่กรองแล้ว จับคู่กับ sector และหุ้นที่เกี่ยวข้อง",
-      portfolio: "รายการหุ้น ต้นทุน กำไร/ขาดทุน และเทียบ benchmark",
-      scan: "สแกนข่าวรายหุ้นจาก SET และบทวิเคราะห์โบรกเกอร์",
+      news: "ข่าวที่กรองแล้ว พร้อมจับคู่ sector และหุ้นที่เกี่ยวข้อง",
+      portfolio: "รายการหุ้น ต้นทุน กำไร/ขาดทุน และการเทียบ benchmark",
+      scan: "สแกนหุ้นจากข้อมูล SET และบทวิเคราะห์โบรกเกอร์",
     },
     eyebrow: "บันทึกการเทรด",
     languageToggle: "เปลี่ยนภาษา",
@@ -203,20 +198,18 @@ const labels = {
     },
     pageSelector: "เลือกหน้า",
     themeLabels: {
-      dark: "มืด",
-      light: "สว่าง",
+      dark: "Dark",
+      light: "Light",
     },
-    themeMode: "ธีมหน้าจอ",
+    themeMode: "ธีม",
     titles: {
-      ai: "สรุปด้วย ChatGPT",
       analytics: "วิเคราะห์พอร์ต",
       ideas: "หุ้นน่าสนใจ",
       news: "สแกนข่าว",
       portfolio: "Portfolio Dashboard",
-      scan: "สแกนหุ้นจาก SET/โบรกเกอร์",
+      scan: "สแกนหุ้น",
     },
     views: {
-      ai: "AI สรุป",
       analytics: "วิเคราะห์",
       ideas: "หุ้นน่าสนใจ",
       news: "ข่าว",

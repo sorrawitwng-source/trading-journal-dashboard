@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+﻿import { defineConfig } from "vitest/config";
 import { createRequire } from "node:module";
 import react from "@vitejs/plugin-react";
 import type { Plugin } from "vite";
@@ -6,6 +6,7 @@ import type { Plugin } from "vite";
 const require = createRequire(import.meta.url);
 const quoteFunction = require("./netlify/functions/quote.cjs") as {
   handler: (event: {
+    httpMethod?: string;
     queryStringParameters?: Record<string, string>;
   }) => Promise<{
     body?: string;
@@ -15,16 +16,6 @@ const quoteFunction = require("./netlify/functions/quote.cjs") as {
 };
 const newsScanFunction = require("./netlify/functions/news-scan.cjs") as {
   handler: (event: {
-    queryStringParameters?: Record<string, string>;
-  }) => Promise<{
-    body?: string;
-    headers?: Record<string, string>;
-    statusCode?: number;
-  }>;
-};
-const aiSummaryFunction = require("./netlify/functions/ai-summary.cjs") as {
-  handler: (event: {
-    body?: string;
     httpMethod?: string;
     queryStringParameters?: Record<string, string>;
   }) => Promise<{
@@ -56,10 +47,7 @@ function localApi(): Plugin {
             : requestUrl.pathname === "/api/news-scan" ||
                 requestUrl.pathname === "/.netlify/functions/news-scan"
               ? newsScanFunction.handler
-              : requestUrl.pathname === "/api/ai-summary" ||
-                  requestUrl.pathname === "/.netlify/functions/ai-summary"
-                ? aiSummaryFunction.handler
-                : null;
+              : null;
 
         if (!handler) {
           next();
@@ -68,11 +56,6 @@ function localApi(): Plugin {
 
         try {
           const result = await handler({
-            body:
-              requestUrl.pathname === "/api/ai-summary" ||
-              requestUrl.pathname === "/.netlify/functions/ai-summary"
-                ? await readRequestBody(request)
-                : undefined,
             httpMethod: request.method,
             queryStringParameters: Object.fromEntries(requestUrl.searchParams),
           });
@@ -92,22 +75,4 @@ function localApi(): Plugin {
     },
     name: "local-dashboard-api",
   };
-}
-
-function readRequestBody(request: {
-  on: (event: string, listener: (chunk?: Buffer) => void) => void;
-}): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-
-    request.on("data", (chunk) => {
-      if (Buffer.isBuffer(chunk)) {
-        chunks.push(chunk);
-      } else if (typeof chunk === "string") {
-        chunks.push(Buffer.from(chunk));
-      }
-    });
-    request.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
-    request.on("error", () => reject(new Error("Could not read request body")));
-  });
 }
